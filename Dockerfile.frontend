@@ -1,0 +1,24 @@
+# Local development image: runs the Next.js dev server for hot reload.
+# A production deployment should use the `production` stage below instead
+# (see docs/DEPLOYMENT_READINESS.md).
+
+FROM node:20-bookworm-slim AS base
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]
+
+# ---------------------------------------------------------------------------
+# Production build target:
+#   docker build -f Dockerfile.frontend --target production -t smartops-frontend:prod .
+# ---------------------------------------------------------------------------
+FROM base AS production
+RUN npm run build
+CMD ["npm", "run", "start", "--", "--hostname", "0.0.0.0"]

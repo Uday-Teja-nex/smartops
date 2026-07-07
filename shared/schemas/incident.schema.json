@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smartops.local/schemas/incident.schema.json",
+  "title": "SmartOps Incident",
+  "type": "object",
+  "required": [
+    "id",
+    "category",
+    "type",
+    "severity",
+    "confidence",
+    "status",
+    "buildingId",
+    "floor",
+    "zone",
+    "sourceId",
+    "startTime",
+    "shortSummary",
+    "detailedNarrative",
+    "recommendedActions",
+    "evidence"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "category": {
+      "enum": [
+        "Safety",
+        "Housekeeping",
+        "Occupancy",
+        "Security",
+        "Queue & Crowd",
+        "System Health"
+      ]
+    },
+    "subcategory": { "type": ["string", "null"] },
+    "type": { "type": "string", "description": "Machine event type, e.g. exit_blocked" },
+    "severity": { "enum": ["low", "medium", "high", "critical"] },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "status": {
+      "enum": [
+        "active",
+        "acknowledged",
+        "assigned",
+        "in_progress",
+        "resolved",
+        "false_positive",
+        "escalated",
+        "human_review"
+      ]
+    },
+    "buildingId": { "type": "string" },
+    "floor": { "type": "string" },
+    "zone": { "type": "string" },
+    "sourceId": { "type": "string" },
+    "cameraId": { "type": "string", "description": "Legacy alias of sourceId" },
+    "candidateId": { "type": ["string", "null"] },
+    "startTime": { "type": "string", "format": "date-time" },
+    "endTime": { "type": ["string", "null"], "format": "date-time" },
+    "ackTime": { "type": ["string", "null"], "format": "date-time" },
+    "resolvedTime": { "type": ["string", "null"], "format": "date-time" },
+    "slaDueAt": { "type": ["string", "null"], "format": "date-time" },
+    "escalatedAt": { "type": ["string", "null"], "format": "date-time" },
+    "shortSummary": { "type": "string" },
+    "detailedNarrative": { "type": "array", "items": { "type": "string" } },
+    "recommendedActions": { "type": "array", "items": { "type": "string" } },
+    "reviewNotes": { "type": "array", "items": { "type": "string" } },
+    "evidence": {
+      "type": "object",
+      "required": ["thumbnailUrl", "clipUrl", "restricted"],
+      "properties": {
+        "thumbnailUrl": { "type": "string" },
+        "clipUrl": { "type": "string" },
+        "restricted": { "type": "boolean" }
+      }
+    },
+    "assignedTo": { "type": ["string", "null"] },
+    "modelProvider": { "type": "string" },
+    "modelVersion": { "type": "string" },
+    "detectionSummary": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Summary of detector output that gated this incident"
+    }
+  }
+}

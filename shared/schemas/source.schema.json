@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smartops.local/schemas/source.schema.json",
+  "title": "SmartOps Video Source",
+  "type": "object",
+  "required": [
+    "id",
+    "orgId",
+    "name",
+    "buildingId",
+    "floor",
+    "zone",
+    "sourceType",
+    "sourceUri",
+    "enabled",
+    "status"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "orgId": { "type": "string" },
+    "name": { "type": "string" },
+    "buildingId": { "type": "string" },
+    "floorId": { "type": ["string", "null"] },
+    "zoneId": { "type": ["string", "null"] },
+    "floor": { "type": "string", "description": "Display label, e.g. L1" },
+    "zone": { "type": "string", "description": "Display label, e.g. Lobby Atrium" },
+    "sourceType": { "enum": ["file", "rtsp", "onvif", "webrtc"] },
+    "sourceUri": { "type": "string" },
+    "inputFormat": { "type": ["string", "null"] },
+    "credentialsRef": {
+      "type": ["string", "null"],
+      "description": "Reference to a secrets-manager entry. Raw credentials are never stored."
+    },
+    "enabled": { "type": "boolean" },
+    "status": { "enum": ["online", "offline", "paused", "failing", "processing"] },
+    "health": {
+      "type": "object",
+      "properties": {
+        "lastSeen": { "type": ["string", "null"], "format": "date-time" },
+        "lastError": { "type": ["string", "null"] },
+        "latencyMs": { "type": ["number", "null"] },
+        "adapter": { "type": ["string", "null"] },
+        "reportedStatus": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "positionNotes": { "type": ["string", "null"] },
+    "detectionConfig": {
+      "type": "object",
+      "properties": {
+        "windowSeconds": { "type": "number" },
+        "sampleFramesPerWindow": { "type": "integer" },
+        "minConfidence": { "type": "number" },
+        "detectors": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}

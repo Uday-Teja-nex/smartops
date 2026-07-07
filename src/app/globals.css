@@ -1,26 +1,159 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   SmartOps design tokens — dark, minimal, premium glassmorphism.
+   Direction: enterprise calm, not cyberpunk. One ambient gradient, layered
+   glass surfaces, restrained accent usage. See docs/UI_REVAMP_GUIDE.md.
+--------------------------------------------------------------------------- */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Base */
+  --bg: #05070d;
+  --bg-raised: #0a0e18;
+  --text: #e6eaf2;
+  --muted: #8b93a7;
+  --muted-strong: #b7bdcc;
+
+  /* Glass surfaces */
+  --glass: rgba(255, 255, 255, 0.04);
+  --glass-strong: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-strong: rgba(255, 255, 255, 0.14);
+  --surface: #0b101c;
+  --surface-2: #0e1424;
+  --border: rgba(148, 163, 184, 0.14);
+
+  /* Primary accent (single hue, used sparingly) */
+  --accent: #5eead4;
+  --accent-strong: #2dd4bf;
+  --accent-soft: rgba(94, 234, 212, 0.12);
+
+  /* Category accents */
+  --accent-safety: #fb7185;
+  --accent-housekeeping: #34d399;
+  --accent-occupancy: #818cf8;
+  --accent-security: #fbbf24;
+  --accent-queue: #38bdf8;
+  --accent-system: #c4b5fd;
+
+  /* Severity */
+  --sev-low: #64748b;
+  --sev-medium: #f59e0b;
+  --sev-high: #fb923c;
+  --sev-critical: #f43f5e;
+
+  /* Depth + radii */
+  --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 24px 60px -32px rgba(0, 0, 0, 0.8);
+  --shadow-float: 0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 32px 80px -24px rgba(0, 0, 0, 0.9);
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+
+  --ring: 0 0 0 2px rgba(94, 234, 212, 0.35);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-safety: var(--accent-safety);
+  --color-accent-housekeeping: var(--accent-housekeeping);
+  --color-accent-occupancy: var(--accent-occupancy);
+  --color-accent-security: var(--accent-security);
+  --color-sev-low: var(--sev-low);
+  --color-sev-medium: var(--sev-medium);
+  --color-sev-high: var(--sev-high);
+  --color-sev-critical: var(--sev-critical);
+  --font-sans: var(--font-plex-sans);
+  --font-display: var(--font-newsreader);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(1100px 700px at 75% -20%, rgba(45, 212, 191, 0.07) 0%, transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(129, 140, 248, 0.06) 0%, transparent 60%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans), sans-serif;
+  letter-spacing: 0.01em;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display), serif;
+  letter-spacing: 0;
+}
+
+/* Reusable glass panel utility (base building block of the design system). */
+.glass-panel {
+  background: linear-gradient(180deg, var(--glass-strong), var(--glass));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-panel);
+  backdrop-filter: blur(18px);
+}
+
+.glass-panel-strong {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--glass-border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float);
+  backdrop-filter: blur(24px);
+}
+
+/* Subtle scrollbars for the dark theme. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Focus visibility */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: var(--radius-sm);
+}
+
+/* Live pulse dot used for realtime indicators. */
+@keyframes smartops-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+}
+.pulse-dot {
+  animation: smartops-pulse 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot {
+    animation: none;
+  }
 }

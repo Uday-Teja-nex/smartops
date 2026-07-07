@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +40,22 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# local data
+/sample-data/output/
+/sample-data/tmp/
+/sample-data/input/*.mp4
+/tmp-video-review/
+
+# local test artifacts
+test-smartops*.db
+services/api/test-smartops*.db
