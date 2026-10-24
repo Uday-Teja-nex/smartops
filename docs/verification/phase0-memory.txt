@@ -1,0 +1,14 @@
+supabase_db_spi-material-tracking 42.45MiB / 3.821GiB 0.05%
+supabase_pg_meta_spi-material-tracking 56.32MiB / 3.821GiB 0.52%
+supabase_storage_spi-material-tracking 36.36MiB / 3.821GiB 0.03%
+supabase_rest_spi-material-tracking 17.04MiB / 3.821GiB 0.16%
+supabase_realtime_spi-material-tracking 68.37MiB / 3.821GiB 0.36%
+supabase_inbucket_spi-material-tracking 21.5MiB / 3.821GiB 0.00%
+supabase_auth_spi-material-tracking 13.54MiB / 3.821GiB 0.00%
+supabase_kong_spi-material-tracking 23.65MiB / 3.821GiB 0.01%
+smartops-api 82.87MiB / 3.821GiB 0.12%
+smartops-detector 270.2MiB / 3.821GiB 0.11%
+smartops-frontend 261MiB / 3.821GiB 0.00%
+smartops-redis 7.188MiB / 3.821GiB 0.45%
+smartops-minio 92.12MiB / 3.821GiB 0.00%
+smartops-postgres 36.33MiB / 3.821GiB 0.03%

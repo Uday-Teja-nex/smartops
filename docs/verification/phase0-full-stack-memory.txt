@@ -1,0 +1,9 @@
+smartops-api 48.59MiB / 3.821GiB 18.69%
+smartops-worker 46.61MiB / 3.821GiB 0.00%
+smartops-detector 98.31MiB / 3.821GiB 0.14%
+smartops-orchestrator 30.46MiB / 3.821GiB 0.18%
+smartops-video-ingest 42.98MiB / 3.821GiB 12.81%
+smartops-frontend 354.4MiB / 3.821GiB 0.00%
+smartops-redis 5.801MiB / 3.821GiB 0.52%
+smartops-minio 89.18MiB / 3.821GiB 0.09%
+smartops-postgres 29.73MiB / 3.821GiB 0.12%

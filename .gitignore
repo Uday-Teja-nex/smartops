@@ -59,3 +59,6 @@ venv/
 # local test artifacts
 test-smartops*.db
 services/api/test-smartops*.db
+
+# Browser diagnostics can include authenticated URLs; save only curated evidence.
+/.playwright-cli/

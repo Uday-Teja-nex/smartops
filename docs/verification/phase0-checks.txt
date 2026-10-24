@@ -1,0 +1,15 @@
+2026-10-22 Phase 0 browser and test evidence
+Frontend lint: exited without diagnostic errors.
+Typecheck: npx tsc --noEmit emitted no errors.
+Vitest: 7 passed, 365 ms (outside sandbox after EPERM cache rename in sandbox).
+API pytest: 21 passed, 73.48 s, two FastAPI startup deprecation warnings.
+Orchestrator pytest: 11 passed, 0.54 s, one LangGraph deprecation warning.
+Worker pytest: 7 passed, 2.11 s.
+Browser: seeded operator sign-in succeeds; Overview renders mock occupancy and template briefing.
+Browser: /v1/incidents/stream returns 404. Query token omitted from saved evidence.
+Browser: direct incident URL loads without a session hang in this run.
+Browser: evidence readyState=4, duration=20.010693 s, no media error.
+Browser: click Play evidence clip -> currentTime=4.477888, paused=false.
+HTTP: authenticated API presign -> Range bytes=0-255 returns 206 video/mp4, 256 bytes.
+Database: four fallen_object/human_review/0.35 incidents; 656 person detections.
+Reported playback/ORB and session-hang failures were not reproduced in this run.

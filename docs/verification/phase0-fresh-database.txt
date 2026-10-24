@@ -1,0 +1,5 @@
+ Container me-api-run-19430b3cb8ac Creating 
+ Container me-api-run-19430b3cb8ac Created 
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001, Initial SaaS-shaped schema.

@@ -1,0 +1,8 @@
+[GIN] 2026/10/22 - 14:18:56 | 500 | 14.685738182s |      172.20.0.8 | POST     "/api/chat"
+time=2026-10-22T14:18:56.832Z level=INFO source=sched.go:641 msg="Load failed" model=/root/.ollama/models/blobs/sha256-e9758e589d443f653821b7be9bb9092c1bf7434522b70ec6e83591b1320fdb4d error="llama-server process has terminated: signal: killed"
+[GIN] 2026/10/22 - 14:19:30 | 500 | 31.635789875s |      172.20.0.8 | POST     "/api/chat"
+time=2026-10-22T14:19:30.369Z level=INFO source=sched.go:641 msg="Load failed" model=/root/.ollama/models/blobs/sha256-e9758e589d443f653821b7be9bb9092c1bf7434522b70ec6e83591b1320fdb4d error="llama-server process has terminated: signal: killed"
+[GIN] 2026/10/22 - 14:19:40 | 500 |  8.244515444s |      172.20.0.8 | POST     "/api/chat"
+.time=2026-10-22T14:19:40.362Z level=INFO source=sched.go:641 msg="Load failed" model=/root/.ollama/models/blobs/sha256-e9758e589d443f653821b7be9bb9092c1bf7434522b70ec6e83591b1320fdb4d error="llama-server process has terminated: signal: killed"
+[GIN] 2026/10/22 - 14:20:49 | 500 |          1m7s |      172.20.0.8 | POST     "/api/chat"
+......time=2026-10-22T14:20:49.742Z level=INFO source=sched.go:641 msg="Load failed" model=/root/.ollama/models/blobs/sha256-e9758e589d443f653821b7be9bb9092c1bf7434522b70ec6e83591b1320fdb4d error="llama-server process has terminated: signal: killed"
