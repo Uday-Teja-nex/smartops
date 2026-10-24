@@ -57,7 +57,8 @@ def test_full_incident_lifecycle_with_audit(
     assert incident["status"] == "active"
     assert incident["slaDueAt"] is not None
     assert incident["subcategory"] == "blocked_exit"
-    assert incident["cameraId"] == incident["sourceId"]  # legacy alias
+    assert "cameraId" not in incident
+    assert incident["sourceId"] == pipeline_source["id"]
 
     # viewer: read yes, mutate no
     assert client.get(f"/v1/incidents/{incident_id}", headers=viewer_headers).status_code == 200

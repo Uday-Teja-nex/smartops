@@ -1,55 +1,66 @@
 # SmartOps handoff — 2026-10-24
 
-Goal: implement all of GOAL_PROMPT.md. This is NOT demo-ready.
-Branch: codex/smartops-live-demo. Phase 0 audit commit: 0003037.
-See PLAN.md for remaining phases and docs/AUDIT.md for measured facts.
+Goal: implement all of GOAL_PROMPT.md. This is not demo-ready.
+Branch: codex/smartops-live-demo. No push or PR authorized.
 
-Current Phase 1 edits remove fabricated model-failure incidents and catalog
-narratives/actions, repair SSE route ordering, preserve Alembic logger state,
-and explicitly log startup failure tracebacks. Worker failures remain visible
-as review_unavailable telemetry. ADR 0006 records this transition.
+## Completed and verified
 
-New regression tests failed before fixes. Current suites pass: API 23, orchestrator 11, worker 9. Docker rebuild is in progress.
-Frontend has not yet been fixed or rebuilt: runtime mock metrics, fake local
-write success, template AI text and stale live state still exist.
+Phase 0 audit is in docs/AUDIT.md, commit 0003037. The reported original
+startup crash and browser playback hang were not reproduced. Native Qwen
+loading failed after 180 seconds, requesting 9.9 GiB with default batching.
+There is no successful GPU inference benchmark yet.
 
-Runtime caveats:
-- Docker images are old; source edits are not deployed until rebuilt.
-- Existing frontend exited 137; cause unproven. Its development process had
-  reached 973 MiB after browser navigation.
-- Native Ollama Qwen default-batch load failed at 9.9 GiB allocation, after
-  180 seconds. Native model downloads completed; service was not running on
-  October 24. Docker Ollama is stopped to prevent port-11434 ambiguity.
-- Fresh smartops_audit Postgres database migrated and seeded successfully.
-  Original boot crash-loop was not reproduced. Cold-start gates remain open.
-- Browser clip playback and direct incident navigation worked in the audit;
-  reported ORB/session hang not reproduced. Evidence reload dependency remains.
-- Existing database contains fabricated incidents from the old pipeline.
-  Do not present them as valid history; clean reset is required later.
-- Supabase containers belong to another project and must not be modified.
+Phase 1 removes runtime mock data, template AI briefings, failure-generated
+incidents and catalog narratives. Model/detector failures are visible as
+review_unavailable telemetry (ADR 0006). Failed writes cannot create local
+success. Session changes clear data; API loss shows Offline and retries.
+SSE routing is fixed, and startup failures retain their traceback logging.
 
-Verification evidence is under docs/verification. Baselines: lint/typecheck
-passed, frontend 7 tests, API 21, orchestrator 11, worker 7. New tests increase
-API and worker counts; use current test output for final results.
+The frontend is non-root Next.js standalone production. Earlier measured
+memory after navigation was 44 MiB versus 973 MiB for the audited dev process;
+this is not a soak result. Incident evidence no longer falls back to the whole
+source video or reloads on source-health changes. Legacy /v1/cameras,
+bootstrap.cameras, cameraId and frontend camera record aliases are removed.
 
-No PR or push authorized. User prompt and unrelated PDF are untracked; do not
-include the PDF in implementation commits. Browser raw diagnostics are ignored
-because request URLs may contain tokens. Save only curated evidence.
+Three fresh-volume down -v/up cycles passed: 24.00, 23.49 and 23.95 seconds
+from up through HTTP checks. Each verified login, source/bootstrap contracts,
+SSE snapshot, frontend and zero seeded incidents. Evidence/logs are in
+`docs/verification/cold-starts.json` and adjacent logs. This does not verify
+model readiness, sustained streaming, or the later 90-second demo target.
+Prior database/evidence are backed up locally in sample-data/output/backups
+(ignored by Git). The active database is fresh; historical fabricated rows
+were removed by the resets. Supabase and native Ollama were not modified.
 
-## Latest progress
+Next.js and eslint-config-next are 16.4.3. Patched compatible dependencies
+produce zero npm audit findings. npm 11.4.2 crashed in Arborist peer resolution;
+`npx --yes npm@11.6.2 audit fix` succeeded without changing global npm.
+Docker npm ci/build also succeeded with the resulting lockfile.
 
-Frontend mock data and template briefing removed. Housekeeping redirects to the
-real incident filter. Failed writes no longer mutate local state; session changes
-clear cached rows. Global offline state and automatic recovery verified by stopping
-and restarting the real API. Frontend is non-root standalone production, 44 MiB
-after navigation. Evidence reload no longer depends on source-health updates.
-SLA durations use days and zero-count donut charts show an empty state.
+Checks: API 23, orchestrator 11, worker 9, frontend 7 tests pass. ESLint,
+TypeScript, local production build and Docker production build pass. Worker
+and frontend tests need normal temp access on this Windows sandbox. API
+on_event and LangGraph deserialization deprecation warnings remain.
+Real service check confirms missing-frame review creates no incident.
 
-Services rebuilt and runtime verified: SSE snapshot works and missing-frame review
-creates no incident. Native Ollama is now the default compose endpoint; Docker
-Ollama is optional on port 11435. Native reachability/inference remains unverified.
+## Remaining work
 
-Remaining Phase 1: three cold starts; legacy camera aliases; remaining stale docs;
-full browser workflow/error checks. Dependency audit found 19 vulnerabilities,
-including critical Next.js: remediate before declaring demo/production readiness.
-All future phases in GOAL_PROMPT.md remain required.
+All Phase 2–5 tasks in PLAN.md and GOAL_PROMPT.md remain. Start with the
+footage shot list, MediaMTX loop publishers and continuous tracker/rules.
+Existing worker processing is still candidate-window/model-first. RTSP,
+ONVIF and WebRTC ingestion are not implemented. Single-person windows are
+gated out. Native Ollama is configured at host.docker.internal:11434, but
+service reachability/GPU inference must be established and benchmarked.
+Docker Ollama is optional on port 11435, and currently stopped.
+
+Tenant isolation, auth hardening, zone editing, real notifications/reports,
+phone onboarding, async enrichment, incident-first persistence, 3-stream
+soak and full repeated demo E2E are still pending. SSE currently accepts a
+long-lived token in its URL; do not publish raw browser/network logs.
+
+The user must eventually provide event footage or approve licensed footage,
+Telegram credentials/chat ID, and optional prospect branding. Ask these as
+one batch when needed. Never change .wslconfig without the user's approval.
+
+GOAL_PROMPT.md and SPI Material Tracking Handbook.pdf are user-owned untracked
+files. Do not include them in commits. Keep the goal active until every
+required acceptance gate is satisfied.

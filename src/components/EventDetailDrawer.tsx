@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -10,11 +10,10 @@ import {
   AlertTriangle,
   ArrowUpRight,
 } from "lucide-react";
-import { CameraRecord, EventRecord, IncidentDetail } from "@/lib/types";
+import { SourceRecord, EventRecord, IncidentDetail } from "@/lib/types";
 import {
   fetchEvidenceUrl,
   fetchIncidentDetail,
-  getSourceClipUrl,
 } from "@/lib/api";
 import { formatConfidence, formatDateTime } from "@/lib/utils";
 import { Badge } from "@/components/Badge";
@@ -44,7 +43,7 @@ export const EventDetailDrawer = ({
   onResolve: () => void;
   onFalsePositive: () => void;
   relatedEvents: EventRecord[];
-  camera: CameraRecord | null;
+  camera: SourceRecord | null;
 }) => {
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const [detail, setDetail] = useState<IncidentDetail | null>(null);
@@ -56,9 +55,9 @@ export const EventDetailDrawer = ({
     }
   }, [open]);
 
-  // Load the full incident (detections + evidence items) when opened, and
-  // resolve the best playable clip: presigned object-storage clip first,
-  // then the raw local file for file-type sources.
+  const eventId = event?.id;
+
+  // Only show evidence attached to this incident.
   useEffect(() => {
     let active = true;
 
@@ -67,10 +66,10 @@ export const EventDetailDrawer = ({
         setDetail(null);
         setClipUrl(null);
       }
-      if (!open || !event) return;
+      if (!open || !eventId) return;
       let resolved: string | null = null;
       try {
-        const incidentDetail = await fetchIncidentDetail(event.id);
+        const incidentDetail = await fetchIncidentDetail(eventId);
         if (!active) return;
         setDetail(incidentDetail);
         const clip = incidentDetail.evidenceItems.find(
@@ -82,10 +81,7 @@ export const EventDetailDrawer = ({
           resolved = presigned.url;
         }
       } catch {
-        // Backend offline or mock event — fall through to the local clip.
-      }
-      if (!resolved && camera?.sourceType === "file") {
-        resolved = getSourceClipUrl(event.sourceId ?? event.cameraId);
+        // Leave evidence unavailable when the request fails.
       }
       if (active) setClipUrl(resolved);
     };
@@ -94,7 +90,7 @@ export const EventDetailDrawer = ({
     return () => {
       active = false;
     };
-  }, [open, event, camera]);
+  }, [open, eventId]);
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
@@ -173,7 +169,7 @@ export const EventDetailDrawer = ({
               Confidence: {formatConfidence(event.confidence)}
             </span>
             <span className="rounded-full bg-slate-800/80 px-3 py-1 text-xs font-semibold text-slate-200">
-              Camera: {event.cameraId}
+              Camera: {event.sourceId}
             </span>
           </div>
           <div className="text-sm text-slate-300">

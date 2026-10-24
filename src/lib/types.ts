@@ -25,10 +25,6 @@ export type SourceType = "file" | "rtsp" | "onvif" | "webrtc";
 export type SourceStatus = "online" | "offline" | "paused" | "failing" | "processing";
 export type BackendStatus = "connected" | "loading" | "offline";
 
-// Legacy aliases while older components migrate.
-export type CameraSourceType = SourceType;
-export type CameraStatus = SourceStatus;
-
 export type Evidence = {
   thumbnailUrl: string;
   clipUrl: string;
@@ -100,8 +96,6 @@ export type EventRecord = {
   floor: string;
   zone: string;
   sourceId: string;
-  /** Legacy alias of sourceId kept while older components migrate. */
-  cameraId: string;
   candidateId?: string | null;
   startTime: string;
   endTime: string | null;
@@ -209,18 +203,6 @@ export type SourceUpdateInput = Partial<SourceCreateInput> & {
   status?: SourceStatus;
 };
 
-// Legacy camera shape kept while older components migrate.
-export type CameraRecord = {
-  id: string;
-  name: string;
-  buildingId: string;
-  floor: string;
-  zone: string;
-  sourceType: SourceType;
-  sourceUri: string;
-  enabled: boolean;
-  status: string;
-};
 
 export type UserRole =
   | "admin"
@@ -253,7 +235,6 @@ export type RuntimeSummary = {
 
 export type BackendBootstrapResponse = {
   buildings: Building[];
-  cameras: CameraRecord[];
   sources: SourceRecord[];
   incidents: EventRecord[];
   runtime: RuntimeSummary;

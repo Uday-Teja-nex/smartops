@@ -164,7 +164,8 @@ def test_delete_source_requires_admin(client, supervisor_headers, admin_headers)
     assert client.delete(f"/v1/sources/{source_id}", headers=admin_headers).status_code == 204
 
 
-def test_legacy_camera_alias_still_works(client, service_headers):
-    cameras = client.get("/v1/cameras", headers=service_headers)
-    assert cameras.status_code == 200
-    assert len(cameras.json()) >= 1
+def test_legacy_camera_alias_removed(client, service_headers):
+    assert client.get("/v1/cameras", headers=service_headers).status_code == 404
+    bootstrap = client.get("/v1/bootstrap", headers=service_headers).json()
+    assert "sources" in bootstrap
+    assert "cameras" not in bootstrap

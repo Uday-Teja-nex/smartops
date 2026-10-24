@@ -3,12 +3,11 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/app/auth";
 import { fetchBootstrap, fetchSources, getApiBaseUrl, patchIncidentAction } from "@/lib/api";
-import { BackendStatus, Building, CameraRecord, EventRecord, RuntimeSummary, SourceRecord, TimeRange } from "@/lib/types";
+import { BackendStatus, Building, EventRecord, RuntimeSummary, SourceRecord, TimeRange } from "@/lib/types";
 
 export type SmartOpsContextValue = {
   events: EventRecord[];
   buildings: Building[];
-  cameras: CameraRecord[];
   sources: SourceRecord[];
   refreshSources: () => Promise<void>;
   runtime: RuntimeSummary | null;
@@ -37,7 +36,6 @@ export const SmartOpsProvider = ({ children }: { children: React.ReactNode }) =>
 const SessionProvider = ({ children, token }: { children: React.ReactNode; token: string | null }) => {
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
-  const [cameras, setCameras] = useState<CameraRecord[]>([]);
   const [sources, setSources] = useState<SourceRecord[]>([]);
   const [runtime, setRuntime] = useState<RuntimeSummary | null>(null);
   const [backendStatus, setBackendStatus] = useState<BackendStatus>("loading");
@@ -56,7 +54,6 @@ const SessionProvider = ({ children, token }: { children: React.ReactNode; token
         const bootstrap = await fetchBootstrap();
         if (!active) return;
         setBuildings(bootstrap.buildings);
-        setCameras(bootstrap.cameras);
         setSources(bootstrap.sources ?? []);
         setRuntime(bootstrap.runtime);
         setEvents(bootstrap.incidents);
@@ -128,10 +125,10 @@ const SessionProvider = ({ children, token }: { children: React.ReactNode; token
   const resolveEvent = useCallback((id: string) => act(id, "resolve"), [act]);
   const markFalsePositive = useCallback((id: string) => act(id, "false-positive"), [act]);
 
-  const value = useMemo(() => ({ events, buildings, cameras, sources, refreshSources, runtime,
+  const value = useMemo(() => ({ events, buildings, sources, refreshSources, runtime,
     backendStatus, actionError, selectedBuildingId, setSelectedBuildingId, timeRange, setTimeRange,
     searchQuery, setSearchQuery, acknowledgeEvent, assignEvent, resolveEvent, markFalsePositive }),
-  [events, buildings, cameras, sources, refreshSources, runtime, backendStatus, actionError,
+  [events, buildings, sources, refreshSources, runtime, backendStatus, actionError,
     selectedBuildingId, timeRange, searchQuery, acknowledgeEvent, assignEvent, resolveEvent, markFalsePositive]);
   return <SmartOpsContext.Provider value={value}>{children}</SmartOpsContext.Provider>;
 };

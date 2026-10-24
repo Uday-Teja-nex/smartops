@@ -20,7 +20,6 @@ const makeEvent = (overrides: Partial<EventRecord> = {}): EventRecord => ({
   floor: "L1",
   zone: "Lobby",
   sourceId: "src-1",
-  cameraId: "src-1",
   startTime: new Date().toISOString(),
   endTime: null,
   shortSummary: "test",

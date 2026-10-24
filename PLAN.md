@@ -9,18 +9,18 @@ Audit committed as 0003037. See docs/AUDIT.md and docs/verification/.
 Native Qwen inference did not succeed; first-boot crash and playback failure
 were not reproduced. These are recorded limitations, not completed fixes.
 
-## Phase 1 — honest and stable (in progress)
+## Phase 1 — honest and stable (gate passed)
 
 - [x] Regression tests reproduce fabricated failure incidents, SSE route shadowing,
   and missing startup traceback logging.
 - [x] Remove failure-generated incidents and canned model narratives/actions.
 - [x] Register static SSE route first; preserve logging through migrations.
-- [ ] Remove runtime mock imports and failed-write local success mutations.
-- [ ] Replace template AI briefing with clearly computed stored-data summary.
-- [ ] Build non-root production frontend; bound API requests and fix offline states.
-- [ ] Stabilize evidence loading and verify browser playback after rebuilding.
-- [ ] Remove legacy aliases and stale docs.
-- [ ] Gate: three cold starts, no runtime mock imports, API-stop UI verification.
+- [x] Remove runtime mock imports and failed-write local success mutations.
+- [x] Replace template AI briefing with clearly computed stored-data summary.
+- [x] Build non-root production frontend; bound API requests and fix offline states.
+- [x] Stabilize evidence loading and verify browser playback after rebuilding.
+- [x] Remove legacy aliases and stale docs.
+- [x] Gate: three cold starts (24.00 / 23.49 / 23.95 s), no runtime mock imports, API-stop UI verification.
 
 ## Phase 2 — continuous streams
 

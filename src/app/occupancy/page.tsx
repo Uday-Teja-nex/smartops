@@ -19,7 +19,7 @@ const CATEGORIES = ["Occupancy", "Security", "Queue & Crowd"] as const;
 export default function OccupancySecurityPage() {
   const {
     events,
-    cameras,
+    sources,
     selectedBuildingId,
     timeRange,
     acknowledgeEvent,
@@ -69,7 +69,7 @@ export default function OccupancySecurityPage() {
   const selectedEvent: EventRecord | null =
     scoped.find((event) => event.id === selectedId) ?? null;
   const camera = selectedEvent
-    ? cameras.find((item) => item.id === selectedEvent.cameraId) ?? null
+    ? sources.find((item) => item.id === selectedEvent.sourceId) ?? null
     : null;
 
   return (

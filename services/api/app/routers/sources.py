@@ -13,15 +13,12 @@ from app.events import publish_event
 from app.ids import new_id
 from app.models import BuildingModel, FloorModel, IncidentModel, SourceModel, ZoneModel
 from app.schemas import (
-    CameraCreateRequest,
-    CameraResponse,
-    CameraUpdateRequest,
     SourceCreateRequest,
     SourceHealthReport,
     SourceResponse,
     SourceUpdateRequest,
 )
-from app.serializers import serialize_source, serialize_source_as_camera
+from app.serializers import serialize_source
 
 router = APIRouter(prefix="/v1", tags=["sources"], dependencies=[Depends(require_viewer)])
 settings = get_settings()
@@ -366,62 +363,3 @@ def get_source_clip(
         raise HTTPException(status_code=404, detail="Clip not found")
 
     return FileResponse(source_path, media_type="video/mp4", filename=source_path.name)
-
-
-# ---------------------------------------------------------------------------
-# Legacy /v1/cameras contract — thin aliases over sources, kept while the
-# worker, video-ingest, and current frontend migrate to /v1/sources.
-# ---------------------------------------------------------------------------
-
-legacy_router = APIRouter(
-    prefix="/v1", tags=["cameras (legacy)"], dependencies=[Depends(require_viewer)]
-)
-
-
-@legacy_router.get("/cameras", response_model=list[CameraResponse])
-def list_cameras(session: Session = Depends(get_db_session)) -> list[CameraResponse]:
-    sources = session.scalars(select(SourceModel).order_by(SourceModel.name)).all()
-    return [serialize_source_as_camera(source) for source in sources]
-
-
-@legacy_router.post("/cameras", response_model=CameraResponse, status_code=201)
-def create_camera(
-    payload: CameraCreateRequest,
-    session: Session = Depends(get_db_session),
-    _: Principal = Depends(require_supervisor),
-) -> CameraResponse:
-    create_payload = SourceCreateRequest(
-        name=payload.name,
-        buildingId=payload.buildingId,
-        floor=payload.floor,
-        zone=payload.zone,
-        sourceType=payload.sourceType,
-        sourceUri=payload.sourceUri,
-        enabled=payload.enabled,
-    )
-    source_response = create_source(create_payload, session)
-    source = session.get(SourceModel, source_response.id)
-    return serialize_source_as_camera(source)
-
-
-@legacy_router.patch("/cameras/{camera_id}", response_model=CameraResponse)
-def update_camera(
-    camera_id: str,
-    payload: CameraUpdateRequest,
-    session: Session = Depends(get_db_session),
-    _: Principal = Depends(require_supervisor),
-) -> CameraResponse:
-    source = _get_source_or_404(camera_id, session)
-    if payload.enabled is not None:
-        source.enabled = payload.enabled
-    if payload.status is not None:
-        source.status = payload.status
-    source.updated_at = datetime.now(UTC)
-    session.commit()
-    session.refresh(source)
-    return serialize_source_as_camera(source)
-
-
-@legacy_router.get("/cameras/{camera_id}/clip")
-def get_camera_clip(camera_id: str, session: Session = Depends(get_db_session)) -> FileResponse:
-    return get_source_clip(camera_id, session)

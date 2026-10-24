@@ -59,7 +59,6 @@ class IncidentDraft(BaseModel):
     floor: str
     zone: str
     sourceId: str
-    cameraId: str
     candidateId: str | None = None
     startTime: datetime
     endTime: datetime | None = None

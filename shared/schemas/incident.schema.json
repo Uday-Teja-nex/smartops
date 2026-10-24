@@ -52,7 +52,6 @@
     "floor": { "type": "string" },
     "zone": { "type": "string" },
     "sourceId": { "type": "string" },
-    "cameraId": { "type": "string", "description": "Legacy alias of sourceId" },
     "candidateId": { "type": ["string", "null"] },
     "startTime": { "type": "string", "format": "date-time" },
     "endTime": { "type": ["string", "null"], "format": "date-time" },

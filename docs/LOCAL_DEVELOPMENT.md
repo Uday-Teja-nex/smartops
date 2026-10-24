@@ -1,15 +1,15 @@
 # Local Development
 
-Docker-first. One command brings up the entire stack; the only host
-dependencies are Docker Desktop and (for frontend dev/tests) Node 20+.
+Docker runs the application services; native Windows Ollama is the configured
+model endpoint. Node 22 and Python are used for development checks.
 
 ## Prerequisites
 
-- Docker Desktop running, **≥10GB memory for the Docker VM** if you want the
-  local VLM path to succeed (Settings → Resources, or `.wslconfig` on
-  Windows). With less, the stack still works — low-memory VLM failures route
-  incidents to `human_review` honestly.
-- ~12GB free disk (images + models).
+- Docker Desktop running. The audited VM has 4 GiB RAM and 2 GiB swap.
+- Native Ollama on port 11434 for model reviews. Successful GPU inference and
+  latency are not yet verified. Default Qwen loading failed in the audit.
+- Failed model reviews produce unavailable telemetry, never invented incidents.
+- No Windows or WSL memory configuration changes have been made.
 
 ## First run
 
@@ -23,8 +23,8 @@ cp .env.example .env
 docker compose up --build -d
 
 # 4. Pull the local models (first time only; ~5GB total)
-docker exec smartops-ollama ollama pull qwen2.5vl:3b
-docker exec smartops-ollama ollama pull llama3.2:3b
+ollama pull qwen2.5vl:3b
+ollama pull llama3.2:3b
 ```
 
 Open http://localhost:3000 and sign in with a demo account
@@ -48,8 +48,9 @@ Open http://localhost:3000 and sign in with a demo account
    review → uploads evidence to MinIO → persists incidents.
 4. The UI receives live `incident`/`source` events over SSE.
 
-Expect the first incidents within ~1–3 minutes (detector path) and VLM
-reviews after the vision model loads (minutes on CPU).
+No incident latency guarantee has been established. Single-person windows are
+currently gated out, and model failures produce no incident. Continuous rules
+and asynchronous enrichment are pending phases.
 
 ## URLs
 
@@ -103,11 +104,11 @@ python -m venv .venv && .venv/Scripts/pip install -r services/api/requirements.t
 
 | Symptom | Cause / fix |
 |---|---|
-| Incidents all `human_review`, notes say `VLM review failed` | Ollama OOM (4GB Docker VM). Raise Docker memory or use a smaller vision model. |
+| Pipeline reports `review_unavailable` | Inspect the actual detector/model error. Failed reviews create no incident. Native Ollama is the default; GPU inference is not yet verified. |
 | `alembic` errors on startup after pulling new code | Old dev volume: `docker compose down -v && docker compose up -d --build`. |
 | Evidence URLs 503 | MinIO not healthy yet, or bucket missing — restart API after MinIO is up. |
 | Source stuck `offline` with `adapter not implemented` | RTSP/ONVIF/WebRTC are interface-only; use MP4 sources locally. |
-| SSE shows "Demo data" badge | Not logged in, or API down — the UI falls back to clearly-labeled mock data. |
+| Console shows Offline | API or SSE unavailable. Real data and actions are hidden; the console retries automatically. |
 | Windows: `npm run build` segfaults | Use the default script (webpack); Turbopack crash is a known local toolchain issue. |
 
 ## Logs & reset

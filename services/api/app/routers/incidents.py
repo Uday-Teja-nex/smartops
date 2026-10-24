@@ -167,7 +167,7 @@ def create_incident(
     principal: Principal = Depends(require_supervisor),
 ) -> EventRecordResponse:
     actor = _actor_of(principal)
-    source_id = payload.sourceId or payload.cameraId
+    source_id = payload.sourceId
     if not source_id:
         raise HTTPException(status_code=422, detail="sourceId is required")
     source = session.get(SourceModel, source_id)

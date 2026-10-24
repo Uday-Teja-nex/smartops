@@ -1,6 +1,7 @@
 # SmartOps Architecture
 
-SmartOps is a multi-tenant-ready smart-building CCTV operations platform. It
+SmartOps is an incomplete smart-building CCTV operations prototype. Tenant
+isolation and continuous streaming remain required work (see PLAN.md). It
 ingests video sources, runs lightweight YOLO detection, reviews candidate
 events with local open-source VLM/LLM models orchestrated by LangGraph,
 persists incidents with evidence, and streams live updates to a Next.js
@@ -61,7 +62,7 @@ operator console.
 | `postgres` | Postgres 16 | 5432 | Durable storage (see docs/DATA_MODEL.md). |
 | `redis` | Redis 7 | 6379 | Candidate job queue, dead-letter queue, candidate status keys, realtime pub/sub channel. |
 | `minio` | MinIO | 9000/9001 | S3-compatible evidence storage (snapshots, thumbnails, clips). |
-| `ollama` | Ollama | 11434 | Local model runtime. Default: `qwen2.5vl:3b` (vision), `llama3.2:3b` (text). |
+| `ollama` | Native Ollama (optional Docker profile on 11435) | 11434 | Local model runtime; successful inference remains unverified. Default: `qwen2.5vl:3b` (vision), `llama3.2:3b` (text). |
 
 ## Data flow (happy path)
 
@@ -86,10 +87,11 @@ operator console.
 
 - Unsupported adapters (RTSP/ONVIF/WebRTC) report explicit
   `adapter not implemented` health; they never fake ingestion.
-- If the detector is down, candidates route to **human review** with a note —
-  footage is never silently dropped, and detection is never simulated.
-- If the VLM output is missing/invalid/low-confidence, the incident persists
-  with status `human_review` and the reason in `reviewNotes`.
+- Missing frames, unavailable detection or invalid/failed VLM output produce
+  `review_unavailable` pipeline telemetry and no fabricated incident (ADR 0006).
+- A valid low-confidence observation can produce a human-review incident.
+- Future rule incidents will persist before asynchronous enrichment; that
+  incident-first pipeline is not implemented yet.
 - Source-health incidents are labeled `modelProvider: rule-engine` — they are
   deterministic rules, not model output.
 - The UI evidence player only draws bounding boxes from persisted detections;

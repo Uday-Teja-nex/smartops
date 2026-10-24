@@ -57,8 +57,8 @@ the tokens; migrate them to `ui/*` primitives opportunistically.
 
 ## Honesty in UI
 
-- The "Live / Demo data" chip in the topbar reflects real backend
-  connectivity; mock data is always labeled.
+- The Connected / Offline status reflects API/SSE connectivity. It does not
+  claim camera liveness. Offline state hides data and actions; no mock fallback.
 - Evidence player draws only persisted detections; otherwise it states
   "No detection overlay available".
 - Model metadata (provider/model/confidence) is shown on incident detail —

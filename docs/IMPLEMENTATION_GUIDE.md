@@ -12,7 +12,7 @@ src/                     Next.js frontend (App Router)
   app/providers.tsx      SmartOps data context (bootstrap + SSE)
   app/auth.tsx           auth context (JWT, roles)
   components/            AppShell, EventTable, EvidenceVideoPlayer, charts, ui/*
-  lib/                   api client, types, analytics, visuals, mockData (fallback only)
+  lib/                   api client, types, analytics, visuals (no mock fallback)
 services/
   api/                   FastAPI + Alembic + tests (source of truth)
   orchestrator/          LangGraph + providers + catalog + tests

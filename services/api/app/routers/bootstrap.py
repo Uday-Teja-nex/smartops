@@ -11,7 +11,6 @@ from app.serializers import (
     serialize_building,
     serialize_incident,
     serialize_source,
-    serialize_source_as_camera,
 )
 
 router = APIRouter(prefix="/v1", tags=["bootstrap"], dependencies=[Depends(require_viewer)])
@@ -42,7 +41,6 @@ def get_bootstrap(session: Session = Depends(get_db_session)) -> BootstrapRespon
 
     return BootstrapResponse(
         buildings=[serialize_building(building) for building in buildings],
-        cameras=[serialize_source_as_camera(source) for source in sources],
         sources=[serialize_source(source) for source in sources],
         incidents=[serialize_incident(incident) for incident in incidents],
         runtime=runtime,

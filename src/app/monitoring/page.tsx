@@ -49,6 +49,8 @@ export default function MonitoringPage() {
   }, []);
 
   useEffect(() => {
+    // State updates in refresh occur after the network request settles.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void refresh();
     const interval = window.setInterval(() => void refresh(), 10000);
     return () => window.clearInterval(interval);

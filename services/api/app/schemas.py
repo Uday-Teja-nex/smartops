@@ -114,36 +114,6 @@ class SourceHealthReport(BaseModel):
     details: dict[str, Any] = Field(default_factory=dict)
 
 
-# Legacy camera contract (kept while worker/video-ingest/frontend migrate).
-
-
-class CameraResponse(BaseModel):
-    id: str
-    name: str
-    buildingId: str
-    floor: str
-    zone: str
-    sourceType: str
-    sourceUri: str
-    enabled: bool
-    status: str
-
-
-class CameraCreateRequest(BaseModel):
-    name: str
-    buildingId: str
-    floor: str
-    zone: str
-    sourceType: SourceType
-    sourceUri: str
-    enabled: bool = True
-
-
-class CameraUpdateRequest(BaseModel):
-    enabled: bool | None = None
-    status: Literal["online", "offline", "paused", "failing", "processing"] | None = None
-
-
 # ---------------------------------------------------------------------------
 # Detections
 # ---------------------------------------------------------------------------
@@ -270,7 +240,6 @@ class EventRecordResponse(BaseModel):
     floor: str
     zone: str
     sourceId: str
-    cameraId: str  # legacy alias of sourceId, kept for the current frontend
     candidateId: str | None = None
     startTime: datetime
     endTime: datetime | None = None
@@ -316,8 +285,7 @@ class IncidentCreateRequest(BaseModel):
     buildingId: str
     floor: str
     zone: str
-    sourceId: str | None = None
-    cameraId: str | None = None  # legacy alias for sourceId
+    sourceId: str
     candidateId: str | None = None
     startTime: datetime
     endTime: datetime | None = None
@@ -356,7 +324,6 @@ class RuntimeSummaryResponse(BaseModel):
 
 class BootstrapResponse(BaseModel):
     buildings: list[BuildingResponse]
-    cameras: list[CameraResponse]
     sources: list[SourceResponse]
     incidents: list[EventRecordResponse]
     runtime: RuntimeSummaryResponse

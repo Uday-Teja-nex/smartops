@@ -10,7 +10,6 @@ from app.models import (
 )
 from app.schemas import (
     BuildingResponse,
-    CameraResponse,
     DetectionBox,
     DetectionResponse,
     EventRecordResponse,
@@ -69,20 +68,6 @@ def serialize_source(model: SourceModel) -> SourceResponse:
         detectionConfig=model.detection_config or {},
         createdAt=model.created_at,
         updatedAt=model.updated_at,
-    )
-
-
-def serialize_source_as_camera(model: SourceModel) -> CameraResponse:
-    return CameraResponse(
-        id=model.id,
-        name=model.name,
-        buildingId=model.building_id,
-        floor=model.floor_label,
-        zone=model.zone_label,
-        sourceType=model.source_type,
-        sourceUri=model.source_uri,
-        enabled=model.enabled,
-        status=model.status,
     )
 
 
@@ -153,7 +138,6 @@ def _incident_fields(model: IncidentModel) -> dict:
         "floor": model.floor,
         "zone": model.zone,
         "sourceId": model.source_id,
-        "cameraId": model.source_id,
         "candidateId": model.candidate_id,
         "startTime": model.start_time,
         "endTime": model.end_time,

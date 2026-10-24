@@ -45,7 +45,8 @@ camelCase fields. Interactive OpenAPI docs: `http://localhost:8000/docs`.
 | `/v1/sources/{id}/pause` · `/resume` · `/disable` | POST | supervisor |
 | `/v1/sources/{id}/health` | POST | supervisor/service — adapter health report |
 | `/v1/sources/{id}/clip` | GET | viewer — raw local MP4 (file sources, dev only) |
-| `/v1/cameras*` | * | legacy aliases over sources; do not build new code on them |
+
+Legacy `/v1/cameras` endpoints have been removed; use `/v1/sources`.
 
 Create request (all optional fields may be omitted):
 
@@ -89,20 +90,20 @@ one is open.
 | `/v1/incidents/{id}/status` | PATCH | operator — `{status, note?}` any lifecycle status |
 | `/v1/incidents/{id}/comments` | POST | operator — `{body}` |
 
-Incident record (list shape; detail adds `events/comments/evidenceItems/detections`):
+Illustrative contract only, not generated demo evidence. Incident record (list shape; detail adds `events/comments/evidenceItems/detections`):
 
 ```json
 {
   "id": "inc-src-demo-lobby-8db6697ecd9c9354",
   "category": "Safety", "subcategory": "fallen_object", "type": "fallen_object",
-  "severity": "medium", "confidence": 0.35, "status": "human_review",
+  "severity": "medium", "confidence": 0.85, "status": "active",
   "buildingId": "bldg-north-01", "floor": "L1", "zone": "Lobby Atrium",
-  "sourceId": "src-demo-lobby", "cameraId": "src-demo-lobby",
+  "sourceId": "src-demo-lobby",
   "candidateId": "src-demo-lobby-8db6697ecd9c9354",
   "startTime": "...", "endTime": null, "ackTime": null, "resolvedTime": null,
   "slaDueAt": "...", "escalatedAt": null,
   "shortSummary": "...", "detailedNarrative": ["..."], "recommendedActions": ["..."],
-  "reviewNotes": ["VLM review failed: ReadTimeout."],
+  "reviewNotes": [],
   "evidence": {"thumbnailUrl": "/v1/evidence/evd-…/url", "clipUrl": "/v1/evidence/evd-…/url", "restricted": true},
   "assignedTo": null,
   "modelProvider": "ollama", "modelVersion": "qwen2.5vl:3b/llama3.2:3b",

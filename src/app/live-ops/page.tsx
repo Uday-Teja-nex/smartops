@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -18,7 +18,7 @@ import {
   getHotspots,
   TIME_RANGE_LABELS,
 } from "@/lib/analytics";
-import { CameraRecord, EventRecord, TimeRange } from "@/lib/types";
+import { SourceRecord, EventRecord, TimeRange } from "@/lib/types";
 import {
   CATEGORY_COLORS,
   SEVERITY_COLORS,
@@ -52,7 +52,7 @@ const buildFiltersFromQuery = (searchParams: URLSearchParams) => {
 
 const LiveOpsContent = ({
   events,
-  cameras,
+  sources,
   selectedBuildingId,
   timeRange,
   searchQuery,
@@ -64,7 +64,7 @@ const LiveOpsContent = ({
   markFalsePositive,
 }: {
   events: EventRecord[];
-  cameras: CameraRecord[];
+  sources: SourceRecord[];
   selectedBuildingId: string;
   timeRange: TimeRange;
   searchQuery: string;
@@ -111,7 +111,7 @@ const LiveOpsContent = ({
         return (
           event.shortSummary.toLowerCase().includes(query) ||
           event.zone.toLowerCase().includes(query) ||
-          event.cameraId.toLowerCase().includes(query)
+          event.sourceId.toLowerCase().includes(query)
         );
       }
       return true;
@@ -175,7 +175,7 @@ const LiveOpsContent = ({
     events.find((event) => event.id === selectedEventId) ??
     null;
   const selectedCamera = selectedEvent
-    ? cameras.find((camera) => camera.id === selectedEvent.cameraId) ?? null
+    ? sources.find((camera) => camera.id === selectedEvent.sourceId) ?? null
     : null;
   const relatedEvents = useMemo(() => {
     if (!selectedEvent) return [];
@@ -324,7 +324,7 @@ const LiveOpsSearchParams = () => {
   const searchParams = useSearchParams();
   const {
     events,
-    cameras,
+    sources,
     selectedBuildingId,
     timeRange,
     searchQuery,
@@ -345,7 +345,7 @@ const LiveOpsSearchParams = () => {
     <LiveOpsContent
       key={key}
       events={events}
-      cameras={cameras}
+      sources={sources}
       selectedBuildingId={selectedBuildingId}
       timeRange={timeRange}
       searchQuery={searchQuery}

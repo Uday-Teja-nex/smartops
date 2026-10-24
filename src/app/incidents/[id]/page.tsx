@@ -85,6 +85,8 @@ export default function IncidentDetailPage() {
   }, [incidentId]);
 
   useEffect(() => {
+    // State updates in load occur after the network request settles.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
 

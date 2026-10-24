@@ -314,7 +314,6 @@ def apply_policy(state: IncidentGraphState) -> IncidentGraphState:
         "floor": camera.get("floor"),
         "zone": camera.get("zone"),
         "sourceId": camera.get("id"),
-        "cameraId": camera.get("id"),
         "candidateId": state.get("candidate_id"),
         "startTime": observed_at,
         "endTime": None,
