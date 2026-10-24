@@ -1,24 +1,24 @@
-# Local development image: runs the Next.js dev server for hot reload.
-# A production deployment should use the `production` stage below instead
-# (see docs/DEPLOYMENT_READINESS.md).
-
-FROM node:20-bookworm-slim AS base
-
+FROM node:22-bookworm-slim AS build
 WORKDIR /app
-
 COPY package.json package-lock.json ./
 RUN npm ci
-
-COPY . .
-
-EXPOSE 3000
-
-CMD ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]
-
-# ---------------------------------------------------------------------------
-# Production build target:
-#   docker build -f Dockerfile.frontend --target production -t smartops-frontend:prod .
-# ---------------------------------------------------------------------------
-FROM base AS production
+COPY tsconfig.json next.config.ts next-env.d.ts postcss.config.mjs ./
+COPY public ./public
+COPY src ./src
+ARG NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
-CMD ["npm", "run", "start", "--", "--hostname", "0.0.0.0"]
+
+FROM node:22-bookworm-slim AS production
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+COPY --from=build --chown=node:node /app/.next/standalone ./
+COPY --from=build --chown=node:node /app/.next/static ./.next/static
+COPY --from=build --chown=node:node /app/public ./public
+USER node
+EXPOSE 3000
+CMD ["node", "server.js"]

@@ -23,7 +23,7 @@ export type EventType = string;
 export type TimeRange = "4h" | "24h" | "7d" | "30d";
 export type SourceType = "file" | "rtsp" | "onvif" | "webrtc";
 export type SourceStatus = "online" | "offline" | "paused" | "failing" | "processing";
-export type BackendStatus = "connected" | "fallback";
+export type BackendStatus = "connected" | "loading" | "offline";
 
 // Legacy aliases while older components migrate.
 export type CameraSourceType = SourceType;

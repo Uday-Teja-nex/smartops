@@ -38,14 +38,15 @@ LM Studio stays experimentation-only. Kubernetes when deployment demands it.
 5. Incidents are the core entity; they are created only through the API
    (audit + realtime depend on it); persistence precedes broadcast.
 6. Anything long-running is queued and retryable (attempts → dead-letter).
-7. **Honesty rule**: fallbacks route to `human_review` with reasons in
-   `reviewNotes`; rule-based incidents say `modelProvider: rule-engine`;
-   the UI never renders detection overlays that are not persisted
-   detections; mock data is always labeled.
+7. **Honesty rule**: failed reviews create no incident and record an actual
+   failure reason. Existing deterministic incidents survive enrichment failure.
+   Rule incidents say `modelProvider: rule-engine`; model prose must come from
+   validated model output. No mock data is permitted in runtime paths.
 
 ## Event processing order (fixed)
 
-detection → model review → policy → persistence → realtime broadcast.
+detection → tracking/zones/rules → persistence → realtime broadcast → asynchronous model enrichment.
+This is the target contract; the legacy batch pipeline is being replaced.
 Every event carries `sourceId`/org metadata from the first step onward.
 
 ## Realtime rules

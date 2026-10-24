@@ -32,7 +32,7 @@ export const DonutChart = ({
   innerRadius?: number;
   outerRadius?: number;
 }) => {
-  if (!data.length) {
+  if (!data.some((item) => item.value > 0)) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-slate-400">
         No data available

@@ -109,21 +109,8 @@ def _normalize_confidence(value: Any) -> float:
 def _mark_human_review(state: IncidentGraphState, reason: str) -> IncidentGraphState:
     notes = state.setdefault("notes", [])
     notes.append(reason)
-    state["event_detected"] = True
-    state["event_type"] = state.get("event_type") or "fallen_object"
-    state["severity"] = state.get("severity") or "medium"
-    state["confidence"] = min(_normalize_confidence(state.get("confidence")), 0.35) or 0.35
-    state["summary"] = state.get("summary") or "Video review candidate pending human confirmation"
-    state["observations"] = state.get("observations") or [
-        "Frames were sampled from the configured source window.",
-        "Automated review did not produce a validated result.",
-        "This candidate is intentionally routed for human review.",
-    ]
-    state["recommended_actions"] = state.get("recommended_actions") or [
-        "Open the evidence and confirm whether an operational issue exists.",
-        "Tune prompts, models, or sampling if this repeats.",
-        "Do not treat this as a confirmed incident until reviewed.",
-    ]
+    # A failed review is telemetry, not evidence of an operational incident.
+    state["event_detected"] = False
     state["route_to"] = "human-review"
     state["review_status"] = "human_review"
     return state
@@ -238,7 +225,7 @@ Return JSON only.
         state["event_type"] = review.event_type
         state["severity"] = review.severity or catalog["severity"]
         state["confidence"] = _normalize_confidence(review.confidence)
-        state["summary"] = review.short_summary or catalog["summary"]
+        state["summary"] = review.short_summary
         state["observations"] = [str(item) for item in review.observations[:4]]
         state["route_to"] = "operations"
         return state
@@ -251,10 +238,9 @@ def run_llm_summary(provider: ModelProvider | None):
         if not state.get("event_detected") or state.get("route_to") == "human-review":
             return state
 
-        event_type = state.get("event_type", "fallen_object")
-        catalog = EVENT_CATALOG.get(event_type, EVENT_CATALOG["fallen_object"])
+        event_type = state["event_type"]
         if provider is None:
-            state["recommended_actions"] = list(catalog["actions"])
+            state["recommended_actions"] = []
             return state
 
         prompt = json.dumps(
@@ -271,9 +257,9 @@ def run_llm_summary(provider: ModelProvider | None):
             summary = LlmSummary.model_validate(raw)
         except Exception as exc:  # noqa: BLE001 - includes ValidationError.
             state.setdefault("notes", []).append(
-                f"LLM summary failed: {exc.__class__.__name__}; using catalog actions."
+                f"LLM summary unavailable: {exc.__class__.__name__}."
             )
-            state["recommended_actions"] = list(catalog["actions"])
+            state["recommended_actions"] = []
             return state
 
         if summary.detailed_narrative:
@@ -281,7 +267,7 @@ def run_llm_summary(provider: ModelProvider | None):
         state["recommended_actions"] = (
             [str(item) for item in summary.recommended_actions[:4]]
             if summary.recommended_actions
-            else list(catalog["actions"])
+            else []
         )
         return state
 
@@ -290,11 +276,12 @@ def run_llm_summary(provider: ModelProvider | None):
 
 def apply_policy(state: IncidentGraphState) -> IncidentGraphState:
     if not state.get("event_detected"):
-        state["route_to"] = "ignored"
+        if state.get("route_to") != "human-review":
+            state["route_to"] = "ignored"
         return state
 
-    event_type = state.get("event_type", "fallen_object")
-    catalog = EVENT_CATALOG.get(event_type, EVENT_CATALOG["fallen_object"])
+    event_type = state["event_type"]
+    catalog = EVENT_CATALOG[event_type]
     confidence = _normalize_confidence(state.get("confidence"))
 
     # Low-confidence results are persisted as human_review, not silently
@@ -332,14 +319,9 @@ def apply_policy(state: IncidentGraphState) -> IncidentGraphState:
         "startTime": observed_at,
         "endTime": None,
         "slaDueAt": sla_due,
-        "shortSummary": state.get("summary") or catalog["summary"],
-        "detailedNarrative": state.get("observations")
-        or [
-            "Candidate was generated from sampled video evidence.",
-            "No identity matching or biometric recognition was used.",
-            "Human review remains part of the operational workflow.",
-        ],
-        "recommendedActions": state.get("recommended_actions") or catalog["actions"],
+        "shortSummary": state.get("summary", ""),
+        "detailedNarrative": state.get("observations", []),
+        "recommendedActions": state.get("recommended_actions", []),
         "reviewNotes": state.get("notes", []),
         "evidence": {
             "thumbnailUrl": "/evidence-placeholder.svg",

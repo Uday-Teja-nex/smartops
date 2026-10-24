@@ -6,6 +6,9 @@ are import-safe without a display or network.
 
 import json
 
+import httpx
+import pytest
+
 from app.main import (
     handle_failure,
     should_send_to_orchestrator,
@@ -36,6 +39,42 @@ class FakeRedis:
 
     def set(self, key, value, ex=None):
         self.kv[key] = value
+
+
+@pytest.mark.parametrize("detected,expected", [(False, "ignored"), (True, "review_unavailable")])
+def test_no_incident_written_for_gated_or_failed_review(monkeypatch, tmp_path, detected, expected):
+    from app import main
+
+    source_path = tmp_path / "sample.mp4"
+    source_path.touch()
+    monkeypatch.setattr(main, "SOURCE_ROOT", tmp_path)
+
+    monkeypatch.setattr(main, "sample_frames", lambda *args: [])
+    monkeypatch.setattr(main, "run_detection", lambda *args: {
+        "status": "ran", "detections": [_det("suitcase")] if detected else [],
+    })
+    monkeypatch.setattr(main, "persist_detections", lambda *args: [])
+    requests = []
+
+    def respond(request):
+        requests.append(request.url.path)
+        return httpx.Response(200, json={
+            "createIncident": False, "routeTo": "human-review", "notes": ["VLM unavailable"],
+        })
+
+    redis = FakeRedis()
+    with httpx.Client(transport=httpx.MockTransport(respond)) as client:
+        main.process_job(client, redis, {
+            "candidateId": "cand-failure", "sourceName": "camera", "sourceUri": str(source_path),
+            "source": {"id": "src-1"},
+        })
+    status = json.loads(redis.kv["smartops:candidate_status:cand-failure"])
+    assert status["state"] == expected
+    assert "/v1/incidents" not in requests
+    if detected:
+        assert status["notes"] == ["VLM unavailable"]
+    else:
+        assert requests == []
 
 
 def test_summarize_detections_counts_people_per_frame():

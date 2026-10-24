@@ -1,0 +1,13 @@
+2026-10-24 Phase 1 UI verification
+Lint, TypeScript and Vitest (7 tests) passed after removing mock runtime paths.
+Production Docker build passed (Next webpack, standalone).
+Container user=node; command=node server.js.
+Idle memory 33.45 MiB; after navigation 44.01 MiB. Development audit snapshot was 973.2 MiB.
+Edge headless browser: seeded operator login succeeded, connected Overview showed honest empty state.
+Stopped smartops-api: UI switched to Offline / Live connection unavailable; no mock metrics or actions.
+Restarted smartops-api: UI recovered automatically to Connected, without refresh.
+Expected browser connection errors occurred during injected outage; no errors before outage.
+Chrome launch exited before page opened; Edge completed checks.
+Screenshots: phase1-overview.png and phase1-api-offline.png.
+Dependency audit reports 19 vulnerabilities, including critical Next.js; not yet remediated.
+Phase 1 is incomplete: cold-start repetitions, legacy removal, security dependency fixes and remaining checks pending.

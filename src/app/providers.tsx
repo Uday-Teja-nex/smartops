@@ -1,31 +1,9 @@
 "use client";
 
-import React, {
-  createContext,
-  startTransition,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/app/auth";
-import {
-  fetchBootstrap,
-  fetchSources,
-  getApiBaseUrl,
-  patchIncidentAction,
-} from "@/lib/api";
-import { BUILDINGS, generateEvents } from "@/lib/mockData";
-import {
-  BackendStatus,
-  Building,
-  CameraRecord,
-  EventRecord,
-  RuntimeSummary,
-  SourceRecord,
-  TimeRange,
-} from "@/lib/types";
+import { fetchBootstrap, fetchSources, getApiBaseUrl, patchIncidentAction } from "@/lib/api";
+import { BackendStatus, Building, CameraRecord, EventRecord, RuntimeSummary, SourceRecord, TimeRange } from "@/lib/types";
 
 export type SmartOpsContextValue = {
   events: EventRecord[];
@@ -35,6 +13,7 @@ export type SmartOpsContextValue = {
   refreshSources: () => Promise<void>;
   runtime: RuntimeSummary | null;
   backendStatus: BackendStatus;
+  actionError: string | null;
   selectedBuildingId: string;
   setSelectedBuildingId: (id: string) => void;
   timeRange: TimeRange;
@@ -49,293 +28,116 @@ export type SmartOpsContextValue = {
 
 const SmartOpsContext = createContext<SmartOpsContextValue | null>(null);
 
-export const SmartOpsProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+export const SmartOpsProvider = ({ children }: { children: React.ReactNode }) => {
   const { token } = useAuth();
-  const [events, setEvents] = useState<EventRecord[]>(() => generateEvents());
-  const [buildings, setBuildings] = useState<Building[]>(BUILDINGS);
+  // A new session must never inherit the previous workspace's cached rows.
+  return <SessionProvider key={token ?? "signed-out"} token={token}>{children}</SessionProvider>;
+};
+
+const SessionProvider = ({ children, token }: { children: React.ReactNode; token: string | null }) => {
+  const [events, setEvents] = useState<EventRecord[]>([]);
+  const [buildings, setBuildings] = useState<Building[]>([]);
   const [cameras, setCameras] = useState<CameraRecord[]>([]);
   const [sources, setSources] = useState<SourceRecord[]>([]);
   const [runtime, setRuntime] = useState<RuntimeSummary | null>(null);
-  const [backendStatus, setBackendStatus] = useState<BackendStatus>("fallback");
-  const [selectedBuildingId, setSelectedBuildingId] = useState(
-    BUILDINGS[0].id
-  );
+  const [backendStatus, setBackendStatus] = useState<BackendStatus>("loading");
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [selectedBuildingId, setSelectedBuildingId] = useState("");
   const [timeRange, setTimeRange] = useState<TimeRange>("7d");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const updateEvent = useCallback(
-    (id: string, updater: (event: EventRecord) => EventRecord) => {
-      setEvents((prev) =>
-        prev.map((event) => (event.id === id ? updater(event) : event))
-      );
-    },
-    []
-  );
-
-  const replaceEvent = useCallback((nextEvent: EventRecord) => {
-    setEvents((prev) =>
-      prev.map((event) => (event.id === nextEvent.id ? nextEvent : event))
-    );
-  }, []);
-
   useEffect(() => {
+    if (!token) return;
     let active = true;
-
+    let stream: EventSource | undefined;
+    let retry: ReturnType<typeof setTimeout> | undefined;
     const hydrate = async () => {
-      if (!token) {
-        if (active) setBackendStatus("fallback");
-        return;
-      }
       try {
         const bootstrap = await fetchBootstrap();
-
         if (!active) return;
-
-        startTransition(() => {
-          setBackendStatus("connected");
-          setBuildings(bootstrap.buildings);
-          setCameras(bootstrap.cameras);
-          setSources(bootstrap.sources ?? []);
-          setRuntime(bootstrap.runtime);
-          setEvents(bootstrap.incidents);
-          if (bootstrap.buildings.length > 0) {
-            setSelectedBuildingId((current) =>
-              bootstrap.buildings.some((building) => building.id === current)
-                ? current
-                : bootstrap.buildings[0].id
-            );
-          }
+        setBuildings(bootstrap.buildings);
+        setCameras(bootstrap.cameras);
+        setSources(bootstrap.sources ?? []);
+        setRuntime(bootstrap.runtime);
+        setEvents(bootstrap.incidents);
+        setSelectedBuildingId((current) => bootstrap.buildings.some((b) => b.id === current)
+          ? current : bootstrap.buildings[0]?.id ?? "");
+        // Start streaming only after bootstrap to avoid a stale REST response
+        // overwriting a newer stream event.
+        stream = new EventSource(`${getApiBaseUrl()}/v1/incidents/stream?token=${encodeURIComponent(token)}`);
+        stream.addEventListener("snapshot", (event) => {
+          try {
+            const snapshot = JSON.parse(event.data) as { incidents: EventRecord[]; sources: SourceRecord[] };
+            if (!active) return;
+            setEvents(snapshot.incidents);
+            setSources(snapshot.sources ?? []);
+            setBackendStatus("connected");
+          } catch { setBackendStatus("offline"); }
         });
-      } catch {
-        if (!active) return;
-        setBackendStatus("fallback");
-      }
-    };
-
-    void hydrate();
-
-    return () => {
-      active = false;
-    };
-  }, [token]);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || !token) return;
-
-    const stream = new EventSource(
-      `${getApiBaseUrl()}/v1/incidents/stream?token=${encodeURIComponent(token)}`
-    );
-
-    stream.addEventListener("snapshot", (event) => {
-      try {
-        const snapshot = JSON.parse(event.data) as {
-          incidents: EventRecord[];
-          sources: SourceRecord[];
+        stream.addEventListener("incident", (event) => {
+          try {
+            const incident = JSON.parse(event.data) as EventRecord;
+            if (!active) return;
+            setEvents((prev) => prev.some((item) => item.id === incident.id)
+              ? prev.map((item) => item.id === incident.id ? incident : item) : [incident, ...prev]);
+          } catch { setBackendStatus("offline"); }
+        });
+        stream.addEventListener("source", (event) => {
+          try {
+            const source = JSON.parse(event.data) as SourceRecord;
+            if (!active) return;
+            setSources((prev) => prev.some((item) => item.id === source.id)
+              ? prev.map((item) => item.id === source.id ? source : item) : [...prev, source]);
+          } catch { setBackendStatus("offline"); }
+        });
+        stream.onerror = () => {
+          if (!active) return;
+          setBackendStatus("offline");
+          stream?.close();
+          retry = setTimeout(() => void hydrate(), 3000);
         };
-        startTransition(() => {
-          setBackendStatus("connected");
-          setEvents(snapshot.incidents);
-          setSources(snapshot.sources ?? []);
-        });
       } catch {
-        // Ignore malformed snapshot; REST hydration remains authoritative.
+        if (!active) return;
+        setBackendStatus("offline");
+        retry = setTimeout(() => void hydrate(), 3000);
       }
-    });
-
-    stream.addEventListener("incident", (event) => {
-      try {
-        const incident = JSON.parse(event.data) as EventRecord;
-        startTransition(() => {
-          setBackendStatus("connected");
-          setEvents((prev) => {
-            const exists = prev.some((item) => item.id === incident.id);
-            return exists
-              ? prev.map((item) => (item.id === incident.id ? incident : item))
-              : [incident, ...prev];
-          });
-        });
-      } catch {
-        // Ignore malformed event payloads.
-      }
-    });
-
-    stream.addEventListener("source", (event) => {
-      try {
-        const source = JSON.parse(event.data) as SourceRecord;
-        startTransition(() => {
-          setSources((prev) => {
-            const exists = prev.some((item) => item.id === source.id);
-            return exists
-              ? prev.map((item) => (item.id === source.id ? source : item))
-              : [...prev, source];
-          });
-        });
-      } catch {
-        // Ignore malformed event payloads.
-      }
-    });
-
-    stream.onerror = () => {
-      setBackendStatus((current) =>
-        current === "connected" ? "connected" : "fallback"
-      );
     };
-
-    return () => {
-      stream.close();
-    };
+    void hydrate();
+    return () => { active = false; stream?.close(); clearTimeout(retry); };
   }, [token]);
 
   const refreshSources = useCallback(async () => {
-    try {
-      const next = await fetchSources();
-      setSources(next);
-      setBackendStatus("connected");
-    } catch {
-      // Keep the last known sources; the caller surfaces errors.
-    }
+    const next = await fetchSources();
+    setSources(next);
   }, []);
 
-  const acknowledgeEvent = useCallback(
-    (id: string) => {
-      const fallback = () =>
-        updateEvent(id, (event) => ({
-          ...event,
-          status: "acknowledged",
-          ackTime: event.ackTime ?? new Date().toISOString(),
-        }));
+  const act = useCallback((id: string, action: Parameters<typeof patchIncidentAction>[1], assignee?: string) => {
+    setActionError(null);
+    if (backendStatus !== "connected") {
+      setActionError("Action not saved: the API or live connection is unavailable. Reconnect and try again.");
+      return;
+    }
+    void patchIncidentAction(id, action, assignee).then((next) => {
+      setEvents((prev) => prev.map((event) => event.id === next.id ? next : event));
+    }).catch((error: unknown) => {
+      setActionError(`Action not confirmed: ${error instanceof Error ? error.message : "request failed"}. Reload the incident before retrying.`);
+    });
+  }, [backendStatus]);
+  const acknowledgeEvent = useCallback((id: string) => act(id, "acknowledge"), [act]);
+  const assignEvent = useCallback((id: string, assignee?: string) => act(id, "assign", assignee), [act]);
+  const resolveEvent = useCallback((id: string) => act(id, "resolve"), [act]);
+  const markFalsePositive = useCallback((id: string) => act(id, "false-positive"), [act]);
 
-      if (backendStatus === "connected") {
-        void patchIncidentAction(id, "acknowledge")
-          .then(replaceEvent)
-          .catch(fallback);
-        return;
-      }
-
-      fallback();
-    },
-    [backendStatus, replaceEvent, updateEvent]
-  );
-
-  const assignEvent = useCallback(
-    (id: string, assignee = "SmartOps Dispatch") => {
-      const fallback = () =>
-        updateEvent(id, (event) => ({
-          ...event,
-          status: "assigned",
-          assignedTo: assignee,
-          ackTime: event.ackTime ?? new Date().toISOString(),
-        }));
-
-      if (backendStatus === "connected") {
-        void patchIncidentAction(id, "assign", assignee)
-          .then(replaceEvent)
-          .catch(fallback);
-        return;
-      }
-
-      fallback();
-    },
-    [backendStatus, replaceEvent, updateEvent]
-  );
-
-  const resolveEvent = useCallback(
-    (id: string) => {
-      const fallback = () =>
-        updateEvent(id, (event) => ({
-          ...event,
-          status: "resolved",
-          endTime: event.endTime ?? new Date().toISOString(),
-          resolvedTime: new Date().toISOString(),
-        }));
-
-      if (backendStatus === "connected") {
-        void patchIncidentAction(id, "resolve")
-          .then(replaceEvent)
-          .catch(fallback);
-        return;
-      }
-
-      fallback();
-    },
-    [backendStatus, replaceEvent, updateEvent]
-  );
-
-  const markFalsePositive = useCallback(
-    (id: string) => {
-      const fallback = () =>
-        updateEvent(id, (event) => ({
-          ...event,
-          status: "false_positive",
-          endTime: new Date().toISOString(),
-          resolvedTime: new Date().toISOString(),
-        }));
-
-      if (backendStatus === "connected") {
-        void patchIncidentAction(id, "false-positive")
-          .then(replaceEvent)
-          .catch(fallback);
-        return;
-      }
-
-      fallback();
-    },
-    [backendStatus, replaceEvent, updateEvent]
-  );
-
-  const value = useMemo(
-    () => ({
-      events,
-      buildings,
-      cameras,
-      sources,
-      refreshSources,
-      runtime,
-      backendStatus,
-      selectedBuildingId,
-      setSelectedBuildingId,
-      timeRange,
-      setTimeRange,
-      searchQuery,
-      setSearchQuery,
-      acknowledgeEvent,
-      assignEvent,
-      resolveEvent,
-      markFalsePositive,
-    }),
-    [
-      events,
-      buildings,
-      cameras,
-      sources,
-      refreshSources,
-      runtime,
-      backendStatus,
-      selectedBuildingId,
-      timeRange,
-      searchQuery,
-      acknowledgeEvent,
-      assignEvent,
-      resolveEvent,
-      markFalsePositive,
-    ]
-  );
-
-  return (
-    <SmartOpsContext.Provider value={value}>
-      {children}
-    </SmartOpsContext.Provider>
-  );
+  const value = useMemo(() => ({ events, buildings, cameras, sources, refreshSources, runtime,
+    backendStatus, actionError, selectedBuildingId, setSelectedBuildingId, timeRange, setTimeRange,
+    searchQuery, setSearchQuery, acknowledgeEvent, assignEvent, resolveEvent, markFalsePositive }),
+  [events, buildings, cameras, sources, refreshSources, runtime, backendStatus, actionError,
+    selectedBuildingId, timeRange, searchQuery, acknowledgeEvent, assignEvent, resolveEvent, markFalsePositive]);
+  return <SmartOpsContext.Provider value={value}>{children}</SmartOpsContext.Provider>;
 };
 
 export const useSmartOps = () => {
   const context = useContext(SmartOpsContext);
-  if (!context) {
-    throw new Error("useSmartOps must be used within SmartOpsProvider");
-  }
+  if (!context) throw new Error("useSmartOps must be used within SmartOpsProvider");
   return context;
 };

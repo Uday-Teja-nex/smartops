@@ -1,72 +1,55 @@
-# Agent Handoff
+# SmartOps handoff — 2026-10-24
 
-Concise state-of-the-world for the next AI agent or developer.
-Read `PLAN.md`, `SKILLS.md`, `docs/ARCHITECTURE.md`, then this.
+Goal: implement all of GOAL_PROMPT.md. This is NOT demo-ready.
+Branch: codex/smartops-live-demo. Phase 0 audit commit: 0003037.
+See PLAN.md for remaining phases and docs/AUDIT.md for measured facts.
 
-## Current status (2026-07-07)
+Current Phase 1 edits remove fabricated model-failure incidents and catalog
+narratives/actions, repair SSE route ordering, preserve Alembic logger state,
+and explicitly log startup failure tracebacks. Worker failures remain visible
+as review_unavailable telemetry. ADR 0006 records this transition.
 
-Working, verified end-to-end on the local Docker stack:
+New regression tests failed before fixes. Current suites pass: API 23, orchestrator 11, worker 9. Docker rebuild is in progress.
+Frontend has not yet been fixed or rebuilt: runtime mock metrics, fake local
+write success, template AI text and stale live state still exist.
 
-- Multi-tenant schema + Alembic migrations (verified on Postgres 16).
-- JWT auth + RBAC (admin/supervisor/operator/viewer/security/ehs) with
-  seeded demo users; service-to-service internal token; audit trail with
-  real actors.
-- Source management: CRUD + pause/resume/disable + adapter health, UI page,
-  MP4 autodiscovery. RTSP/ONVIF/WebRTC are honest interface-only stubs.
-- Pipeline: MP4 → candidate windows → YOLO detector (yolov8n CPU) →
-  persisted detections → LangGraph review (6-category taxonomy, structured
-  outputs, Pydantic validation, confidence policy) → MinIO evidence
-  (snapshot/thumbnail/ffmpeg clip, presigned URLs) → incident upsert →
-  Redis pub/sub → SSE → UI live update. Retry + dead-letter verified live.
-- Rule-based System Health incidents on source failure (`rule-engine`).
-- UI: dark glass design system, 11 routes, evidence player with REAL
-  detection overlays only, role-aware nav and action gating.
-- Tests: API (pytest+SQLite), orchestrator (FakeProvider), worker (gating/
-  retry), frontend (vitest), `scripts/smoke.py` E2E; CI workflow.
+Runtime caveats:
+- Docker images are old; source edits are not deployed until rebuilt.
+- Existing frontend exited 137; cause unproven. Its development process had
+  reached 973 MiB after browser navigation.
+- Native Ollama Qwen default-batch load failed at 9.9 GiB allocation, after
+  180 seconds. Native model downloads completed; service was not running on
+  October 24. Docker Ollama is stopped to prevent port-11434 ambiguity.
+- Fresh smartops_audit Postgres database migrated and seeded successfully.
+  Original boot crash-loop was not reproduced. Cold-start gates remain open.
+- Browser clip playback and direct incident navigation worked in the audit;
+  reported ORB/session hang not reproduced. Evidence reload dependency remains.
+- Existing database contains fabricated incidents from the old pipeline.
+  Do not present them as valid history; clean reset is required later.
+- Supabase containers belong to another project and must not be modified.
 
-## Known risks / sharp edges
+Verification evidence is under docs/verification. Baselines: lint/typecheck
+passed, frontend 7 tests, API 21, orchestrator 11, worker 7. New tests increase
+API and worker counts; use current test output for final results.
 
-1. **Ollama memory**: on Docker VMs <~8GB the vision model OOMs; incidents
-   then persist as `human_review` with the reason in `reviewNotes`. This is
-   designed degradation, not a bug. (docs/AI_PIPELINE.md → memory profile.)
-2. **Turbopack on Windows**: `next build` (turbopack) segfaults on some
-   machines; `npm run build` is pinned to `--webpack`.
-3. **Org scoping**: `org_id` exists everywhere but queries are not yet
-   filtered per-principal (single-tenant runtime). See DEPLOYMENT_READINESS.
-4. **Legacy `/v1/cameras`** endpoints and the incident `cameraId` alias are
-   transitional; remove once nothing references them.
-5. First VLM call after idle is slow (model load) — worker/orchestrator
-   timeouts are deliberately generous (480–540s).
+No PR or push authorized. User prompt and unrelated PDF are untracked; do not
+include the PDF in implementation commits. Browser raw diagnostics are ignored
+because request URLs may contain tokens. Save only curated evidence.
 
-## Do-not-break rules
+## Latest progress
 
-- Never fake AI output. Fallbacks must set `human_review` + `reviewNotes`;
-  rule-based incidents must say `modelProvider: rule-engine`; the UI never
-  draws boxes that aren't persisted detections.
-- Persist before broadcast. Incidents only via `POST /v1/incidents`.
-- Keep provider/detector/adapter abstractions intact.
-- New env vars go to `.env.example` + `docker-compose.yml`.
-- Schema changes = new Alembic revision.
-- Keep `PLAN.md`, `SKILLS.md`, and this file current in the same PR.
+Frontend mock data and template briefing removed. Housekeeping redirects to the
+real incident filter. Failed writes no longer mutate local state; session changes
+clear cached rows. Global offline state and automatic recovery verified by stopping
+and restarting the real API. Frontend is non-root standalone production, 44 MiB
+after navigation. Evidence reload no longer depends on source-health updates.
+SLA durations use days and zero-count donut charts show an empty state.
 
-## Verification commands
+Services rebuilt and runtime verified: SSE snapshot works and missing-frame review
+creates no incident. Native Ollama is now the default compose endpoint; Docker
+Ollama is optional on port 11435. Native reachability/inference remains unverified.
 
-```bash
-npm run lint && npm test && npm run build
-# NOTE: run each service separately — their `app` packages collide in one process
-python -m pytest services/api/tests -q
-python -m pytest services/orchestrator/tests -q
-python -m pytest services/worker/tests -q
-docker compose up --build -d && python scripts/smoke.py
-```
-
-## Recommended next tasks (in order)
-
-1. RTSP adapter (`services/video-ingest/app/adapters/rtsp.py`) against a
-   real or simulated RTSP feed (e.g. `mediamtx` container) — the whole
-   downstream pipeline already works.
-2. Per-org query scoping derived from the JWT principal.
-3. Evidence access rules (role × restricted) at `GET /v1/evidence/{id}/url`
-   + access audit log.
-4. Notification delivery (email/webhook) honoring stored org preferences.
-5. Playwright E2E for login → source CRUD → incident detail.
+Remaining Phase 1: three cold starts; legacy camera aliases; remaining stale docs;
+full browser workflow/error checks. Dependency audit found 19 vulnerabilities,
+including critical Next.js: remediate before declaring demo/production readiness.
+All future phases in GOAL_PROMPT.md remain required.

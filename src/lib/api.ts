@@ -45,6 +45,7 @@ const request = async <T,>(path: string, init?: RequestInit): Promise<T> => {
   const token = getStoredToken();
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
     ...init,
+    signal: init?.signal ?? AbortSignal.timeout(10000),
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

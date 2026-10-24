@@ -3,6 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      target: production
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
     container_name: smartops-frontend
     environment:
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
@@ -61,14 +64,11 @@ services:
     container_name: smartops-orchestrator
     environment:
       SMARTOPS_MODEL_PROVIDER: ${SMARTOPS_MODEL_PROVIDER:-ollama}
-      SMARTOPS_OLLAMA_HOST: ${SMARTOPS_OLLAMA_HOST:-http://ollama:11434}
+      SMARTOPS_OLLAMA_HOST: ${SMARTOPS_OLLAMA_HOST:-http://host.docker.internal:11434}
       SMARTOPS_TEXT_MODEL: ${SMARTOPS_TEXT_MODEL:-llama3.2:3b}
       SMARTOPS_VISION_MODEL: ${SMARTOPS_VISION_MODEL:-qwen2.5vl:3b}
       SMARTOPS_MODEL_TIMEOUT_SECONDS: ${SMARTOPS_MODEL_TIMEOUT_SECONDS:-480}
       SMARTOPS_REVIEW_CONFIDENCE_THRESHOLD: ${SMARTOPS_REVIEW_CONFIDENCE_THRESHOLD:-0.6}
-    depends_on:
-      ollama:
-        condition: service_started
     ports:
       - "8100:8100"
     healthcheck:
@@ -208,6 +208,7 @@ services:
     restart: unless-stopped
 
   ollama:
+    profiles: [docker-ollama]
     image: ollama/ollama:latest
     container_name: smartops-ollama
     environment:
@@ -217,7 +218,7 @@ services:
       OLLAMA_NUM_PARALLEL: ${OLLAMA_NUM_PARALLEL:-1}
       OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-2m}
     ports:
-      - "11434:11434"
+      - "11435:11434"
     volumes:
       - ollama_data:/root/.ollama
     restart: unless-stopped

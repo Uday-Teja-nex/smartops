@@ -1,70 +1,78 @@
 # SmartOps
 
-Production-shaped, multi-tenant smart-building CCTV operations platform.
-SmartOps ingests video sources, runs lightweight YOLO detection, reviews
-candidate events with local open-source VLM/LLM models (LangGraph +
-Ollama), persists incidents with object-storage evidence, and streams live
-updates to a dark, premium operator console.
+SmartOps is being rebuilt into a live camera-to-incident operations product.
+It is not yet client-demo-ready. See [PLAN.md](PLAN.md) and [AUDIT.md](docs/AUDIT.md)
+for the verified state and remaining acceptance gates.
 
-**Honesty by design**: nothing in the UI is presented as AI detection unless
-it came from the real pipeline. Fallbacks are routed to human review with
-recorded reasons; rule-based incidents are labeled `rule-engine`; the
-evidence player only draws persisted detection boxes.
+## Current local setup (PowerShell)
 
-## Quick start
+Docker Desktop must be running. Keep ports 3000, 8000, 8100, 8200 and 9000–9001
+available. This is the current development stack, not the final demo launcher.
 
-```bash
-# 1. Put any .mp4 into sample-data/input/
-# 2. Start the stack (Docker Desktop with ≥10GB memory recommended for the VLM path)
+```powershell
 docker compose up --build -d
-
-# 3. First time only: pull the local models (~5GB)
-docker exec smartops-ollama ollama pull qwen2.5vl:3b
-docker exec smartops-ollama ollama pull llama3.2:3b
 ```
 
-Open http://localhost:3000 — sign in with `operator@smartops.local` /
-`smartops-demo` (all demo roles listed on the login screen).
+Open [SmartOps](http://localhost:3000). Development seed credentials:
+`operator@smartops.local` / `smartops-demo`. Do not use these in production.
+A fresh database seeds topology and users, not incident history.
 
-Within a couple of minutes the seeded/autodiscovered MP4 source produces
-candidate windows → YOLO detections → LangGraph review → incidents with
-evidence, live on the dashboard.
+The frontend runs a non-root production build with webpack. Unsupported mock
+occupancy/cleaning metrics and template AI text are removed. API/stream failures
+show an unavailable state; failed writes do not fabricate local success.
 
-Full setup, verification checklist, troubleshooting, backup/restore:
-[docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md).
+The legacy file processor still reads `sample-data/input/`. Failed model
+reviews create no incident and retain failure reasons in pipeline telemetry.
+Existing database rows from the previous fabricated fallback are not valid
+incident history. A clean reset and real history generation remain required.
 
-## Stack
+## Models
 
-Next.js 16 · React 19 · Tailwind 4 · framer-motion — FastAPI · SQLAlchemy ·
-Alembic — Postgres · Redis · MinIO — ultralytics YOLOv8n — LangGraph —
-Ollama (`qwen2.5vl:3b`, `llama3.2:3b`) — Docker Compose.
+Default container endpoint: `http://host.docker.internal:11434`. Native Ollama
+must be running and reachable from Docker. The audit's native Qwen load failed
+under memory pressure; GPU inference and latency targets remain unverified.
 
-## Documentation
+Optional Docker Ollama uses profile `docker-ollama` and host port 11435. Set
+`SMARTOPS_OLLAMA_HOST=http://ollama:11434` in `.env` before using that profile.
 
-| Doc | What |
-|---|---|
-| [PLAN.md](PLAN.md) | Execution plan, current verified state, next phases |
-| [SKILLS.md](SKILLS.md) | Engineering contract (principles, definition of done) |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System diagram, services, data flow |
-| [docs/VIDEO_PIPELINE.md](docs/VIDEO_PIPELINE.md) | Adapters, candidate windows, gating, evidence |
-| [docs/AI_PIPELINE.md](docs/AI_PIPELINE.md) | YOLO → LangGraph → models, validation, fallbacks |
-| [docs/DATA_MODEL.md](docs/DATA_MODEL.md) | Entities and relationships |
-| [docs/API_CONTRACTS.md](docs/API_CONTRACTS.md) | REST/SSE contracts with examples |
-| [docs/UI_REVAMP_GUIDE.md](docs/UI_REVAMP_GUIDE.md) | Design tokens, motion rules, components |
-| [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) | Test layers and commands |
-| [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md) | Setup, checks, failures, resets |
-| [docs/DEPLOYMENT_READINESS.md](docs/DEPLOYMENT_READINESS.md) | What must change before real customers |
-| [docs/IMPLEMENTATION_GUIDE.md](docs/IMPLEMENTATION_GUIDE.md) | How to extend safely |
-| [docs/AGENT_HANDOFF.md](docs/AGENT_HANDOFF.md) | State + do-not-break rules for the next agent |
-| [docs/DECISIONS/](docs/DECISIONS/) | ADRs |
+```powershell
+docker compose --profile docker-ollama up --build -d
+```
 
 ## Verification
 
-```bash
-npm run lint && npm test && npm run build
-# NOTE: run each service separately — their `app` packages collide in one process
-python -m pytest services/api/tests -q
-python -m pytest services/orchestrator/tests -q
-python -m pytest services/worker/tests -q
-docker compose up --build -d && python scripts/smoke.py
+```powershell
+npm run lint
 ```
+
+```powershell
+npx tsc --noEmit
+```
+
+```powershell
+npm test
+```
+
+Run Python services separately because their app packages collide:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest services/api/tests -q
+```
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest services/orchestrator/tests -q
+```
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest services/worker/tests -q
+```
+
+Runtime regression checks after rebuilding:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/verify_phase1_services.py
+```
+
+See [AGENT_HANDOFF](docs/AGENT_HANDOFF.md) and `docs/verification/` for evidence.
+Streaming rules, tenant enforcement, phone notifications, cold-start/reset gates,
+full E2E and production deployment remain unfinished.

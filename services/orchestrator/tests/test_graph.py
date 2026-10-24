@@ -109,7 +109,11 @@ def test_invalid_model_output_falls_back_to_human_review():
     graph = build_graph(provider)
     state = graph.invoke(_base_state())
     assert state["route_to"] == "human-review"
-    assert state["incident"]["status"] == "human_review"
+    assert "incident" not in state
+    assert state["event_detected"] is False
+    assert not state.get("event_type")
+    assert not state.get("observations")
+    assert not state.get("recommended_actions")
 
 
 def test_model_exception_falls_back_to_human_review():
@@ -118,6 +122,7 @@ def test_model_exception_falls_back_to_human_review():
     state = graph.invoke(_base_state())
     assert state["route_to"] == "human-review"
     assert any("VLM review failed" in note for note in state["notes"])
+    assert "incident" not in state
 
 
 def test_no_event_is_ignored():
@@ -155,7 +160,7 @@ def test_detector_unavailable_skips_vlm_and_routes_human_review():
     )
     assert provider.vlm_calls == 0
     assert state["route_to"] == "human-review"
-    assert state["incident"]["status"] == "human_review"
+    assert "incident" not in state
 
 
 def test_empty_detections_after_detector_ran_is_ignored_without_vlm():

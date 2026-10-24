@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect } from "react";
 import {
   Activity,
-  BrushCleaning,
   Building2,
   Camera,
   FileBarChart,
@@ -22,6 +21,8 @@ import { useSmartOps } from "@/app/providers";
 import { TIME_RANGE_LABELS } from "@/lib/analytics";
 import { UserRole } from "@/lib/types";
 import { classNames } from "@/lib/utils";
+import { ErrorState } from "@/components/ui/EmptyState";
+import { SkeletonPanel } from "@/components/ui/Skeleton";
 
 type NavItem = {
   name: string;
@@ -36,7 +37,6 @@ const NAV_ITEMS: NavItem[] = [
   { name: "Sources", href: "/sources", icon: Camera },
   { name: "Monitoring", href: "/monitoring", icon: Radio },
   { name: "Safety & EHS", href: "/safety", icon: ShieldAlert },
-  { name: "Housekeeping", href: "/housekeeping", icon: BrushCleaning },
   { name: "Occupancy & Security", href: "/occupancy", icon: Building2 },
   { name: "Reports", href: "/reports", icon: FileBarChart },
   { name: "Settings", href: "/settings", icon: Settings, minRole: "supervisor" },
@@ -48,6 +48,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
   const { user, initializing, logout, hasRole } = useAuth();
   const {
     backendStatus,
+    actionError,
     runtime,
     buildings,
     selectedBuildingId,
@@ -198,12 +199,12 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                         : "bg-amber-300"
                     )}
                   />
-                  {connected ? "Live" : "Demo data"}
+                  {connected ? "Connected" : backendStatus === "loading" ? "Connecting" : "Offline"}
                 </span>
                 <p className="hidden truncate text-xs text-slate-500 md:block">
                   {connected && runtime
                     ? `${runtime.activeSourceCount}/${runtime.totalSourceCount} sources active · ${runtime.modelProvider} · ${runtime.orchestrator}`
-                    : "Backend offline — showing local demo data"}
+                    : "Waiting for the API and live updates"}
                 </p>
               </div>
 
@@ -271,7 +272,12 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
             </nav>
           </header>
 
-          <main className="flex-1 px-6 py-6">{children}</main>
+          <main className="flex-1 px-6 py-6">
+            {actionError && <div role="alert" className="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-200">{actionError}</div>}
+            {backendStatus === "loading" ? <SkeletonPanel lines={6} /> : backendStatus === "offline" ? (
+              <ErrorState title="Live connection unavailable" description="The API or event stream is unreachable. Data and actions are unavailable while SmartOps reconnects automatically." />
+            ) : children}
+          </main>
         </div>
       </div>
     </div>

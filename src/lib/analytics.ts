@@ -1,4 +1,4 @@
-﻿import { EventCategory, EventRecord, EventSeverity, TimeRange } from "./types";
+import { EventCategory, EventRecord, EventSeverity, TimeRange } from "./types";
 import { clamp } from "./utils";
 
 const RANGE_MINUTES: Record<TimeRange, number> = {
@@ -111,56 +111,6 @@ export const getCategoryPerformance = (events: EventRecord[]) => {
   });
 };
 
-export const generateBriefing = (
-  events: EventRecord[],
-  rangeLabel: string
-) => {
-  const active = events.filter((event) => event.status === "active");
-  const severeActive = active.filter(
-    (event) => event.severity === "high" || event.severity === "critical"
-  );
-  const categories = getCountsByCategory(events);
-  const topCategory = Object.entries(categories).sort((a, b) => b[1] - a[1])[0];
-  const hotspots = getHotspots(events, 2);
-
-  const highlights = [
-    `${active.length} active events tracked in ${rangeLabel.toLowerCase()}`,
-    severeActive.length
-      ? `${severeActive.length} high-severity items require attention`
-      : "No critical safety breaches detected",
-    topCategory
-      ? `${topCategory[0]} events make up ${Math.round(
-          (topCategory[1] / (events.length || 1)) * 100
-        )}% of activity`
-      : "Event mix balanced across operations",
-  ];
-
-  const actions = [
-    hotspots[0]
-      ? `Dispatch team to ${hotspots[0].zone} for recurring issues`
-      : "Prioritize zones with the most open items",
-    "Confirm exits and safety equipment remain unobstructed",
-    "Close housekeeping loops within SLA window",
-  ];
-
-  const eveningHotspot = events.find((event) => {
-    const hour = new Date(event.startTime).getHours();
-    return hour >= 18 && hour <= 19 && event.zone.includes("Pantry");
-  });
-
-  const rootCause = eveningHotspot
-    ? "Recurring obstructions near pantry deliveries 6-7pm"
-    : hotspots[1]
-      ? `Repeat events cluster around ${hotspots[1].zone}`
-      : "Operations are stable with no dominant root cause";
-
-  return {
-    highlights,
-    actions,
-    rootCause,
-  };
-};
-
 export const scoreStatus = (count: number, total: number) => {
   if (!total) return "green";
   const ratio = count / total;
@@ -196,8 +146,3 @@ export const buildTrend = (events: EventRecord[]) => {
     value: clamp(entry.count / max, 0, 1),
   }));
 };
-
-
-
-
-

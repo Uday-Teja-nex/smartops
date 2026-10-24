@@ -1,0 +1,6 @@
+2026-10-24 Phase 1 first slice
+Regression tests before fixes: orchestrator 3 failures, API startup/routing 2 failures.
+After fixes: API 23 passed (76.21 s), orchestrator 11 passed (0.50 s), worker 9 passed (0.47 s).
+New worker process tests verify failed review writes no incident and preserves review_unavailable reason;
+gated empty detection candidates make no review request.
+Docker rebuild/runtime check pending. Phase 1 cold-start and frontend gates remain open.

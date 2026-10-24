@@ -388,7 +388,7 @@ def process_job(client: httpx.Client, redis_client: redis.Redis, job: dict[str, 
             redis_client,
             candidate_id,
             {
-                "state": "ignored",
+                "state": "review_unavailable" if result.get("routeTo") == "human-review" else "ignored",
                 "sourceId": source.get("id"),
                 "sourceName": job.get("sourceName"),
                 "routeTo": result.get("routeTo"),

@@ -9,3 +9,9 @@ sample-data/output
 sample-data/tmp
 **/__pycache__
 **/*.pyc
+.venv
+.playwright-cli
+.env*
+docs/verification
+*.pdf
+sample-data/input

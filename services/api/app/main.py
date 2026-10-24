@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -39,11 +40,12 @@ app.include_router(bootstrap.router)
 app.include_router(topology.router)
 app.include_router(sources.router)
 app.include_router(sources.legacy_router)
+# Static stream path must precede /incidents/{incident_id}.
+app.include_router(pipeline.router)
 app.include_router(incidents.router)
 app.include_router(detections.router)
 app.include_router(evidence.router)
 app.include_router(org.router)
-app.include_router(pipeline.router)
 
 
 def run_migrations() -> None:
@@ -59,6 +61,14 @@ def run_migrations() -> None:
 
 @app.on_event("startup")
 def startup() -> None:
+    try:
+        initialize_storage()
+    except Exception:
+        logging.getLogger(__name__).exception("API startup failed")
+        raise
+
+
+def initialize_storage() -> None:
     if settings.database_url.startswith("sqlite"):
         # Test/dev-lite mode: skip Alembic and build the schema directly.
         Base.metadata.create_all(bind=engine)

@@ -1,0 +1,12 @@
+{
+  "sseFirstLine": "event: snapshot",
+  "review": {
+    "candidateId": "verification-no-frames",
+    "createIncident": false,
+    "routeTo": "human-review",
+    "incident": null,
+    "notes": [
+      "No sampled frames were provided by the worker."
+    ]
+  }
+}

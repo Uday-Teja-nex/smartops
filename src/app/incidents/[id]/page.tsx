@@ -32,11 +32,10 @@ import {
   addIncidentComment,
   fetchEvidenceUrl,
   fetchIncidentDetail,
-  getSourceClipUrl,
   patchIncidentAction,
 } from "@/lib/api";
 import { IncidentDetail } from "@/lib/types";
-import { formatConfidence, formatDateTime } from "@/lib/utils";
+import { formatConfidence, formatDateTime, formatDurationMinutes } from "@/lib/utils";
 import { getCategoryStyle, getSeverityStyle } from "@/lib/visuals";
 
 const slaCountdown = (slaDueAt: string | null | undefined, status: string) => {
@@ -44,8 +43,7 @@ const slaCountdown = (slaDueAt: string | null | undefined, status: string) => {
   const remaining = new Date(slaDueAt).getTime() - Date.now();
   const overdue = remaining < 0;
   const minutes = Math.abs(Math.round(remaining / 60000));
-  const label =
-    minutes >= 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : `${minutes}m`;
+  const label = formatDurationMinutes(minutes);
   return { overdue, label };
 };
 
@@ -78,19 +76,13 @@ export default function IncidentDetailPage() {
           resolved = null;
         }
       }
-      if (!resolved) {
-        const source = sources.find((item) => item.id === next.sourceId);
-        if (source?.sourceType === "file") {
-          resolved = getSourceClipUrl(next.sourceId);
-        }
-      }
       setClipUrl(resolved);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load incident");
     } finally {
       setLoading(false);
     }
-  }, [incidentId, sources]);
+  }, [incidentId]);
 
   useEffect(() => {
     void load();
@@ -189,7 +181,7 @@ export default function IncidentDetailPage() {
               style={getCategoryStyle(detail.category)}
             />
             {detail.subcategory && (
-              <Badge label={detail.subcategory} className="!normal-case" tone="slate" />
+              <Badge label={detail.subcategory.replaceAll("_", " ")} className="!normal-case" tone="slate" />
             )}
             <Badge
               label={`Severity: ${detail.severity}`}
