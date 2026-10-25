@@ -11,4 +11,4 @@ def test_rule_incident_preserves_measurements_without_ai_claims():
     assert payload['detectionSummary'] == event
     assert payload['detailedNarrative'] == []
     assert payload['evidence']['clipUrl'] == ''
-    assert payload['reviewNotes'] == ['AI review pending; enrichment is not yet connected.']
+    assert payload['reviewNotes'] == ['AI review unavailable: enrichment is not configured.']

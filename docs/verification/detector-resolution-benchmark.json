@@ -1,0 +1,23 @@
+{
+  "method": "one real RTSP frame, two CPU threads, ten predictions per size while three streams active; no accuracy ground truth",
+  "results": [
+    {
+      "imageSize": 640,
+      "meanMs": 122.94,
+      "maxMs": 143.4,
+      "detections": 9
+    },
+    {
+      "imageSize": 512,
+      "meanMs": 83.39,
+      "maxMs": 96.75,
+      "detections": 7
+    },
+    {
+      "imageSize": 416,
+      "meanMs": 55.08,
+      "maxMs": 62.44,
+      "detections": 7
+    }
+  ]
+}

@@ -49,10 +49,12 @@ export const EvidenceVideoPlayer = ({
   src,
   sourceLabel,
   annotations = [],
+  burnedInOverlays = false,
 }: {
   src: string;
   sourceLabel?: string;
   annotations?: EvidenceAnnotation[];
+  burnedInOverlays?: boolean;
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -196,7 +198,7 @@ export const EvidenceVideoPlayer = ({
           </button>
         ) : (
           <span className="text-[10px] uppercase tracking-wide text-slate-600">
-            No detection overlay available
+            {burnedInOverlays ? "Measured boxes recorded in clip" : "No detection overlay available"}
           </span>
         )}
       </div>

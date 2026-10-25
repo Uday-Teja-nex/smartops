@@ -169,3 +169,23 @@ def test_legacy_camera_alias_removed(client, service_headers):
     bootstrap = client.get("/v1/bootstrap", headers=service_headers).json()
     assert "sources" in bootstrap
     assert "cameras" not in bootstrap
+
+def test_offline_and_image_quality_incidents_are_broadcast_and_distinct(client, supervisor_headers, service_headers, viewer_headers, monkeypatch):
+    from app.routers import sources
+    broadcasts = []
+    monkeypatch.setattr(sources, 'publish_event', lambda kind, payload: broadcasts.append((kind, payload)))
+    created = client.post('/v1/sources', headers=supervisor_headers, json=_source_payload(name='Quality test'))
+    source_id = created.json()['id']
+    path = f'/v1/sources/{source_id}/health'
+    response = client.post(path, headers=service_headers, json={'status': 'offline', 'adapter': 'continuous-rtsp', 'lastError': 'No fresh frames'})
+    assert response.status_code == 200
+    incidents = [payload for kind, payload in broadcasts if kind == 'incident']
+    assert len(incidents) == 1
+    assert incidents[0]['type'] == 'camera_offline'
+    assert incidents[0]['evidence']['clipUrl'] == ''
+    broadcasts.clear()
+    response = client.post(path, headers=service_headers, json={'status': 'failing', 'adapter': 'continuous-rtsp', 'details': {'issues': ['camera_low_light', 'camera_obscured'], 'meanLuminance': 0}})
+    assert response.status_code == 200
+    incidents = [payload for kind, payload in broadcasts if kind == 'incident']
+    assert {incident['type'] for incident in incidents} == {'camera_low_light', 'camera_obscured'}
+    assert all(incident['detectionSummary']['meanLuminance'] == 0 for incident in incidents)

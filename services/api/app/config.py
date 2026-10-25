@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     candidate_queue: str = "smartops:candidate_jobs"
     dead_letter_queue: str = "smartops:candidate_jobs:dead"
     seed_demo_data: bool = True
+    mediamtx_webrtc_public_url: str = 'http://localhost:8889'
+    mediamtx_rtsp_host: str = 'mediamtx'
 
     # Evidence object storage (MinIO locally; any S3-compatible store later).
     minio_endpoint: str = "http://minio:9000"

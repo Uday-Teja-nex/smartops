@@ -1,0 +1,53 @@
+{
+  "elapsedSeconds": 1190.14,
+  "completed30Minutes": false,
+  "acceptancePassed": false,
+  "reason": "Run interrupted at 19.8 minutes; sustained throughput also dipped below target. Docker Desktop later reported manually paused.",
+  "sources": [
+    {
+      "id": "src-998150016d",
+      "medianFps": 2.9979008997696788,
+      "minFps": 1.2031804258696521,
+      "samplesBelow2Fps": 3,
+      "samples": 91,
+      "errorCounterStart": 15,
+      "errorCounterEnd": 15
+    },
+    {
+      "id": "src-58b3c52406",
+      "medianFps": 2.9979245913959547,
+      "minFps": 0.5547365144164091,
+      "samplesBelow2Fps": 6,
+      "samples": 93,
+      "errorCounterStart": 20,
+      "errorCounterEnd": 20
+    },
+    {
+      "id": "src-22abea8b8a",
+      "medianFps": 2.9980371982312843,
+      "minFps": 1.359353766994899,
+      "samplesBelow2Fps": 5,
+      "samples": 93,
+      "errorCounterStart": 15,
+      "errorCounterEnd": 15
+    }
+  ],
+  "memory": {
+    "smartops-stream-processor": {
+      "start": "539.4MiB / 3.821GiB",
+      "end": "477.3MiB / 3.821GiB"
+    },
+    "smartops-detector": {
+      "start": "390.9MiB / 3.821GiB",
+      "end": "226.9MiB / 3.821GiB"
+    },
+    "smartops-api": {
+      "start": "91.8MiB / 3.821GiB",
+      "end": "82.5MiB / 3.821GiB"
+    },
+    "smartops-minio": {
+      "start": "361.3MiB / 3.821GiB",
+      "end": "431.9MiB / 3.821GiB"
+    }
+  }
+}

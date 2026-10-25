@@ -1,6 +1,6 @@
 # SmartOps execution plan
 
-Updated 2026-10-25. The acceptance specification is GOAL_PROMPT.md. Earlier
+Updated 2026-10-26. The acceptance specification is GOAL_PROMPT.md. Earlier
 claims of feature completion were contradicted by the audit and are withdrawn.
 
 ## Phase 0 — audit
@@ -25,10 +25,12 @@ were not reproduced. These are recorded limitations, not completed fixes.
 ## Phase 2 — continuous streams
 
 - [x] MediaMTX and one looping MP4 publisher, real reconnecting RTSP adapter.
-- [ ] Continuous detection/tracking, polygon zones, schedules and all Tier 1 rules.
+- [x] Continuous detection/tracking, polygons, schedules and measured health rules implemented.
+- [ ] Validate all Tier 1 events on representative permitted footage.
 - [x] Incident-first persistence, bounded pre/post clips, snapshots and durable delivery.
 - [x] Timestamped sampled camera preview with matching real boxes and zone overlays.
-- [ ] Full-rate live playback with real detection/zone overlays.
+- [x] Full-rate WebRTC component and frozen-frame zone editor implemented.
+- [ ] Verify integrated playback, zone editing and annotated clips in the deployed browser.
 - [x] Footage shot list supplied; local engineering clip provenance recorded.
 - [ ] Obtain event footage with commercial-demo permission.
 - [ ] Gate: measured <=5-second alerts and 30-minute three-stream soak.
@@ -61,3 +63,7 @@ were not reproduced. These are recorded limitations, not completed fixes.
 
 Commit each phase; no push or PR. Work sequentially in verified slices. Do not
 mark the goal complete while any GOAL_PROMPT.md requirement lacks evidence.
+
+Latest soak: interrupted at 19.8 minutes, median ~3 FPS but intermittent dips
+below 2 FPS. Gate remains open. Independent durable delivery now removes
+incident/evidence HTTP bursts from the frame loop; rerun after Docker resumes.

@@ -1,6 +1,8 @@
 """Short-lived, timestamped observations. They are not historical analytics."""
 from datetime import UTC, datetime
 import json
+import re
+from urllib.parse import urlparse
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -47,6 +49,21 @@ def source_for(source_id, session, principal):
     if source is None or (principal.kind != 'service' and source.org_id != principal.org_id):
         raise HTTPException(status_code=404, detail='Source not found')
     return source
+
+
+@router.get('/{source_id}/playback')
+def get_playback(source_id: str, session: Session = Depends(get_db_session),
+                 principal: Principal = Depends(require_viewer)):
+    source = source_for(source_id, session, principal)
+    uri = urlparse(source.source_uri)
+    path = uri.path.strip('/')
+    settings = get_settings()
+    if (source.source_type != 'rtsp' or uri.hostname != settings.mediamtx_rtsp_host
+            or uri.scheme not in {'rtsp', 'rtsps'} or not re.fullmatch(r'[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*', path)):
+        raise HTTPException(status_code=409, detail='Live playback requires this source to be relayed through MediaMTX')
+    if not source.enabled or source.status == 'paused':
+        raise HTTPException(status_code=409, detail='Source is paused or disabled')
+    return {'whepUrl': f"{settings.mediamtx_webrtc_public_url.rstrip('/')}/{path}/whep"}
 
 
 @router.post('/{source_id}/observations')

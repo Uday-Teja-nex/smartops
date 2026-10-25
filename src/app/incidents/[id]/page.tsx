@@ -264,7 +264,8 @@ export default function IncidentDetailPage() {
               <span className="ml-auto text-[10px] uppercase tracking-wide text-slate-600">
                 {annotations.length > 0
                   ? `${detail.detections.length} detections overlayed`
-                  : "no detection overlay available"}
+                  : detail.evidenceItems.some((item) => item.kind === "clip" && item.meta.overlaysBurnedIn === true)
+                    ? "measured boxes recorded in clip" : "no detection overlay available"}
               </span>
             </h3>
             {clipUrl ? (
@@ -272,6 +273,7 @@ export default function IncidentDetailPage() {
                 src={clipUrl}
                 sourceLabel={source?.sourceUri}
                 annotations={annotations}
+                burnedInOverlays={detail.evidenceItems.find((item) => item.kind === "clip")?.meta.overlaysBurnedIn === true}
               />
             ) : (
               <div className="mt-3 rounded-xl border border-dashed border-[color:var(--glass-border)] p-8 text-center text-xs text-slate-500">

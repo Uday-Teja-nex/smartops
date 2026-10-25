@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from app.zone_config import validate_detection_config
 
 SourceType = Literal["file", "rtsp", "onvif", "webrtc"]
 SourceStatus = Literal["online", "offline", "paused", "failing", "processing"]
@@ -72,6 +74,7 @@ class SourceResponse(BaseModel):
 
 
 class SourceCreateRequest(BaseModel):
+    _validate_zones = field_validator('detectionConfig')(validate_detection_config)
     name: str = Field(min_length=1, max_length=120)
     buildingId: str
     floorId: str | None = None
@@ -89,6 +92,7 @@ class SourceCreateRequest(BaseModel):
 
 
 class SourceUpdateRequest(BaseModel):
+    _validate_zones = field_validator('detectionConfig')(validate_detection_config)
     name: str | None = None
     buildingId: str | None = None
     floorId: str | None = None

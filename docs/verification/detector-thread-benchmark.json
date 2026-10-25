@@ -1,0 +1,25 @@
+{
+  "method": "10 predictions per thread count on one real RTSP frame while three-stream workload remained active; comparative only",
+  "results": [
+    {
+      "threads": 1,
+      "meanMs": 230.54,
+      "maxMs": 291.98
+    },
+    {
+      "threads": 2,
+      "meanMs": 181.99,
+      "maxMs": 286.3
+    },
+    {
+      "threads": 4,
+      "meanMs": 299.62,
+      "maxMs": 383.17
+    },
+    {
+      "threads": 8,
+      "meanMs": 253.97,
+      "maxMs": 315.13
+    }
+  ]
+}

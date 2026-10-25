@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Camera,
   CircleAlert,
@@ -26,6 +27,7 @@ import { SOURCE_STATUS_COLORS, hexToRgba } from "@/lib/visuals";
 import { classNames, formatDateTime } from "@/lib/utils";
 import {
   Building,
+  DetectionConfig,
   SourceCreateInput,
   SourceRecord,
   SourceStatus,
@@ -47,8 +49,8 @@ const SOURCE_TYPE_OPTIONS: Array<{
   {
     value: "rtsp",
     label: "RTSP stream",
-    supported: false,
-    note: "Adapter pending — source can be registered but will stay offline.",
+    supported: true,
+    note: "Continuous detection with polygon rules. Relay through MediaMTX for browser playback.",
   },
   {
     value: "onvif",
@@ -73,6 +75,7 @@ const STATUS_LABELS: Record<SourceStatus, string> = {
 };
 
 type FormState = {
+  detectionConfig: DetectionConfig;
   name: string;
   buildingId: string;
   floorId: string;
@@ -92,6 +95,7 @@ type FormState = {
 };
 
 const emptyForm = (buildings: Building[]): FormState => ({
+  detectionConfig: {},
   name: "",
   buildingId: buildings[0]?.id ?? "",
   floorId: "",
@@ -111,6 +115,7 @@ const emptyForm = (buildings: Building[]): FormState => ({
 });
 
 const formFromSource = (source: SourceRecord): FormState => ({
+  detectionConfig: source.detectionConfig,
   name: source.name,
   buildingId: source.buildingId,
   floorId: source.floorId ?? "",
@@ -147,6 +152,7 @@ const formToInput = (form: FormState): SourceCreateInput => ({
     .filter(Boolean),
   positionNotes: form.positionNotes.trim() || null,
   detectionConfig: {
+    ...form.detectionConfig,
     windowSeconds: Number(form.windowSeconds) || 30,
     sampleFramesPerWindow: Number(form.sampleFramesPerWindow) || 3,
     minConfidence: Number(form.minConfidence) || 0.35,
@@ -460,6 +466,7 @@ export default function SourcesPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1.5">
+                        {canManage && source.sourceType === "rtsp" && <Link className="rounded-lg px-2 py-1 text-xs text-cyan-300" href={`/sources/${source.id}/zones`}>Zones</Link>}
                         {source.status === "paused" || !source.enabled ? (
                           <button
                             title="Resume"

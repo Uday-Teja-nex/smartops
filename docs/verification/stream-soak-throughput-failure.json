@@ -1,0 +1,1381 @@
+{
+  "startedAt": "2026-10-25T06:13:24.215217+00:00",
+  "requestedMinutes": 30.0,
+  "sourceIds": [
+    "src-998150016d",
+    "src-58b3c52406",
+    "src-22abea8b8a"
+  ],
+  "samples": [
+    {
+      "elapsedSeconds": 0.92,
+      "sources": [
+        {
+          "id": "src-998150016d",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:13:22.451594+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 210,
+            "pendingIncidents": 0,
+            "processedFrames": 23,
+            "processingFps": 1.5289618780865968,
+            "detectorLatencyMs": 663.7,
+            "processingLagMs": 711.9617669959553,
+            "processingErrors": 0,
+            "pendingEvidence": 1
+          },
+          "observationStatus": 200,
+          "sequence": 250,
+          "observationAgeSeconds": 1.290618
+        },
+        {
+          "id": "src-58b3c52406",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:13:22.248361+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 213,
+            "pendingIncidents": 1,
+            "processedFrames": 23,
+            "processingFps": 1.539615423377074,
+            "detectorLatencyMs": 698.8,
+            "processingLagMs": 796.1484340485185,
+            "processingErrors": 0,
+            "pendingEvidence": 2
+          },
+          "observationStatus": 200,
+          "sequence": 234,
+          "observationAgeSeconds": 1.515067
+        },
+        {
+          "id": "src-22abea8b8a",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:13:22.726247+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 220,
+            "pendingIncidents": 0,
+            "processedFrames": 24,
+            "processingFps": 1.5206938370674403,
+            "detectorLatencyMs": 639.3,
+            "processingLagMs": 731.5579499700107,
+            "processingErrors": 0,
+            "pendingEvidence": 4
+          },
+          "observationStatus": 200,
+          "sequence": 242,
+          "observationAgeSeconds": 1.008597
+        }
+      ],
+      "containers": [
+        {
+          "BlockIO": "25.1MB / 9.68MB",
+          "CPUPerc": "26.09%",
+          "Container": "0a97fb162384006d7a94105689ed7accdab8c5e20bf9c1ff495bfedc9276c03b",
+          "ID": "0a97fb162384",
+          "MemPerc": "13.55%",
+          "MemUsage": "530.1MiB / 3.821GiB",
+          "Name": "smartops-stream-processor",
+          "NetIO": "32.8MB / 45.7MB",
+          "PIDs": "115"
+        },
+        {
+          "BlockIO": "4.12MB / 1.75MB",
+          "CPUPerc": "21.19%",
+          "Container": "f3c63435ba40cb3055c0a9f817d29e00007ea1816fa440e488a96c2a83c61c5d",
+          "ID": "f3c63435ba40",
+          "MemPerc": "2.96%",
+          "MemUsage": "116MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher-3",
+          "NetIO": "607kB / 42.1MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "3.68MB / 1.75MB",
+          "CPUPerc": "21.81%",
+          "Container": "efb309ae933bc298854a081c1ea125f3bf6f85d353ef8c771ae1b99038474a9a",
+          "ID": "efb309ae933b",
+          "MemPerc": "2.94%",
+          "MemUsage": "114.9MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher-2",
+          "NetIO": "598kB / 42MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "6.03MB / 438kB",
+          "CPUPerc": "0.00%",
+          "Container": "1964982492d8314f72a6acd176a1723278d4bf28e51f8781752a4c11e7303712",
+          "ID": "1964982492d8",
+          "MemPerc": "1.26%",
+          "MemUsage": "49.11MiB / 3.821GiB",
+          "Name": "smartops-frontend",
+          "NetIO": "68.1kB / 683kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "43.5MB / 774kB",
+          "CPUPerc": "17.18%",
+          "Container": "f776e8a095565c88ab0c13d41b9c7614591eb98c5c4ce5c7a3b3050fbb080158",
+          "ID": "f776e8a09556",
+          "MemPerc": "2.44%",
+          "MemUsage": "95.61MiB / 3.821GiB",
+          "Name": "smartops-api",
+          "NetIO": "382MB / 590MB",
+          "PIDs": "8"
+        },
+        {
+          "BlockIO": "569kB / 25.6MB",
+          "CPUPerc": "13.76%",
+          "Container": "e3685cc68814cab2a870c4c3e6408aeca1c80436dd1cba75de8587096cfe9077",
+          "ID": "e3685cc68814",
+          "MemPerc": "0.37%",
+          "MemUsage": "14.58MiB / 3.821GiB",
+          "Name": "smartops-video-ingest",
+          "NetIO": "969kB / 493kB",
+          "PIDs": "20"
+        },
+        {
+          "BlockIO": "30.5MB / 3.26MB",
+          "CPUPerc": "22.74%",
+          "Container": "0906e212abfeab24b63a980d05c6ccc437b6b5d907d03b86f66d256acf8be5b0",
+          "ID": "0906e212abfe",
+          "MemPerc": "3.05%",
+          "MemUsage": "119.4MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher",
+          "NetIO": "1.64MB / 116MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "27.9MB / 2.54MB",
+          "CPUPerc": "5.75%",
+          "Container": "0b73d1b1038a4fcc283e59359bf622774bdd2d2179384b94ff1e28831c3c0f25",
+          "ID": "0b73d1b1038a",
+          "MemPerc": "0.66%",
+          "MemUsage": "25.85MiB / 3.821GiB",
+          "Name": "smartops-mediamtx",
+          "NetIO": "7.58GB / 3.59GB",
+          "PIDs": "20"
+        },
+        {
+          "BlockIO": "999kB / 125MB",
+          "CPUPerc": "0.00%",
+          "Container": "5083f45466ad9c2bcbd22833a016e0b42d3208018eeeed5084f20deceee4a940",
+          "ID": "5083f45466ad",
+          "MemPerc": "0.21%",
+          "MemUsage": "8.23MiB / 3.821GiB",
+          "Name": "smartops-worker",
+          "NetIO": "302kB / 2.96MB",
+          "PIDs": "39"
+        },
+        {
+          "BlockIO": "496MB / 4.96GB",
+          "CPUPerc": "4.45%",
+          "Container": "e331964d06e011ca76b3c4e718c6eed8075cdae6dbe86d6114f9f679f9a7d55d",
+          "ID": "e331964d06e0",
+          "MemPerc": "7.89%",
+          "MemUsage": "308.8MiB / 3.821GiB",
+          "Name": "smartops-minio",
+          "NetIO": "4.66GB / 22.5MB",
+          "PIDs": "26"
+        },
+        {
+          "BlockIO": "31.2MB / 57.4MB",
+          "CPUPerc": "0.19%",
+          "Container": "5d19b28f0a31821695ca4714983fbdb5c88b13c8d2de0f825dea452e10c9be28",
+          "ID": "5d19b28f0a31",
+          "MemPerc": "0.44%",
+          "MemUsage": "17.14MiB / 3.821GiB",
+          "Name": "smartops-orchestrator",
+          "NetIO": "1.38MB / 18.6kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "57.9MB / 503MB",
+          "CPUPerc": "4.53%",
+          "Container": "beb556ad91844abc11cfe1a9224ecef8f3270e2973a75a49931dc857b385fe8b",
+          "ID": "beb556ad9184",
+          "MemPerc": "1.59%",
+          "MemUsage": "62.22MiB / 3.821GiB",
+          "Name": "smartops-postgres",
+          "NetIO": "151MB / 167MB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "14.3MB / 2.27MB",
+          "CPUPerc": "1.03%",
+          "Container": "69823389f4c4d563de2d2537d0bd7a4740ded07b12c53ba6be2dede8ac4e325a",
+          "ID": "69823389f4c4",
+          "MemPerc": "0.16%",
+          "MemUsage": "6.152MiB / 3.821GiB",
+          "Name": "smartops-redis",
+          "NetIO": "436MB / 157MB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "221MB / 359MB",
+          "CPUPerc": "217.59%",
+          "Container": "67ed7df2d0f944d9a1911fc9267c43b57a81b44aefdcd8665009bbf570ffa4c6",
+          "ID": "67ed7df2d0f9",
+          "MemPerc": "4.18%",
+          "MemUsage": "163.6MiB / 3.821GiB",
+          "Name": "smartops-detector",
+          "NetIO": "3.96GB / 42.3MB",
+          "PIDs": "55"
+        }
+      ],
+      "statsExitCode": 0
+    },
+    {
+      "elapsedSeconds": 13.98,
+      "sources": [
+        {
+          "id": "src-998150016d",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:13:33.100102+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 370,
+            "pendingIncidents": 0,
+            "processedFrames": 39,
+            "processingFps": 1.6437349024828067,
+            "detectorLatencyMs": 586.1,
+            "processingLagMs": 615.9802289912477,
+            "processingErrors": 0,
+            "pendingEvidence": 10
+          },
+          "observationStatus": 200,
+          "sequence": 437,
+          "observationAgeSeconds": 0.729093
+        },
+        {
+          "id": "src-58b3c52406",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:13:37.946707+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 448,
+            "pendingIncidents": 0,
+            "processedFrames": 47,
+            "processingFps": 1.347352109094371,
+            "detectorLatencyMs": 583.0,
+            "processingLagMs": 636.3313189940527,
+            "processingErrors": 0,
+            "pendingEvidence": 2
+          },
+          "observationStatus": 200,
+          "sequence": 438,
+          "observationAgeSeconds": 0.990247
+        },
+        {
+          "id": "src-22abea8b8a",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:13:34.027342+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 389,
+            "pendingIncidents": 0,
+            "processedFrames": 42,
+            "processingFps": 1.5844110353153575,
+            "detectorLatencyMs": 675.7,
+            "processingLagMs": 740.3256219695322,
+            "processingErrors": 0,
+            "pendingEvidence": 3
+          },
+          "observationStatus": 200,
+          "sequence": 435,
+          "observationAgeSeconds": 1.240834
+        }
+      ],
+      "containers": [
+        {
+          "BlockIO": "26.6MB / 13.2MB",
+          "CPUPerc": "52.61%",
+          "Container": "0a97fb162384006d7a94105689ed7accdab8c5e20bf9c1ff495bfedc9276c03b",
+          "ID": "0a97fb162384",
+          "MemPerc": "14.47%",
+          "MemUsage": "566.3MiB / 3.821GiB",
+          "Name": "smartops-stream-processor",
+          "NetIO": "54MB / 75.3MB",
+          "PIDs": "120"
+        },
+        {
+          "BlockIO": "4.12MB / 2.51MB",
+          "CPUPerc": "15.87%",
+          "Container": "f3c63435ba40cb3055c0a9f817d29e00007ea1816fa440e488a96c2a83c61c5d",
+          "ID": "f3c63435ba40",
+          "MemPerc": "2.94%",
+          "MemUsage": "115MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher-3",
+          "NetIO": "684kB / 49.1MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "3.68MB / 2.51MB",
+          "CPUPerc": "17.15%",
+          "Container": "efb309ae933bc298854a081c1ea125f3bf6f85d353ef8c771ae1b99038474a9a",
+          "ID": "efb309ae933b",
+          "MemPerc": "2.93%",
+          "MemUsage": "114.6MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher-2",
+          "NetIO": "675kB / 48.9MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "6.03MB / 721kB",
+          "CPUPerc": "0.00%",
+          "Container": "1964982492d8314f72a6acd176a1723278d4bf28e51f8781752a4c11e7303712",
+          "ID": "1964982492d8",
+          "MemPerc": "1.25%",
+          "MemUsage": "49.01MiB / 3.821GiB",
+          "Name": "smartops-frontend",
+          "NetIO": "68.1kB / 683kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "43.5MB / 1.08MB",
+          "CPUPerc": "15.36%",
+          "Container": "f776e8a095565c88ab0c13d41b9c7614591eb98c5c4ce5c7a3b3050fbb080158",
+          "ID": "f776e8a09556",
+          "MemPerc": "2.42%",
+          "MemUsage": "94.75MiB / 3.821GiB",
+          "Name": "smartops-api",
+          "NetIO": "396MB / 611MB",
+          "PIDs": "7"
+        },
+        {
+          "BlockIO": "569kB / 25.6MB",
+          "CPUPerc": "0.00%",
+          "Container": "e3685cc68814cab2a870c4c3e6408aeca1c80436dd1cba75de8587096cfe9077",
+          "ID": "e3685cc68814",
+          "MemPerc": "0.37%",
+          "MemUsage": "14.5MiB / 3.821GiB",
+          "Name": "smartops-video-ingest",
+          "NetIO": "969kB / 493kB",
+          "PIDs": "20"
+        },
+        {
+          "BlockIO": "30.5MB / 4.24MB",
+          "CPUPerc": "17.45%",
+          "Container": "0906e212abfeab24b63a980d05c6ccc437b6b5d907d03b86f66d256acf8be5b0",
+          "ID": "0906e212abfe",
+          "MemPerc": "3.03%",
+          "MemUsage": "118.7MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher",
+          "NetIO": "1.74MB / 123MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "28.2MB / 2.54MB",
+          "CPUPerc": "5.28%",
+          "Container": "0b73d1b1038a4fcc283e59359bf622774bdd2d2179384b94ff1e28831c3c0f25",
+          "ID": "0b73d1b1038a",
+          "MemPerc": "0.65%",
+          "MemUsage": "25.41MiB / 3.821GiB",
+          "Name": "smartops-mediamtx",
+          "NetIO": "7.6GB / 3.61GB",
+          "PIDs": "21"
+        },
+        {
+          "BlockIO": "999kB / 125MB",
+          "CPUPerc": "0.00%",
+          "Container": "5083f45466ad9c2bcbd22833a016e0b42d3208018eeeed5084f20deceee4a940",
+          "ID": "5083f45466ad",
+          "MemPerc": "0.21%",
+          "MemUsage": "8.211MiB / 3.821GiB",
+          "Name": "smartops-worker",
+          "NetIO": "302kB / 2.96MB",
+          "PIDs": "39"
+        },
+        {
+          "BlockIO": "496MB / 4.97GB",
+          "CPUPerc": "0.87%",
+          "Container": "e331964d06e011ca76b3c4e718c6eed8075cdae6dbe86d6114f9f679f9a7d55d",
+          "ID": "e331964d06e0",
+          "MemPerc": "7.95%",
+          "MemUsage": "311MiB / 3.821GiB",
+          "Name": "smartops-minio",
+          "NetIO": "4.68GB / 22.6MB",
+          "PIDs": "26"
+        },
+        {
+          "BlockIO": "31.2MB / 57.4MB",
+          "CPUPerc": "0.16%",
+          "Container": "5d19b28f0a31821695ca4714983fbdb5c88b13c8d2de0f825dea452e10c9be28",
+          "ID": "5d19b28f0a31",
+          "MemPerc": "0.45%",
+          "MemUsage": "17.43MiB / 3.821GiB",
+          "Name": "smartops-orchestrator",
+          "NetIO": "1.38MB / 18.6kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "58.2MB / 504MB",
+          "CPUPerc": "3.37%",
+          "Container": "beb556ad91844abc11cfe1a9224ecef8f3270e2973a75a49931dc857b385fe8b",
+          "ID": "beb556ad9184",
+          "MemPerc": "1.59%",
+          "MemUsage": "62.4MiB / 3.821GiB",
+          "Name": "smartops-postgres",
+          "NetIO": "152MB / 168MB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "14.3MB / 2.28MB",
+          "CPUPerc": "0.86%",
+          "Container": "69823389f4c4d563de2d2537d0bd7a4740ded07b12c53ba6be2dede8ac4e325a",
+          "ID": "69823389f4c4",
+          "MemPerc": "0.17%",
+          "MemUsage": "6.578MiB / 3.821GiB",
+          "Name": "smartops-redis",
+          "NetIO": "449MB / 164MB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "221MB / 360MB",
+          "CPUPerc": "214.69%",
+          "Container": "67ed7df2d0f944d9a1911fc9267c43b57a81b44aefdcd8665009bbf570ffa4c6",
+          "ID": "67ed7df2d0f9",
+          "MemPerc": "4.18%",
+          "MemUsage": "163.5MiB / 3.821GiB",
+          "Name": "smartops-detector",
+          "NetIO": "3.96GB / 42.4MB",
+          "PIDs": "55"
+        }
+      ],
+      "statsExitCode": 0
+    },
+    {
+      "elapsedSeconds": 26.6,
+      "sources": [
+        {
+          "id": "src-998150016d",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:13:49.129776+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 611,
+            "pendingIncidents": 0,
+            "processedFrames": 64,
+            "processingFps": 1.6562397961476722,
+            "detectorLatencyMs": 590.0,
+            "processingLagMs": 632.6689830166288,
+            "processingErrors": 0,
+            "pendingEvidence": 4
+          },
+          "observationStatus": 200,
+          "sequence": 620,
+          "observationAgeSeconds": 1.20243
+        },
+        {
+          "id": "src-58b3c52406",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:13:48.835053+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 611,
+            "pendingIncidents": 0,
+            "processedFrames": 65,
+            "processingFps": 1.6312287607496345,
+            "detectorLatencyMs": 522.7,
+            "processingLagMs": 607.9502059728839,
+            "processingErrors": 0,
+            "pendingEvidence": 2
+          },
+          "observationStatus": 200,
+          "sequence": 622,
+          "observationAgeSeconds": 1.467437
+        },
+        {
+          "id": "src-22abea8b8a",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:13:49.974238+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 629,
+            "pendingIncidents": 0,
+            "processedFrames": 67,
+            "processingFps": 1.6678203378298542,
+            "detectorLatencyMs": 578.5,
+            "processingLagMs": 667.4837819882669,
+            "processingErrors": 0,
+            "pendingEvidence": 5
+          },
+          "observationStatus": 200,
+          "sequence": 629,
+          "observationAgeSeconds": 1.099926
+        }
+      ],
+      "containers": [
+        {
+          "BlockIO": "38.7MB / 15.2MB",
+          "CPUPerc": "62.74%",
+          "Container": "0a97fb162384006d7a94105689ed7accdab8c5e20bf9c1ff495bfedc9276c03b",
+          "ID": "0a97fb162384",
+          "MemPerc": "13.62%",
+          "MemUsage": "532.9MiB / 3.821GiB",
+          "Name": "smartops-stream-processor",
+          "NetIO": "73.5MB / 107MB",
+          "PIDs": "115"
+        },
+        {
+          "BlockIO": "4.12MB / 5.55MB",
+          "CPUPerc": "16.02%",
+          "Container": "f3c63435ba40cb3055c0a9f817d29e00007ea1816fa440e488a96c2a83c61c5d",
+          "ID": "f3c63435ba40",
+          "MemPerc": "2.86%",
+          "MemUsage": "112.1MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher-3",
+          "NetIO": "772kB / 55.2MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "3.68MB / 5.34MB",
+          "CPUPerc": "20.66%",
+          "Container": "efb309ae933bc298854a081c1ea125f3bf6f85d353ef8c771ae1b99038474a9a",
+          "ID": "efb309ae933b",
+          "MemPerc": "2.85%",
+          "MemUsage": "111.6MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher-2",
+          "NetIO": "739kB / 54.6MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "6.03MB / 4.67MB",
+          "CPUPerc": "0.00%",
+          "Container": "1964982492d8314f72a6acd176a1723278d4bf28e51f8781752a4c11e7303712",
+          "ID": "1964982492d8",
+          "MemPerc": "1.15%",
+          "MemUsage": "45.09MiB / 3.821GiB",
+          "Name": "smartops-frontend",
+          "NetIO": "68.1kB / 683kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "43.7MB / 2.47MB",
+          "CPUPerc": "19.32%",
+          "Container": "f776e8a095565c88ab0c13d41b9c7614591eb98c5c4ce5c7a3b3050fbb080158",
+          "ID": "f776e8a09556",
+          "MemPerc": "2.35%",
+          "MemUsage": "91.84MiB / 3.821GiB",
+          "Name": "smartops-api",
+          "NetIO": "410MB / 632MB",
+          "PIDs": "8"
+        },
+        {
+          "BlockIO": "569kB / 25.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "e3685cc68814cab2a870c4c3e6408aeca1c80436dd1cba75de8587096cfe9077",
+          "ID": "e3685cc68814",
+          "MemPerc": "0.37%",
+          "MemUsage": "14.5MiB / 3.821GiB",
+          "Name": "smartops-video-ingest",
+          "NetIO": "969kB / 493kB",
+          "PIDs": "20"
+        },
+        {
+          "BlockIO": "30.5MB / 12.4MB",
+          "CPUPerc": "22.41%",
+          "Container": "0906e212abfeab24b63a980d05c6ccc437b6b5d907d03b86f66d256acf8be5b0",
+          "ID": "0906e212abfe",
+          "MemPerc": "2.78%",
+          "MemUsage": "108.8MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher",
+          "NetIO": "1.84MB / 130MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "28.2MB / 2.58MB",
+          "CPUPerc": "6.23%",
+          "Container": "0b73d1b1038a4fcc283e59359bf622774bdd2d2179384b94ff1e28831c3c0f25",
+          "ID": "0b73d1b1038a",
+          "MemPerc": "0.67%",
+          "MemUsage": "26.1MiB / 3.821GiB",
+          "Name": "smartops-mediamtx",
+          "NetIO": "7.62GB / 3.63GB",
+          "PIDs": "22"
+        },
+        {
+          "BlockIO": "999kB / 125MB",
+          "CPUPerc": "0.00%",
+          "Container": "5083f45466ad9c2bcbd22833a016e0b42d3208018eeeed5084f20deceee4a940",
+          "ID": "5083f45466ad",
+          "MemPerc": "0.20%",
+          "MemUsage": "7.98MiB / 3.821GiB",
+          "Name": "smartops-worker",
+          "NetIO": "303kB / 2.96MB",
+          "PIDs": "39"
+        },
+        {
+          "BlockIO": "497MB / 4.99GB",
+          "CPUPerc": "2.44%",
+          "Container": "e331964d06e011ca76b3c4e718c6eed8075cdae6dbe86d6114f9f679f9a7d55d",
+          "ID": "e331964d06e0",
+          "MemPerc": "7.76%",
+          "MemUsage": "303.5MiB / 3.821GiB",
+          "Name": "smartops-minio",
+          "NetIO": "4.69GB / 22.7MB",
+          "PIDs": "26"
+        },
+        {
+          "BlockIO": "31.7MB / 57.4MB",
+          "CPUPerc": "0.18%",
+          "Container": "5d19b28f0a31821695ca4714983fbdb5c88b13c8d2de0f825dea452e10c9be28",
+          "ID": "5d19b28f0a31",
+          "MemPerc": "0.44%",
+          "MemUsage": "17.09MiB / 3.821GiB",
+          "Name": "smartops-orchestrator",
+          "NetIO": "1.38MB / 18.6kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "58.2MB / 507MB",
+          "CPUPerc": "3.50%",
+          "Container": "beb556ad91844abc11cfe1a9224ecef8f3270e2973a75a49931dc857b385fe8b",
+          "ID": "beb556ad9184",
+          "MemPerc": "1.45%",
+          "MemUsage": "56.92MiB / 3.821GiB",
+          "Name": "smartops-postgres",
+          "NetIO": "153MB / 169MB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "14.4MB / 2.37MB",
+          "CPUPerc": "1.28%",
+          "Container": "69823389f4c4d563de2d2537d0bd7a4740ded07b12c53ba6be2dede8ac4e325a",
+          "ID": "69823389f4c4",
+          "MemPerc": "0.14%",
+          "MemUsage": "5.285MiB / 3.821GiB",
+          "Name": "smartops-redis",
+          "NetIO": "462MB / 171MB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "337MB / 364MB",
+          "CPUPerc": "311.79%",
+          "Container": "67ed7df2d0f944d9a1911fc9267c43b57a81b44aefdcd8665009bbf570ffa4c6",
+          "ID": "67ed7df2d0f9",
+          "MemPerc": "8.23%",
+          "MemUsage": "322MiB / 3.821GiB",
+          "Name": "smartops-detector",
+          "NetIO": "3.97GB / 42.6MB",
+          "PIDs": "76"
+        }
+      ],
+      "statsExitCode": 0
+    },
+    {
+      "elapsedSeconds": 39.72,
+      "sources": [
+        {
+          "id": "src-998150016d",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:13:59.151768+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 761,
+            "pendingIncidents": 0,
+            "processedFrames": 79,
+            "processingFps": 1.7998755191583682,
+            "detectorLatencyMs": 522.9,
+            "processingLagMs": 599.9448620132171,
+            "processingErrors": 0,
+            "pendingEvidence": 4
+          },
+          "observationStatus": 200,
+          "sequence": 819,
+          "observationAgeSeconds": 0.946007
+        },
+        {
+          "id": "src-58b3c52406",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:13:59.612552+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 776,
+            "pendingIncidents": 0,
+            "processedFrames": 81,
+            "processingFps": 1.7279088461351935,
+            "detectorLatencyMs": 475.2,
+            "processingLagMs": 628.2706230413169,
+            "processingErrors": 0,
+            "pendingEvidence": 0
+          },
+          "observationStatus": 200,
+          "sequence": 827,
+          "observationAgeSeconds": 0.813636
+        },
+        {
+          "id": "src-22abea8b8a",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:14:00.427001+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 786,
+            "pendingIncidents": 0,
+            "processedFrames": 83,
+            "processingFps": 1.7589209252320717,
+            "detectorLatencyMs": 248.8,
+            "processingLagMs": 305.761824012734,
+            "processingErrors": 0,
+            "pendingEvidence": 0
+          },
+          "observationStatus": 200,
+          "sequence": 830,
+          "observationAgeSeconds": 0.600463
+        }
+      ],
+      "containers": [
+        {
+          "BlockIO": "39.8MB / 16.8MB",
+          "CPUPerc": "24.46%",
+          "Container": "0a97fb162384006d7a94105689ed7accdab8c5e20bf9c1ff495bfedc9276c03b",
+          "ID": "0a97fb162384",
+          "MemPerc": "13.77%",
+          "MemUsage": "539MiB / 3.821GiB",
+          "Name": "smartops-stream-processor",
+          "NetIO": "89.5MB / 132MB",
+          "PIDs": "115"
+        },
+        {
+          "BlockIO": "4.25MB / 5.55MB",
+          "CPUPerc": "17.72%",
+          "Container": "f3c63435ba40cb3055c0a9f817d29e00007ea1816fa440e488a96c2a83c61c5d",
+          "ID": "f3c63435ba40",
+          "MemPerc": "2.88%",
+          "MemUsage": "112.9MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher-3",
+          "NetIO": "847kB / 60.7MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "3.68MB / 5.54MB",
+          "CPUPerc": "19.02%",
+          "Container": "efb309ae933bc298854a081c1ea125f3bf6f85d353ef8c771ae1b99038474a9a",
+          "ID": "efb309ae933b",
+          "MemPerc": "2.86%",
+          "MemUsage": "112MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher-2",
+          "NetIO": "804kB / 60.4MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "6.03MB / 5.07MB",
+          "CPUPerc": "0.00%",
+          "Container": "1964982492d8314f72a6acd176a1723278d4bf28e51f8781752a4c11e7303712",
+          "ID": "1964982492d8",
+          "MemPerc": "1.14%",
+          "MemUsage": "44.72MiB / 3.821GiB",
+          "Name": "smartops-frontend",
+          "NetIO": "68.1kB / 683kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "44.3MB / 2.57MB",
+          "CPUPerc": "20.25%",
+          "Container": "f776e8a095565c88ab0c13d41b9c7614591eb98c5c4ce5c7a3b3050fbb080158",
+          "ID": "f776e8a09556",
+          "MemPerc": "2.37%",
+          "MemUsage": "92.66MiB / 3.821GiB",
+          "Name": "smartops-api",
+          "NetIO": "427MB / 656MB",
+          "PIDs": "8"
+        },
+        {
+          "BlockIO": "573kB / 25.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "e3685cc68814cab2a870c4c3e6408aeca1c80436dd1cba75de8587096cfe9077",
+          "ID": "e3685cc68814",
+          "MemPerc": "0.37%",
+          "MemUsage": "14.48MiB / 3.821GiB",
+          "Name": "smartops-video-ingest",
+          "NetIO": "976kB / 495kB",
+          "PIDs": "20"
+        },
+        {
+          "BlockIO": "30.5MB / 13.5MB",
+          "CPUPerc": "18.02%",
+          "Container": "0906e212abfeab24b63a980d05c6ccc437b6b5d907d03b86f66d256acf8be5b0",
+          "ID": "0906e212abfe",
+          "MemPerc": "2.76%",
+          "MemUsage": "107.8MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher",
+          "NetIO": "1.93MB / 136MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "28.2MB / 2.58MB",
+          "CPUPerc": "5.28%",
+          "Container": "0b73d1b1038a4fcc283e59359bf622774bdd2d2179384b94ff1e28831c3c0f25",
+          "ID": "0b73d1b1038a",
+          "MemPerc": "0.65%",
+          "MemUsage": "25.31MiB / 3.821GiB",
+          "Name": "smartops-mediamtx",
+          "NetIO": "7.64GB / 3.64GB",
+          "PIDs": "22"
+        },
+        {
+          "BlockIO": "999kB / 125MB",
+          "CPUPerc": "0.00%",
+          "Container": "5083f45466ad9c2bcbd22833a016e0b42d3208018eeeed5084f20deceee4a940",
+          "ID": "5083f45466ad",
+          "MemPerc": "0.20%",
+          "MemUsage": "7.965MiB / 3.821GiB",
+          "Name": "smartops-worker",
+          "NetIO": "303kB / 2.96MB",
+          "PIDs": "39"
+        },
+        {
+          "BlockIO": "498MB / 5.01GB",
+          "CPUPerc": "1.81%",
+          "Container": "e331964d06e011ca76b3c4e718c6eed8075cdae6dbe86d6114f9f679f9a7d55d",
+          "ID": "e331964d06e0",
+          "MemPerc": "8.04%",
+          "MemUsage": "314.5MiB / 3.821GiB",
+          "Name": "smartops-minio",
+          "NetIO": "4.71GB / 22.8MB",
+          "PIDs": "26"
+        },
+        {
+          "BlockIO": "31.7MB / 57.4MB",
+          "CPUPerc": "0.11%",
+          "Container": "5d19b28f0a31821695ca4714983fbdb5c88b13c8d2de0f825dea452e10c9be28",
+          "ID": "5d19b28f0a31",
+          "MemPerc": "0.46%",
+          "MemUsage": "17.89MiB / 3.821GiB",
+          "Name": "smartops-orchestrator",
+          "NetIO": "1.38MB / 18.6kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "58.6MB / 508MB",
+          "CPUPerc": "4.66%",
+          "Container": "beb556ad91844abc11cfe1a9224ecef8f3270e2973a75a49931dc857b385fe8b",
+          "ID": "beb556ad9184",
+          "MemPerc": "1.56%",
+          "MemUsage": "60.91MiB / 3.821GiB",
+          "Name": "smartops-postgres",
+          "NetIO": "154MB / 170MB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "14.7MB / 2.38MB",
+          "CPUPerc": "1.02%",
+          "Container": "69823389f4c4d563de2d2537d0bd7a4740ded07b12c53ba6be2dede8ac4e325a",
+          "ID": "69823389f4c4",
+          "MemPerc": "0.17%",
+          "MemUsage": "6.547MiB / 3.821GiB",
+          "Name": "smartops-redis",
+          "NetIO": "477MB / 179MB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "340MB / 364MB",
+          "CPUPerc": "216.16%",
+          "Container": "67ed7df2d0f944d9a1911fc9267c43b57a81b44aefdcd8665009bbf570ffa4c6",
+          "ID": "67ed7df2d0f9",
+          "MemPerc": "4.93%",
+          "MemUsage": "192.8MiB / 3.821GiB",
+          "Name": "smartops-detector",
+          "NetIO": "3.98GB / 42.7MB",
+          "PIDs": "55"
+        }
+      ],
+      "statsExitCode": 0
+    },
+    {
+      "elapsedSeconds": 52.28,
+      "sources": [
+        {
+          "id": "src-998150016d",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:14:15.769259+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 1009,
+            "pendingIncidents": 0,
+            "processedFrames": 106,
+            "processingFps": 1.2201997049489253,
+            "detectorLatencyMs": 712.2,
+            "processingLagMs": 754.9989169929177,
+            "processingErrors": 0,
+            "pendingEvidence": 6
+          },
+          "observationStatus": 200,
+          "sequence": 1009,
+          "observationAgeSeconds": 0.845827
+        },
+        {
+          "id": "src-58b3c52406",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:14:15.510036+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 1011,
+            "pendingIncidents": 0,
+            "processedFrames": 105,
+            "processingFps": 1.1547228929626325,
+            "detectorLatencyMs": 724.5,
+            "processingLagMs": 748.1011260533705,
+            "processingErrors": 0,
+            "pendingEvidence": 5
+          },
+          "observationStatus": 200,
+          "sequence": 1011,
+          "observationAgeSeconds": 1.104847
+        },
+        {
+          "id": "src-22abea8b8a",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:14:11.519298+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 952,
+            "pendingIncidents": 1,
+            "processedFrames": 101,
+            "processingFps": 1.387791812472691,
+            "detectorLatencyMs": 597.7,
+            "processingLagMs": 678.6107560037635,
+            "processingErrors": 0,
+            "pendingEvidence": 8
+          },
+          "observationStatus": 200,
+          "sequence": 1008,
+          "observationAgeSeconds": 1.362018
+        }
+      ],
+      "containers": [
+        {
+          "BlockIO": "51.1MB / 21.3MB",
+          "CPUPerc": "137.00%",
+          "Container": "0a97fb162384006d7a94105689ed7accdab8c5e20bf9c1ff495bfedc9276c03b",
+          "ID": "0a97fb162384",
+          "MemPerc": "13.85%",
+          "MemUsage": "542.1MiB / 3.821GiB",
+          "Name": "smartops-stream-processor",
+          "NetIO": "112MB / 170MB",
+          "PIDs": "115"
+        },
+        {
+          "BlockIO": "4.25MB / 12.7MB",
+          "CPUPerc": "24.05%",
+          "Container": "f3c63435ba40cb3055c0a9f817d29e00007ea1816fa440e488a96c2a83c61c5d",
+          "ID": "f3c63435ba40",
+          "MemPerc": "2.72%",
+          "MemUsage": "106.3MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher-3",
+          "NetIO": "928kB / 67.5MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "3.68MB / 12.6MB",
+          "CPUPerc": "25.33%",
+          "Container": "efb309ae933bc298854a081c1ea125f3bf6f85d353ef8c771ae1b99038474a9a",
+          "ID": "efb309ae933b",
+          "MemPerc": "2.70%",
+          "MemUsage": "105.6MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher-2",
+          "NetIO": "886kB / 67.2MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "6.03MB / 9.15MB",
+          "CPUPerc": "0.00%",
+          "Container": "1964982492d8314f72a6acd176a1723278d4bf28e51f8781752a4c11e7303712",
+          "ID": "1964982492d8",
+          "MemPerc": "1.03%",
+          "MemUsage": "40.26MiB / 3.821GiB",
+          "Name": "smartops-frontend",
+          "NetIO": "68.1kB / 683kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "45.2MB / 3.46MB",
+          "CPUPerc": "29.25%",
+          "Container": "f776e8a095565c88ab0c13d41b9c7614591eb98c5c4ce5c7a3b3050fbb080158",
+          "ID": "f776e8a09556",
+          "MemPerc": "2.34%",
+          "MemUsage": "91.4MiB / 3.821GiB",
+          "Name": "smartops-api",
+          "NetIO": "440MB / 674MB",
+          "PIDs": "9"
+        },
+        {
+          "BlockIO": "573kB / 25.8MB",
+          "CPUPerc": "0.00%",
+          "Container": "e3685cc68814cab2a870c4c3e6408aeca1c80436dd1cba75de8587096cfe9077",
+          "ID": "e3685cc68814",
+          "MemPerc": "0.37%",
+          "MemUsage": "14.35MiB / 3.821GiB",
+          "Name": "smartops-video-ingest",
+          "NetIO": "976kB / 495kB",
+          "PIDs": "20"
+        },
+        {
+          "BlockIO": "30.5MB / 21.9MB",
+          "CPUPerc": "25.39%",
+          "Container": "0906e212abfeab24b63a980d05c6ccc437b6b5d907d03b86f66d256acf8be5b0",
+          "ID": "0906e212abfe",
+          "MemPerc": "2.50%",
+          "MemUsage": "97.8MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher",
+          "NetIO": "2.03MB / 143MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "28.2MB / 2.58MB",
+          "CPUPerc": "7.51%",
+          "Container": "0b73d1b1038a4fcc283e59359bf622774bdd2d2179384b94ff1e28831c3c0f25",
+          "ID": "0b73d1b1038a",
+          "MemPerc": "0.67%",
+          "MemUsage": "26.12MiB / 3.821GiB",
+          "Name": "smartops-mediamtx",
+          "NetIO": "7.66GB / 3.66GB",
+          "PIDs": "22"
+        },
+        {
+          "BlockIO": "999kB / 126MB",
+          "CPUPerc": "0.00%",
+          "Container": "5083f45466ad9c2bcbd22833a016e0b42d3208018eeeed5084f20deceee4a940",
+          "ID": "5083f45466ad",
+          "MemPerc": "0.20%",
+          "MemUsage": "7.668MiB / 3.821GiB",
+          "Name": "smartops-worker",
+          "NetIO": "303kB / 2.96MB",
+          "PIDs": "39"
+        },
+        {
+          "BlockIO": "502MB / 5.03GB",
+          "CPUPerc": "5.07%",
+          "Container": "e331964d06e011ca76b3c4e718c6eed8075cdae6dbe86d6114f9f679f9a7d55d",
+          "ID": "e331964d06e0",
+          "MemPerc": "8.40%",
+          "MemUsage": "328.5MiB / 3.821GiB",
+          "Name": "smartops-minio",
+          "NetIO": "4.73GB / 22.9MB",
+          "PIDs": "26"
+        },
+        {
+          "BlockIO": "31.7MB / 57.4MB",
+          "CPUPerc": "0.15%",
+          "Container": "5d19b28f0a31821695ca4714983fbdb5c88b13c8d2de0f825dea452e10c9be28",
+          "ID": "5d19b28f0a31",
+          "MemPerc": "0.41%",
+          "MemUsage": "16.07MiB / 3.821GiB",
+          "Name": "smartops-orchestrator",
+          "NetIO": "1.38MB / 18.6kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "59.2MB / 510MB",
+          "CPUPerc": "6.28%",
+          "Container": "beb556ad91844abc11cfe1a9224ecef8f3270e2973a75a49931dc857b385fe8b",
+          "ID": "beb556ad9184",
+          "MemPerc": "1.51%",
+          "MemUsage": "59.08MiB / 3.821GiB",
+          "Name": "smartops-postgres",
+          "NetIO": "155MB / 171MB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "14.9MB / 2.47MB",
+          "CPUPerc": "5.07%",
+          "Container": "69823389f4c4d563de2d2537d0bd7a4740ded07b12c53ba6be2dede8ac4e325a",
+          "ID": "69823389f4c4",
+          "MemPerc": "0.15%",
+          "MemUsage": "6.039MiB / 3.821GiB",
+          "Name": "smartops-redis",
+          "NetIO": "488MB / 184MB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "428MB / 371MB",
+          "CPUPerc": "219.35%",
+          "Container": "67ed7df2d0f944d9a1911fc9267c43b57a81b44aefdcd8665009bbf570ffa4c6",
+          "ID": "67ed7df2d0f9",
+          "MemPerc": "6.28%",
+          "MemUsage": "245.9MiB / 3.821GiB",
+          "Name": "smartops-detector",
+          "NetIO": "3.98GB / 42.8MB",
+          "PIDs": "56"
+        }
+      ],
+      "statsExitCode": 0
+    },
+    {
+      "elapsedSeconds": 64.99,
+      "sources": [
+        {
+          "id": "src-998150016d",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:14:26.078599+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 1164,
+            "pendingIncidents": 0,
+            "processedFrames": 123,
+            "processingFps": 1.775615722838107,
+            "detectorLatencyMs": 514.1,
+            "processingLagMs": 567.0798249775544,
+            "processingErrors": 0,
+            "pendingEvidence": 4
+          },
+          "observationStatus": 200,
+          "sequence": 1202,
+          "observationAgeSeconds": 0.739915
+        },
+        {
+          "id": "src-58b3c52406",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:14:25.729296+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 1165,
+            "pendingIncidents": 0,
+            "processedFrames": 122,
+            "processingFps": 1.7966142789562267,
+            "detectorLatencyMs": 605.3,
+            "processingLagMs": 662.931427010335,
+            "processingErrors": 0,
+            "pendingEvidence": 8
+          },
+          "observationStatus": 200,
+          "sequence": 1199,
+          "observationAgeSeconds": 1.303492
+        },
+        {
+          "id": "src-22abea8b8a",
+          "status": "processing",
+          "health": {
+            "lastSeen": "2026-10-25T06:14:26.849337+00:00",
+            "lastError": null,
+            "latencyMs": null,
+            "adapter": "continuous-rtsp",
+            "reportedStatus": "processing",
+            "frameSequence": 1182,
+            "pendingIncidents": 0,
+            "processedFrames": 125,
+            "processingFps": 1.7551375671623395,
+            "detectorLatencyMs": 210.8,
+            "processingLagMs": 460.04912798525766,
+            "processingErrors": 0,
+            "pendingEvidence": 10
+          },
+          "observationStatus": 200,
+          "sequence": 1203,
+          "observationAgeSeconds": 1.097528
+        }
+      ],
+      "containers": [
+        {
+          "BlockIO": "53.3MB / 25.5MB",
+          "CPUPerc": "254.29%",
+          "Container": "0a97fb162384006d7a94105689ed7accdab8c5e20bf9c1ff495bfedc9276c03b",
+          "ID": "0a97fb162384",
+          "MemPerc": "14.96%",
+          "MemUsage": "585.3MiB / 3.821GiB",
+          "Name": "smartops-stream-processor",
+          "NetIO": "132MB / 208MB",
+          "PIDs": "120"
+        },
+        {
+          "BlockIO": "4.25MB / 15MB",
+          "CPUPerc": "22.25%",
+          "Container": "f3c63435ba40cb3055c0a9f817d29e00007ea1816fa440e488a96c2a83c61c5d",
+          "ID": "f3c63435ba40",
+          "MemPerc": "2.66%",
+          "MemUsage": "104.2MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher-3",
+          "NetIO": "999kB / 74.3MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "3.68MB / 15MB",
+          "CPUPerc": "23.14%",
+          "Container": "efb309ae933bc298854a081c1ea125f3bf6f85d353ef8c771ae1b99038474a9a",
+          "ID": "efb309ae933b",
+          "MemPerc": "2.64%",
+          "MemUsage": "103.4MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher-2",
+          "NetIO": "968kB / 74MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "6.03MB / 10.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "1964982492d8314f72a6acd176a1723278d4bf28e51f8781752a4c11e7303712",
+          "ID": "1964982492d8",
+          "MemPerc": "1.01%",
+          "MemUsage": "39.46MiB / 3.821GiB",
+          "Name": "smartops-frontend",
+          "NetIO": "68.1kB / 683kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "45.2MB / 3.5MB",
+          "CPUPerc": "28.57%",
+          "Container": "f776e8a095565c88ab0c13d41b9c7614591eb98c5c4ce5c7a3b3050fbb080158",
+          "ID": "f776e8a09556",
+          "MemPerc": "2.33%",
+          "MemUsage": "91.15MiB / 3.821GiB",
+          "Name": "smartops-api",
+          "NetIO": "455MB / 696MB",
+          "PIDs": "9"
+        },
+        {
+          "BlockIO": "573kB / 25.8MB",
+          "CPUPerc": "0.00%",
+          "Container": "e3685cc68814cab2a870c4c3e6408aeca1c80436dd1cba75de8587096cfe9077",
+          "ID": "e3685cc68814",
+          "MemPerc": "0.37%",
+          "MemUsage": "14.31MiB / 3.821GiB",
+          "Name": "smartops-video-ingest",
+          "NetIO": "982kB / 497kB",
+          "PIDs": "20"
+        },
+        {
+          "BlockIO": "30.5MB / 25MB",
+          "CPUPerc": "26.53%",
+          "Container": "0906e212abfeab24b63a980d05c6ccc437b6b5d907d03b86f66d256acf8be5b0",
+          "ID": "0906e212abfe",
+          "MemPerc": "2.45%",
+          "MemUsage": "95.71MiB / 3.821GiB",
+          "Name": "smartops-stream-publisher",
+          "NetIO": "2.12MB / 151MB",
+          "PIDs": "29"
+        },
+        {
+          "BlockIO": "29.9MB / 2.58MB",
+          "CPUPerc": "7.65%",
+          "Container": "0b73d1b1038a4fcc283e59359bf622774bdd2d2179384b94ff1e28831c3c0f25",
+          "ID": "0b73d1b1038a",
+          "MemPerc": "0.70%",
+          "MemUsage": "27.4MiB / 3.821GiB",
+          "Name": "smartops-mediamtx",
+          "NetIO": "7.68GB / 3.69GB",
+          "PIDs": "22"
+        },
+        {
+          "BlockIO": "999kB / 126MB",
+          "CPUPerc": "0.00%",
+          "Container": "5083f45466ad9c2bcbd22833a016e0b42d3208018eeeed5084f20deceee4a940",
+          "ID": "5083f45466ad",
+          "MemPerc": "0.19%",
+          "MemUsage": "7.617MiB / 3.821GiB",
+          "Name": "smartops-worker",
+          "NetIO": "303kB / 2.96MB",
+          "PIDs": "39"
+        },
+        {
+          "BlockIO": "502MB / 5.06GB",
+          "CPUPerc": "16.58%",
+          "Container": "e331964d06e011ca76b3c4e718c6eed8075cdae6dbe86d6114f9f679f9a7d55d",
+          "ID": "e331964d06e0",
+          "MemPerc": "8.37%",
+          "MemUsage": "327.5MiB / 3.821GiB",
+          "Name": "smartops-minio",
+          "NetIO": "4.76GB / 23.1MB",
+          "PIDs": "26"
+        },
+        {
+          "BlockIO": "31.8MB / 57.4MB",
+          "CPUPerc": "0.15%",
+          "Container": "5d19b28f0a31821695ca4714983fbdb5c88b13c8d2de0f825dea452e10c9be28",
+          "ID": "5d19b28f0a31",
+          "MemPerc": "0.43%",
+          "MemUsage": "16.84MiB / 3.821GiB",
+          "Name": "smartops-orchestrator",
+          "NetIO": "1.38MB / 18.6kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "59.3MB / 512MB",
+          "CPUPerc": "6.50%",
+          "Container": "beb556ad91844abc11cfe1a9224ecef8f3270e2973a75a49931dc857b385fe8b",
+          "ID": "beb556ad9184",
+          "MemPerc": "1.51%",
+          "MemUsage": "59.21MiB / 3.821GiB",
+          "Name": "smartops-postgres",
+          "NetIO": "156MB / 172MB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "14.9MB / 2.48MB",
+          "CPUPerc": "1.10%",
+          "Container": "69823389f4c4d563de2d2537d0bd7a4740ded07b12c53ba6be2dede8ac4e325a",
+          "ID": "69823389f4c4",
+          "MemPerc": "0.15%",
+          "MemUsage": "5.969MiB / 3.821GiB",
+          "Name": "smartops-redis",
+          "NetIO": "501MB / 192MB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "429MB / 374MB",
+          "CPUPerc": "314.02%",
+          "Container": "67ed7df2d0f944d9a1911fc9267c43b57a81b44aefdcd8665009bbf570ffa4c6",
+          "ID": "67ed7df2d0f9",
+          "MemPerc": "11.92%",
+          "MemUsage": "466.6MiB / 3.821GiB",
+          "Name": "smartops-detector",
+          "NetIO": "3.99GB / 43MB",
+          "PIDs": "57"
+        }
+      ],
+      "statsExitCode": 0
+    }
+  ],
+  "purpose": "Capacity test: same supplied clip on three independent RTSP transports",
+  "elapsedSeconds": 67.64
+}

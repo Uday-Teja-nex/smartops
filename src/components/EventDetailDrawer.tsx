@@ -210,6 +210,7 @@ export const EventDetailDrawer = ({
               src={clipUrl}
               sourceLabel={camera?.sourceUri}
               annotations={annotations}
+              burnedInOverlays={detail?.evidenceItems.find((item) => item.kind === "clip")?.meta.overlaysBurnedIn === true}
             />
           ) : (
             <div className="mt-3 grid gap-3 sm:grid-cols-2">

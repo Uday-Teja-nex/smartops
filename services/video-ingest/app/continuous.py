@@ -23,6 +23,9 @@ from app.tracking import Tracker
 from app.ring import FrameRing
 from app.stream_evidence import upload_evidence
 from app.outbox import Outbox
+from app.frame_health import FrameHealth
+from app.delivery import IncidentDelivery
+from app.overlays import annotate
 
 
 def incident_payload(source, event, captured_at):
@@ -35,7 +38,7 @@ def incident_payload(source, event, captured_at):
         'startTime': datetime.fromtimestamp(captured_at, UTC).isoformat(),
         'shortSummary': f"{event['type'].replace('_', ' ').capitalize()}: {event['count']} tracked object(s) in {event['zoneId']} for {event['durationSeconds']:.1f}s",
         'detailedNarrative': [], 'recommendedActions': [],
-        'reviewNotes': ['AI review pending; enrichment is not yet connected.'],
+        'reviewNotes': ['AI review unavailable: enrichment is not configured.'],
         'evidence': {'thumbnailUrl': '', 'clipUrl': '', 'restricted': True},
         'modelProvider': 'rule-engine', 'modelVersion': 'zone-rules-v1',
         'detectionSummary': event,
@@ -57,19 +60,31 @@ def run(source, client, stop, *, detector_url, fps=3):
     engine = RuleEngine(load_rules(source))
     tracker = Tracker(fps=fps)
     reader = StreamReader(source['sourceUri']).start()
-    pending = Outbox(os.getenv('SMARTOPS_OUTBOX_PATH', '/data/incidents.db'))
+    outbox_path = os.getenv('SMARTOPS_OUTBOX_PATH', '/data/incidents.db')
+    pending = Outbox(outbox_path)
     pending.recover_evidence()
+    delivery = IncidentDelivery(outbox_path, source['id']).start()
     ring = FrameRing()
     evidence_waiting = []
     evidence_running = []
     evidence_pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix='evidence')
     previous_sequence = 0
-    last_health = 0
+    last_health = time.monotonic() - 5
+    processed_frames = 0
+    last_processed_frames = 0
+    detector_ms = None
+    processing_lag_ms = None
+    errors = 0
+    frame_health = FrameHealth()
+    reported_issues = []
     try:
         while not stop.is_set():
+            if not delivery.thread.is_alive():
+                raise RuntimeError('Incident delivery stopped unexpectedly')
             tick = time.monotonic()
             frame = reader.latest()
             fresh = frame is not None and tick - frame.monotonic_at < 1.5
+            quality = frame_health.update(tick, frame.image if fresh else None)
             try:
                 for future, payload in list(evidence_running):
                     if not future.done():
@@ -90,11 +105,7 @@ def run(source, client, stop, *, detector_url, fps=3):
                         evidence_waiting.remove(job)
                 # Retries use the same incident ID. A full buffer pauses detection
                 # rather than silently dropping rule events during API outages.
-                if pending:
-                    client.post('/v1/incidents', json=pending[0]).raise_for_status()
-                    log('rule_incident_persisted', sourceId=source['id'], incidentId=pending[0]['id'])
-                    pending.popleft()
-                if tick - last_health >= 5:
+                if tick - last_health >= 5 or quality['issues'] != reported_issues:
                     current = client.get(f"/v1/sources/{source['id']}")
                     current.raise_for_status()
                     updated = current.json()
@@ -112,10 +123,20 @@ def run(source, client, stop, *, detector_url, fps=3):
                         stop.wait(1 / fps)
                         continue
                     client.post(f"/v1/sources/{source['id']}/health", json={
-                        'status': 'processing' if fresh else 'offline',
-                        'adapter': 'continuous-rtsp', 'lastError': None if fresh else reader.last_error,
-                        'details': {'frameSequence': reader.sequence, 'pendingIncidents': len(pending)},
+                        'status': ('offline' if 'camera_offline' in quality['issues'] else
+                                   'failing' if quality['issues'] else 'processing' if fresh else 'offline'),
+                        'adapter': 'continuous-rtsp',
+                        'lastError': ', '.join(quality['issues']) if quality['issues'] else None if fresh else reader.last_error,
+                        'details': {'frameSequence': reader.sequence, 'pendingIncidents': len(pending),
+                                    'processedFrames': processed_frames,
+                                    'processingFps': (processed_frames - last_processed_frames) / max(.001, tick - last_health),
+                                    'detectorLatencyMs': detector_ms, 'processingLagMs': processing_lag_ms,
+                                    'processingErrors': errors,
+                                    'pendingEvidence': len(evidence_waiting) + len(evidence_running),
+                                    'warmingUp': not fresh and not quality['issues'], **quality},
                     }).raise_for_status()
+                    reported_issues = quality['issues']
+                    last_processed_frames = processed_frames
                     last_health = tick
                 if (source['enabled'] and source['status'] != 'paused'
                         and fresh and frame.sequence != previous_sequence and len(pending) < 100):
@@ -123,11 +144,10 @@ def run(source, client, stop, *, detector_url, fps=3):
                     image = frame.image
                     if image.shape[1] > 640:
                         image = cv2.resize(image, (640, round(image.shape[0] * 640 / image.shape[1])))
-                    ok, encoded = cv2.imencode('.jpg', image)
+                    ok, encoded = cv2.imencode('.jpg', image, [cv2.IMWRITE_JPEG_QUALITY, 80])
                     if not ok:
                         raise RuntimeError('Frame encoding failed')
                     jpeg = encoded.tobytes()
-                    ring.append(frame.captured_at, jpeg)
                     for job in list(evidence_waiting):
                         payload, triggered_at, snapshot, boxes = job
                         if frame.captured_at >= triggered_at + 5 and not pending and len(evidence_running) < 2:
@@ -141,23 +161,29 @@ def run(source, client, stop, *, detector_url, fps=3):
                                     'imageBase64': base64.b64encode(encoded).decode('ascii')}],
                     })
                     response.raise_for_status()
+                    detector_ms = response.json().get('inferenceMs')
+                    processing_lag_ms = (time.monotonic() - frame.monotonic_at) * 1000
                     # Discard slow detector output instead of treating it as live.
                     if time.monotonic() - frame.monotonic_at < 1.5:
+                        processed_frames += 1
+                        annotated = annotate(image, response.json()['detections'])
+                        ok, evidence_encoded = cv2.imencode('.jpg', annotated, [cv2.IMWRITE_JPEG_QUALITY, 80])
+                        if not ok:
+                            raise RuntimeError('Evidence annotation encoding failed')
+                        evidence_jpeg = evidence_encoded.tobytes()
+                        ring.append(frame.captured_at, evidence_jpeg)
                         observations = tracker.update(response.json()['detections'], frame.monotonic_at)
                         for event in engine.update(frame.monotonic_at, observations, wall_time=frame.captured_at):
                             payload = incident_payload(source, event, frame.captured_at)
                             if len(evidence_waiting) + len(evidence_running) < 20:
                                 pending.track_evidence(payload)
-                                evidence_waiting.append((payload, frame.captured_at, jpeg, response.json()['detections']))
+                                evidence_waiting.append((payload, frame.captured_at, evidence_jpeg, response.json()['detections']))
                             else:
                                 payload['reviewNotes'].append('Evidence unavailable: evidence queue capacity reached')
                             pending.append(payload)
                             log('rule_triggered', sourceId=source['id'], incidentId=payload['id'], rule=event)
-                        # Persist immediately, before the next frame or any AI work.
-                        while pending:
-                            client.post('/v1/incidents', json=pending[0]).raise_for_status()
-                            log('rule_incident_persisted', sourceId=source['id'], incidentId=pending[0]['id'])
-                            pending.popleft()
+                        # Durable delivery runs concurrently; evidence waits until
+                        # initial incident persistence has drained the outbox.
                         client.post(f"/v1/sources/{source['id']}/observations", json={
                             'sequence': frame.sequence,
                             'capturedAt': datetime.fromtimestamp(frame.captured_at, UTC).isoformat(),
@@ -167,9 +193,11 @@ def run(source, client, stop, *, detector_url, fps=3):
                             'previewJpeg': base64.b64encode(jpeg).decode('ascii'),
                         }).raise_for_status()
             except (httpx.HTTPError, RuntimeError) as exc:
+                errors += 1
                 log('continuous_processing_error', level='error', sourceId=source['id'], error=type(exc).__name__)
             stop.wait(max(0, 1 / fps - (time.monotonic() - tick)))
     finally:
+        delivery.close()
         reader.close()
         evidence_pool.shutdown(wait=True, cancel_futures=True)
         for future, payload in evidence_running:
@@ -198,7 +226,10 @@ def main():
         source = response.json()
         if source['sourceType'] != 'rtsp' or not source['enabled'] or source['status'] == 'paused':
             raise RuntimeError('Continuous processor requires an enabled RTSP source')
-        run(source, client, stop, detector_url=os.getenv('SMARTOPS_DETECTOR_BASE_URL', 'http://detector:8200'))
+        fps = int(os.getenv('SMARTOPS_STREAM_FPS', '3'))
+        if not 2 <= fps <= 5:
+            raise ValueError('SMARTOPS_STREAM_FPS must be between 2 and 5')
+        run(source, client, stop, detector_url=os.getenv('SMARTOPS_DETECTOR_BASE_URL', 'http://detector:8200'), fps=fps)
 
 
 if __name__ == '__main__':

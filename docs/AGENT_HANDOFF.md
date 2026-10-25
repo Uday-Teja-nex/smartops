@@ -1,4 +1,4 @@
-# SmartOps handoff — 2026-10-25
+# SmartOps handoff — 2026-10-26
 
 Goal: implement all of GOAL_PROMPT.md. This is not demo-ready.
 Branch: codex/smartops-live-demo. No push or PR authorized.
@@ -42,35 +42,66 @@ and frontend tests need normal temp access on this Windows sandbox. API
 on_event and LangGraph deserialization deprecation warnings remain.
 Real service check confirms missing-frame review creates no incident.
 
+## Phase 2 progress and current verification
+
+Commit 5ecacd3 introduced continuous RTSP rules, evidence and sampled previews.
+A bounded supervisor now discovers enabled RTSP sources with per-source
+processes and durable journals. Three independent transports of the supplied
+clip ran through real detection/tracking. This is a capacity test, not three
+independently validated event scenes. Health rules measure missing frames,
+low luminance, uniform images and unchanged images; the latter two explicitly
+state possible causes rather than asserting deliberate tampering. Health
+incidents now publish SSE updates after persistence.
+
+The tuned soak stopped at 1190.14 seconds (19.8 minutes); it did NOT pass.
+Median processing was about 3 FPS per stream, with 3/6/5 sampled intervals
+below 2 FPS. Error counters did not increase during the run. Memory varied;
+MinIO grew from 361 to 432 MiB, so a complete steady-state assessment remains
+required. Full evidence and assessment are under docs/verification/stream-soak*.
+Docker Desktop subsequently reported manually paused. The user has been
+asked asynchronously to unpause it for runtime checks; keep developing the
+independent parts without repeating that question.
+
+Measured thread tuning retained detector resolution at 640, using two CPU
+threads and serialized predictor initialization. Lower resolution changed
+object counts and was not selected. Incident delivery now runs independently
+of frame sampling to avoid stalls during bursts of evidence updates. Durable
+acknowledgments cannot delete a newer pending update. These latest delivery
+changes require another runtime soak after Docker resumes.
+
+Direct MediaMTX WebRTC playback was verified in Edge at 960x544; capture-to-
+display latency was not established (browser metadata omitted captureTime).
+The integrated LiveVideo component, matched-frame mode and frozen-frame zone
+editor are implemented and locally built, but their browser verification is
+pending deployment. Playback currently supports managed MediaMTX RTSP paths;
+external camera relay setup and media authorization are still pending.
+Zone validation rejects invalid geometry, unknown rules and invalid schedules.
+Source edits preserve configured zones. New evidence frames burn in their
+actual detector boxes; decoding/browser verification of this latest path is
+pending deployment. Old clips correctly retain their original metadata.
+
+Local checks on 2026-10-26: API 33, stream 27, detector 1, frontend 8 tests
+passed. Frontend lint, typecheck and production build pass, including the new
+/sources/[id]/zones route. CI now includes stream and detector tests; no remote
+CI claim is made because no changes have been pushed.
+
 ## Remaining work
 
-Phase 2 is in progress. MediaMTX and a single continuous RTSP processor now
-run real YOLO/ByteTrack, polygon count/dwell, schedules, unattended bags and
-blocked-exit rules. Rule incidents persist before any AI work. SQLite delivery
-and evidence journals survive restart; missing post-event footage times out.
-Real clips encode from a bounded ring and upload to MinIO. Evidence decoding
-verified a 9.70-second / 30-frame clip. Stream recovery measured 8.36 seconds.
-The engineering full-frame restricted zone is deliberately a wiring test, not
-an actual security violation. Remove its history before client demos.
+Complete Phase 2 runtime verification, 30-minute three-stream soak, <=5-second
+visible-event latency checks, and actual Tier 1 positive/negative footage
+validation. Retire the old file-window pipeline once file publishing/source
+management is unified. Native Ollama GPU inference, asynchronous enrichment,
+provider/backend switches, tenant isolation, auth hardening, notifications,
+reports, phone onboarding and repeated full demo E2E remain required.
+SSE currently accepts long-lived tokens in URLs. MediaMTX ports remain
+loopback-only. Do not treat this build as production-ready or client-demo-ready.
 
-A sampled camera preview at /cameras has actual matching detections, zones and
-anonymous track IDs. It explicitly does not claim full-rate live video. Five
-live API samples measured 0.40–0.49 seconds age (live-observations.json).
-API 24 and stream 18 tests pass; frontend lint/typecheck/production build pass.
-Full-rate WebRTC, multi-source supervision, health classification and the
-three-stream soak are not yet verified. The existing file window pipeline
-still runs and needs retirement after stream source management is complete.
-Native Ollama GPU inference and enrichment remain unverified.
-
-Tenant isolation, auth hardening, zone editing, real notifications/reports,
-phone onboarding, async enrichment, 3-stream
-soak and full repeated demo E2E are still pending. SSE currently accepts a
-long-lived token in its URL; do not publish raw browser/network logs.
-
-The user must eventually provide event footage or approve licensed footage,
-Telegram credentials/chat ID, and optional prospect branding. Ask these as
-one batch when needed. Never change .wslconfig without the user's approval.
+Footage shot list is in docs/FOOTAGE_SHOT_LIST.md. The existing clip is only
+used for local engineering; commercial-demo rights are unverified. A batch
+request for permitted event footage, Telegram credentials/chat ID and optional
+branding was sent earlier; do not repeatedly ask. Never change .wslconfig
+without the user's approval.
 
 GOAL_PROMPT.md and SPI Material Tracking Handbook.pdf are user-owned untracked
-files. Do not include them in commits. Keep the goal active until every
-required acceptance gate is satisfied.
+files. Do not include them in commits. Keep working until the acceptance gates
+are met; a completed increment is not a reason to stop the goal.

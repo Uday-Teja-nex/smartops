@@ -34,7 +34,7 @@ def upload_evidence(source_id, incident_id, frames, snapshot, detections):
             response.raise_for_status()
             return response.json()['id']
 
-        snapshot_id = save('snapshot', snapshot, 'image/jpeg', {'detections': detections})
+        snapshot_id = save('snapshot', snapshot, 'image/jpeg', {'detections': detections, 'overlaysBurnedIn': True})
         if len(frames) < 2:
             raise RuntimeError('Insufficient recorded frames for an evidence clip')
         gaps = [b[0] - a[0] for a, b in zip(frames, frames[1:])]
@@ -56,7 +56,7 @@ def upload_evidence(source_id, incident_id, frames, snapshot, detections):
                             '-threads', '2', str(root / 'clip.mp4')], check=True, timeout=30,
                            capture_output=True)
             clip_id = save('clip', (root / 'clip.mp4').read_bytes(), 'video/mp4',
-                 {'captureStart': frames[0][0], 'captureEnd': frames[-1][0], 'sampledFrames': len(frames)},
+                 {'captureStart': frames[0][0], 'captureEnd': frames[-1][0], 'sampledFrames': len(frames), 'overlaysBurnedIn': True},
                  frames[-1][0] - frames[0][0])
             return {'thumbnailUrl': f'/v1/evidence/{snapshot_id}/url',
                     'clipUrl': f'/v1/evidence/{clip_id}/url', 'restricted': True}

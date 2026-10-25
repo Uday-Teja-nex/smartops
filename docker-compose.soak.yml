@@ -1,0 +1,17 @@
+# Engineering-only: three independent transports of the same supplied clip.
+# This is a capacity test, not three distinct event validation scenes.
+services:
+  stream-publisher-2:
+    extends:
+      file: docker-compose.yml
+      service: stream-publisher
+    container_name: smartops-stream-publisher-2
+    environment:
+      SMARTOPS_PUBLISH_URL: rtsp://mediamtx:8554/soak-2
+  stream-publisher-3:
+    extends:
+      file: docker-compose.yml
+      service: stream-publisher
+    container_name: smartops-stream-publisher-3
+    environment:
+      SMARTOPS_PUBLISH_URL: rtsp://mediamtx:8554/soak-3

@@ -50,5 +50,10 @@ class Outbox:
         with self.db:
             self.db.execute('DELETE FROM pending WHERE rowid=(SELECT rowid FROM pending ORDER BY rowid LIMIT 1)')
 
+    def acknowledge(self, payload):
+        with self.db:
+            self.db.execute('DELETE FROM pending WHERE id=? AND payload=?',
+                            (payload['id'], json.dumps(payload)))
+
     def close(self):
         self.db.close()

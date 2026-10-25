@@ -41,6 +41,16 @@ export class ApiError extends Error {
   }
 }
 
+export const describeApiDetail = (detail: unknown): string => {
+  if (typeof detail === "string") return detail;
+  if (!Array.isArray(detail)) return "Request could not be validated";
+  return detail.slice(0, 5).map((error: { loc?: unknown[]; msg?: unknown }) => {
+    const location = Array.isArray(error?.loc) ? error.loc.filter((part) => part !== "body").join(".") : "";
+    const message = typeof error?.msg === "string" ? error.msg : "Invalid value";
+    return location ? `${location}: ${message}` : message;
+  }).join("; ");
+};
+
 const request = async <T,>(path: string, init?: RequestInit): Promise<T> => {
   const token = getStoredToken();
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
@@ -56,8 +66,8 @@ const request = async <T,>(path: string, init?: RequestInit): Promise<T> => {
   if (!response.ok) {
     let detail = `API request failed: ${response.status}`;
     try {
-      const body = (await response.json()) as { detail?: string };
-      if (body.detail) detail = `${detail} — ${body.detail}`;
+      const body = (await response.json()) as { detail?: unknown };
+      if (body.detail) detail = `${detail} — ${describeApiDetail(body.detail)}`;
     } catch {
       // Non-JSON error body; keep the status-only message.
     }
@@ -81,6 +91,9 @@ export const login = (email: string, password: string) =>
   });
 
 export const fetchMe = () => request<UserRecord>("/v1/auth/me", { cache: "no-store" });
+
+export const fetchSourcePlayback = (sourceId: string) =>
+  request<{ whepUrl: string }>(`/v1/sources/${encodeURIComponent(sourceId)}/playback`, { cache: "no-store" });
 
 export const fetchUsers = () => request<UserRecord[]>("/v1/users", { cache: "no-store" });
 

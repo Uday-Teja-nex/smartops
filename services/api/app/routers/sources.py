@@ -18,7 +18,7 @@ from app.schemas import (
     SourceResponse,
     SourceUpdateRequest,
 )
-from app.serializers import serialize_source
+from app.serializers import serialize_incident, serialize_source
 
 router = APIRouter(prefix="/v1", tags=["sources"], dependencies=[Depends(require_viewer)])
 settings = get_settings()
@@ -249,69 +249,53 @@ def disable_source(
     return serialize_source(_set_lifecycle(session, source, enabled=False, status="offline"))
 
 
+HEALTH_DESCRIPTIONS = {
+    "camera_offline": "No fresh frames are available",
+    "camera_low_light": "Sustained low image luminance",
+    "camera_obscured": "Possible covered lens or uniform view; inspect the camera",
+    "camera_frozen": "Possible frozen video or static scene; frames remain nearly unchanged",
+}
+
+
 def _maybe_create_source_health_incident(
     session: Session, source: SourceModel, payload: SourceHealthReport, previous_status: str
-) -> None:
-    """Rule-based System Health incident when a source starts failing.
-
-    This is explicitly NOT model-driven: it is a deterministic rule on
-    adapter health reports, and is labeled as such via modelProvider.
-    """
-    if payload.status != "failing" or previous_status == "failing":
-        return
-
-    open_health_incident = session.scalars(
-        select(IncidentModel).where(
+) -> list[IncidentModel]:
+    if payload.status not in {"failing", "offline"} or payload.details.get('warmingUp'):
+        return []
+    reported = payload.details.get("issues", [])
+    kinds = [kind for kind in HEALTH_DESCRIPTIONS if kind in reported]
+    if not kinds:
+        kinds = ["camera_offline"]
+    previous_issues = (source.health or {}).get("issues", [])
+    incidents = []
+    for kind in kinds:
+        if previous_status == payload.status and kind in previous_issues:
+            continue
+        existing = session.scalars(select(IncidentModel).where(
             IncidentModel.source_id == source.id,
-            IncidentModel.category == "System Health",
+            IncidentModel.event_type == kind,
             IncidentModel.status.in_(("active", "acknowledged", "assigned", "in_progress")),
+        )).first()
+        if existing is not None:
+            continue
+        now = datetime.now(UTC)
+        incident = IncidentModel(
+            id=new_id("inc"), org_id=source.org_id, category="System Health",
+            subcategory=kind, event_type=kind, severity="high" if kind == "camera_offline" else "medium",
+            confidence=1.0, status="active", building_id=source.building_id,
+            floor=source.floor_label, zone=source.zone_label, source_id=source.id,
+            start_time=now, sla_due_at=now + timedelta(minutes=120),
+            short_summary=f"{source.name}: {HEALTH_DESCRIPTIONS[kind]}",
+            detailed_narrative=[], recommended_actions=[],
+            review_notes=["Measured source-health rule; image quality does not establish tampering or its cause."],
+            evidence_thumbnail_url="", evidence_clip_url="", evidence_restricted=True,
+            model_provider="rule-engine", model_version="source-health-v2",
+            detection_summary={"adapter": payload.adapter, "error": payload.lastError, **payload.details},
+            created_at=now, updated_at=now,
         )
-    ).first()
-    if open_health_incident is not None:
-        return
-
-    now = datetime.now(UTC)
-    session.add(
-        IncidentModel(
-            id=new_id("inc"),
-            org_id=source.org_id,
-            category="System Health",
-            subcategory="camera_offline",
-            event_type="camera_offline",
-            severity="high",
-            confidence=1.0,
-            status="active",
-            building_id=source.building_id,
-            floor=source.floor_label,
-            zone=source.zone_label,
-            source_id=source.id,
-            candidate_id=None,
-            start_time=now,
-            end_time=None,
-            sla_due_at=now + timedelta(minutes=120),
-            short_summary=f"Video source '{source.name}' is failing health checks",
-            detailed_narrative=[
-                "The ingestion adapter reported a failing health probe.",
-                f"Adapter: {payload.adapter or 'unknown'}.",
-                f"Error: {payload.lastError or 'no error message provided'}.",
-            ],
-            recommended_actions=[
-                "Check source power, storage, and network.",
-                "Verify the source URI and credentials.",
-                "Escalate to facilities IT if unresolved.",
-            ],
-            review_notes=["Created by rule-based source health monitoring (no model involved)."],
-            evidence_thumbnail_url="/evidence-placeholder.svg",
-            evidence_clip_url="/restricted",
-            evidence_restricted=True,
-            assigned_to=None,
-            model_provider="rule-engine",
-            model_version="source-health-v1",
-            detection_summary={},
-            created_at=now,
-            updated_at=now,
-        )
-    )
+        session.add(incident)
+        incidents.append(incident)
+    return incidents
 
 
 @router.post("/sources/{source_id}/health", response_model=SourceResponse)
@@ -325,11 +309,12 @@ def report_source_health(
     source = _get_source_or_404(source_id, session)
     now = datetime.now(UTC)
     previous_status = source.status
+    health_incidents = []
     # A paused/disabled source keeps its lifecycle status; health details are
     # still recorded so the UI can show the last probe result.
     if source.enabled and source.status != "paused":
         source.status = payload.status
-        _maybe_create_source_health_incident(session, source, payload, previous_status)
+        health_incidents = _maybe_create_source_health_incident(session, source, payload, previous_status)
     source.health = {
         "lastSeen": now.isoformat(),
         "lastError": payload.lastError,
@@ -343,6 +328,8 @@ def report_source_health(
     session.refresh(source)
     response = serialize_source(source)
     publish_event("source", response.model_dump(mode="json"))
+    for incident in health_incidents:
+        publish_event("incident", serialize_incident(incident).model_dump(mode="json"))
     return response
 
 

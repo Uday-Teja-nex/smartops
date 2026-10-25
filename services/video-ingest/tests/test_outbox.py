@@ -25,6 +25,7 @@ def test_interrupted_evidence_is_reported_after_restart(tmp_path):
     box.track_evidence({'id': 'inc-completed', 'reviewNotes': []})
     box.finish_evidence({'id': 'inc-completed', 'reviewNotes': [], 'evidence': {'clipUrl': '/clip'}})
     box.close()
+
     box = Outbox(path)
     box.recover_evidence()
     delivered = []
@@ -36,5 +37,17 @@ def test_interrupted_evidence_is_reported_after_restart(tmp_path):
     assert interrupted['reviewNotes'] == ['Evidence unavailable: processor restarted before evidence completed']
     assert next(p for p in delivered if p['id'] == 'inc-completed')['evidence']['clipUrl'] == '/clip'
     box.recover_evidence()
+    assert not box
+    box.close()
+
+
+def test_acknowledging_old_delivery_does_not_drop_a_newer_update(tmp_path):
+    box = Outbox(tmp_path / 'concurrent.db')
+    box.append({'id': 'one', 'version': 1})
+    sent = box[0]
+    box.append({'id': 'one', 'version': 2})
+    box.acknowledge(sent)
+    assert box[0]['version'] == 2
+    box.acknowledge(box[0])
     assert not box
     box.close()

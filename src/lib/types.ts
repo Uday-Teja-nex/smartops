@@ -151,8 +151,19 @@ export type SourceHealth = {
   [key: string]: unknown;
 };
 
+export type ZoneRuleConfig = {
+  type: string;
+  threshold?: number;
+  durationSeconds?: number;
+  radius?: number;
+  movementTolerance?: number;
+  timezone?: string;
+  allowedHours?: Array<{ days: number[]; start: string; end: string }>;
+};
+export type DetectionZone = { id: string; polygon: [number, number][]; rules: ZoneRuleConfig[] };
+
 export type DetectionConfig = {
-  zones?: Array<{ id: string; polygon: [number, number][]; rules: Array<Record<string, unknown>> }>;
+  zones?: DetectionZone[];
   windowSeconds?: number;
   sampleFramesPerWindow?: number;
   minConfidence?: number;

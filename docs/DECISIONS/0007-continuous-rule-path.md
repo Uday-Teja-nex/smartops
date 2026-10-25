@@ -12,12 +12,16 @@ retaining only the latest frame. Detection samples at 3 fps and discards
 results older than 1.5 seconds. ByteTrack (Supervision 0.25.1) runs separately
 per object class, preventing person/bag identity crossover. Rule observations
 use normalized bounding-box bottom centers. Tracking and dwell reset across
-observation gaps; frozen/low-light/tamper classifiers are still pending.
+observation gaps. Persistent low-light, uniform-image and unchanged-frame
+measurements produce explicitly qualified image-health alerts; they do not
+establish tampering or distinguish a static scene from a frozen camera.
 
 Zone rules emit measured count/dwell metadata. Incidents are posted immediately
 to the existing idempotent API and SSE path, before any model request. AI and
-evidence readiness remain explicit. This first slice is one configured source
-per process. SQLite incident retries and an evidence completion journal survive restarts.
+evidence readiness remain explicit. A bounded supervisor discovers enabled
+RTSP sources (optional allowlist) and owns one isolated process and journal
+per source, defaulting to three workers. Disabled/paused workers terminate
+gracefully; crashes back off before restart. SQLite incident retries and an evidence completion journal survive restarts.
 Dynamic source/config updates, a bounded pre/post JPEG ring, unattended-object
 and schedule rules are implemented. Evidence runs off the detection loop;
 missing footage is reported explicitly. Timestamped detections and matching
@@ -33,3 +37,9 @@ References: [MediaMTX Docker setup](https://github.com/bluenviron/mediamtx/blob/
 [on-demand publisher example](https://github.com/bluenviron/mediamtx/blob/v1.21.2/docs/2-features/14-on-demand-publishing.md),
 [OpenCV capture properties](https://docs.opencv.org/4.x/d4/d15/group__videoio__flags__base.html).
 ByteTrack's pinned package source/docstrings were inspected locally before use.
+
+The initial three-stream check processed only 1.2–1.8 FPS per source and failed
+the throughput target. A real-frame thread benchmark favored two PyTorch CPU
+threads over the default eight under load. Inference now serializes shared
+predictor initialization and applies the configured thread budget. The full
+soak must be rerun after deployment; no acceptance claim is made yet.

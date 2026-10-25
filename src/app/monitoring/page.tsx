@@ -222,6 +222,14 @@ export default function MonitoringPage() {
                         {source.status}
                       </span>
                     </div>
+                    {typeof source.health?.processingFps === "number" && <dl className="mt-3 grid grid-cols-3 gap-2 text-xs text-slate-300">
+                      <div><dt className="text-slate-500">Processed FPS</dt><dd>{source.health.processingFps.toFixed(1)}</dd></div>
+                      <div><dt className="text-slate-500">Detector</dt><dd>{typeof source.health.detectorLatencyMs === "number" ? `${Math.round(source.health.detectorLatencyMs)} ms` : "Unavailable"}</dd></div>
+                      <div><dt className="text-slate-500">Frame lag</dt><dd>{typeof source.health.processingLagMs === "number" ? `${Math.round(source.health.processingLagMs)} ms` : "Unavailable"}</dd></div>
+                      <div><dt className="text-slate-500">Incident queue</dt><dd>{String(source.health.pendingIncidents ?? "Unavailable")}</dd></div>
+                      <div><dt className="text-slate-500">Evidence queue</dt><dd>{String(source.health.pendingEvidence ?? "Unavailable")}</dd></div>
+                      <div><dt className="text-slate-500">Errors this run</dt><dd>{String(source.health.processingErrors ?? "Unavailable")}</dd></div>
+                    </dl>}
                     {source.health?.lastError ? (
                       <p className="mt-2 truncate rounded-lg bg-rose-500/10 px-2 py-1 text-[11px] text-rose-300">
                         {String(source.health.lastError)}
