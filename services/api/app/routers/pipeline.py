@@ -7,7 +7,7 @@ from redis import asyncio as aioredis
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.auth import require_viewer
+from app.auth import Principal, require_viewer
 from app.config import get_settings
 from app.db import engine
 from app.events import EVENTS_CHANNEL
@@ -64,7 +64,7 @@ def _snapshot_payload() -> str:
 
 
 @router.get("/incidents/stream")
-async def stream_events() -> StreamingResponse:
+async def stream_events(principal: Principal = Depends(require_viewer)) -> StreamingResponse:
     """SSE stream: one initial `snapshot`, then granular Redis pub/sub events.
 
     Event types:
@@ -91,6 +91,9 @@ async def stream_events() -> StreamingResponse:
                 try:
                     body = json.loads(message["data"])
                     kind = body.get("kind", "incident")
+                    if (kind == "observation" and principal.kind != "service"
+                            and body.get("data", {}).get("orgId") != principal.org_id):
+                        continue
                     data = json.dumps(body.get("data", {}))
                 except (json.JSONDecodeError, TypeError):
                     continue

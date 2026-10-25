@@ -152,11 +152,23 @@ export type SourceHealth = {
 };
 
 export type DetectionConfig = {
+  zones?: Array<{ id: string; polygon: [number, number][]; rules: Array<Record<string, unknown>> }>;
   windowSeconds?: number;
   sampleFramesPerWindow?: number;
   minConfidence?: number;
   detectors?: string[];
   [key: string]: unknown;
+};
+
+export type LiveObservation = {
+  sourceId: string;
+  sequence: number;
+  capturedAt: string;
+  width: number;
+  height: number;
+  previewJpeg: string | null;
+  detections: Array<{ label: string; confidence: number; bbox: { x: number; y: number; w: number; h: number } }>;
+  tracks: Array<{ track_id: number; label: string; x: number; y: number; confidence: number }>;
 };
 
 export type SourceRecord = {

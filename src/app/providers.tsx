@@ -3,10 +3,11 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/app/auth";
 import { fetchBootstrap, fetchSources, getApiBaseUrl, patchIncidentAction } from "@/lib/api";
-import { BackendStatus, Building, EventRecord, RuntimeSummary, SourceRecord, TimeRange } from "@/lib/types";
+import { BackendStatus, Building, EventRecord, LiveObservation, RuntimeSummary, SourceRecord, TimeRange } from "@/lib/types";
 
 export type SmartOpsContextValue = {
   events: EventRecord[];
+  observations: Record<string, LiveObservation>;
   buildings: Building[];
   sources: SourceRecord[];
   refreshSources: () => Promise<void>;
@@ -35,6 +36,7 @@ export const SmartOpsProvider = ({ children }: { children: React.ReactNode }) =>
 
 const SessionProvider = ({ children, token }: { children: React.ReactNode; token: string | null }) => {
   const [events, setEvents] = useState<EventRecord[]>([]);
+  const [observations, setObservations] = useState<Record<string, LiveObservation>>({});
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [sources, setSources] = useState<SourceRecord[]>([]);
   const [runtime, setRuntime] = useState<RuntimeSummary | null>(null);
@@ -76,8 +78,19 @@ const SessionProvider = ({ children, token }: { children: React.ReactNode; token
             const incident = JSON.parse(event.data) as EventRecord;
             if (!active) return;
             setEvents((prev) => prev.some((item) => item.id === incident.id)
-              ? prev.map((item) => item.id === incident.id ? incident : item) : [incident, ...prev]);
+              ? prev.map((item) => item.id === incident.id ? incident : item) : [incident, ...prev].slice(0, 200));
           } catch { setBackendStatus("offline"); }
+        });
+        stream.addEventListener("observation", (event) => {
+          try {
+            const observation = JSON.parse(event.data) as LiveObservation;
+            if (!active) return;
+            setObservations((previous) => ({
+              ...Object.fromEntries(Object.entries(previous).filter(([, item]) =>
+                Date.now() - Date.parse(item.capturedAt) < 10000).slice(-63)),
+              [observation.sourceId]: observation,
+            }));
+          } catch { /* A malformed observation must not replace a real frame. */ }
         });
         stream.addEventListener("source", (event) => {
           try {
@@ -125,10 +138,10 @@ const SessionProvider = ({ children, token }: { children: React.ReactNode; token
   const resolveEvent = useCallback((id: string) => act(id, "resolve"), [act]);
   const markFalsePositive = useCallback((id: string) => act(id, "false-positive"), [act]);
 
-  const value = useMemo(() => ({ events, buildings, sources, refreshSources, runtime,
+  const value = useMemo(() => ({ events, observations, buildings, sources, refreshSources, runtime,
     backendStatus, actionError, selectedBuildingId, setSelectedBuildingId, timeRange, setTimeRange,
     searchQuery, setSearchQuery, acknowledgeEvent, assignEvent, resolveEvent, markFalsePositive }),
-  [events, buildings, sources, refreshSources, runtime, backendStatus, actionError,
+  [events, observations, buildings, sources, refreshSources, runtime, backendStatus, actionError,
     selectedBuildingId, timeRange, searchQuery, acknowledgeEvent, assignEvent, resolveEvent, markFalsePositive]);
   return <SmartOpsContext.Provider value={value}>{children}</SmartOpsContext.Provider>;
 };

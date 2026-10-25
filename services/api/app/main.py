@@ -14,6 +14,7 @@ from app.routers import (
     detections,
     evidence,
     incidents,
+    live,
     org,
     pipeline,
     sources,
@@ -39,6 +40,7 @@ app.include_router(auth.users_router)
 app.include_router(bootstrap.router)
 app.include_router(topology.router)
 app.include_router(sources.router)
+app.include_router(live.router)
 # Static stream path must precede /incidents/{incident_id}.
 app.include_router(pipeline.router)
 app.include_router(incidents.router)

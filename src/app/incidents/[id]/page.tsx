@@ -50,7 +50,9 @@ const slaCountdown = (slaDueAt: string | null | undefined, status: string) => {
 export default function IncidentDetailPage() {
   const params = useParams<{ id: string }>();
   const incidentId = params.id;
-  const { sources } = useSmartOps();
+  const { sources, events } = useSmartOps();
+  const liveIncident = events.find((event) => event.id === incidentId);
+  const evidenceRevision = JSON.stringify([liveIncident?.evidence, liveIncident?.reviewNotes]);
   const { hasRole, user } = useAuth();
   const canAct = hasRole("operator");
 
@@ -88,7 +90,7 @@ export default function IncidentDetailPage() {
     // State updates in load occur after the network request settles.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
-  }, [load]);
+  }, [load, evidenceRevision]);
 
   const annotations = useMemo(() => {
     if (!detail) return [];

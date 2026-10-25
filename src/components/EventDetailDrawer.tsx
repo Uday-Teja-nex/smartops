@@ -56,6 +56,7 @@ export const EventDetailDrawer = ({
   }, [open]);
 
   const eventId = event?.id;
+  const evidenceRevision = JSON.stringify([event?.evidence, event?.reviewNotes]);
 
   // Only show evidence attached to this incident.
   useEffect(() => {
@@ -90,7 +91,7 @@ export const EventDetailDrawer = ({
     return () => {
       active = false;
     };
-  }, [open, eventId]);
+  }, [open, eventId, evidenceRevision]);
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {

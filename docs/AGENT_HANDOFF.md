@@ -1,4 +1,4 @@
-# SmartOps handoff — 2026-10-24
+# SmartOps handoff — 2026-10-25
 
 Goal: implement all of GOAL_PROMPT.md. This is not demo-ready.
 Branch: codex/smartops-live-demo. No push or PR authorized.
@@ -44,16 +44,26 @@ Real service check confirms missing-frame review creates no incident.
 
 ## Remaining work
 
-All Phase 2–5 tasks in PLAN.md and GOAL_PROMPT.md remain. Start with the
-footage shot list, MediaMTX loop publishers and continuous tracker/rules.
-Existing worker processing is still candidate-window/model-first. RTSP,
-ONVIF and WebRTC ingestion are not implemented. Single-person windows are
-gated out. Native Ollama is configured at host.docker.internal:11434, but
-service reachability/GPU inference must be established and benchmarked.
-Docker Ollama is optional on port 11435, and currently stopped.
+Phase 2 is in progress. MediaMTX and a single continuous RTSP processor now
+run real YOLO/ByteTrack, polygon count/dwell, schedules, unattended bags and
+blocked-exit rules. Rule incidents persist before any AI work. SQLite delivery
+and evidence journals survive restart; missing post-event footage times out.
+Real clips encode from a bounded ring and upload to MinIO. Evidence decoding
+verified a 9.70-second / 30-frame clip. Stream recovery measured 8.36 seconds.
+The engineering full-frame restricted zone is deliberately a wiring test, not
+an actual security violation. Remove its history before client demos.
+
+A sampled camera preview at /cameras has actual matching detections, zones and
+anonymous track IDs. It explicitly does not claim full-rate live video. Five
+live API samples measured 0.40–0.49 seconds age (live-observations.json).
+API 24 and stream 18 tests pass; frontend lint/typecheck/production build pass.
+Full-rate WebRTC, multi-source supervision, health classification and the
+three-stream soak are not yet verified. The existing file window pipeline
+still runs and needs retirement after stream source management is complete.
+Native Ollama GPU inference and enrichment remain unverified.
 
 Tenant isolation, auth hardening, zone editing, real notifications/reports,
-phone onboarding, async enrichment, incident-first persistence, 3-stream
+phone onboarding, async enrichment, 3-stream
 soak and full repeated demo E2E are still pending. SSE currently accepts a
 long-lived token in its URL; do not publish raw browser/network logs.
 

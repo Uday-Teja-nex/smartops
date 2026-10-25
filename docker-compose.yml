@@ -1,4 +1,59 @@
 services:
+  mediamtx:
+    image: bluenviron/mediamtx:1.21.2
+    container_name: smartops-mediamtx
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml:ro
+    ports:
+      - "127.0.0.1:8554:8554"
+      - "127.0.0.1:1935:1935"
+      - "127.0.0.1:8888:8888"
+      - "127.0.0.1:8889:8889"
+      - "127.0.0.1:8189:8189/udp"
+      - "127.0.0.1:9997:9997"
+    restart: unless-stopped
+
+  stream-publisher:
+    profiles: [demo-streams]
+    build:
+      context: ./services/stream-publisher
+    container_name: smartops-stream-publisher
+    environment:
+      SMARTOPS_LOOP_FILE: ${SMARTOPS_LOOP_FILE:-/media/first test video.mp4}
+      SMARTOPS_PUBLISH_URL: rtsp://mediamtx:8554/demo-lobby
+    volumes:
+      - ./sample-data/input:/media:ro
+    depends_on:
+      - mediamtx
+    restart: unless-stopped
+
+  stream-processor:
+    profiles: [demo-streams]
+    build:
+      context: ./services/video-ingest
+      dockerfile: Dockerfile.processor
+    container_name: smartops-stream-processor
+    volumes:
+      - processor_data:/data
+    environment:
+      SMARTOPS_STREAM_SOURCE_ID: ${SMARTOPS_STREAM_SOURCE_ID:-src-stream-lobby}
+      SMARTOPS_MINIO_ENDPOINT: ${SMARTOPS_MINIO_ENDPOINT:-http://minio:9000}
+      SMARTOPS_MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-smartops}
+      SMARTOPS_MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-smartopsminio}
+      SMARTOPS_MINIO_BUCKET: ${SMARTOPS_MINIO_BUCKET:-smartops-evidence}
+      SMARTOPS_API_BASE_URL: http://api:8000
+      SMARTOPS_DETECTOR_BASE_URL: http://detector:8200
+      SMARTOPS_INTERNAL_TOKEN: ${SMARTOPS_INTERNAL_TOKEN:-smartops-internal-dev-token}
+      OPENCV_FFMPEG_CAPTURE_OPTIONS: rtsp_transport;tcp
+    depends_on:
+      api:
+        condition: service_healthy
+      detector:
+        condition: service_healthy
+      mediamtx:
+        condition: service_started
+    restart: unless-stopped
+
   frontend:
     build:
       context: .
@@ -224,6 +279,7 @@ services:
     restart: unless-stopped
 
 volumes:
+  processor_data:
   postgres_data:
   redis_data:
   minio_data:

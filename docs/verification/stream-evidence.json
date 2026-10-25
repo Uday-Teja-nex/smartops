@@ -1,0 +1,15 @@
+{
+  "incidentId": "inc-rule-bf886f7841694480a18e7510774bd66f",
+  "evidenceId": "evd-cd2a6837dd",
+  "contentType": "video/mp4",
+  "decoded": true,
+  "frameCount": 30,
+  "fps": 3.0864197530864197,
+  "durationSeconds": 9.697596788406372,
+  "bytes": 337108,
+  "meta": {
+    "captureStart": 1792868481.7135687,
+    "captureEnd": 1792868491.4111655,
+    "sampledFrames": 30
+  }
+}

@@ -1,6 +1,6 @@
 # SmartOps execution plan
 
-Updated 2026-10-24. The acceptance specification is GOAL_PROMPT.md. Earlier
+Updated 2026-10-25. The acceptance specification is GOAL_PROMPT.md. Earlier
 claims of feature completion were contradicted by the audit and are withdrawn.
 
 ## Phase 0 — audit
@@ -24,11 +24,13 @@ were not reproduced. These are recorded limitations, not completed fixes.
 
 ## Phase 2 — continuous streams
 
-- [ ] MediaMTX and looping MP4 publishers, real reconnecting RTSP adapter.
+- [x] MediaMTX and one looping MP4 publisher, real reconnecting RTSP adapter.
 - [ ] Continuous detection/tracking, polygon zones, schedules and all Tier 1 rules.
-- [ ] Incident-first API persistence, pre/post ring-buffer clips and snapshots.
-- [ ] Live playback with real detection/zone overlays.
-- [ ] Footage shot list and commercial-demo license records.
+- [x] Incident-first persistence, bounded pre/post clips, snapshots and durable delivery.
+- [x] Timestamped sampled camera preview with matching real boxes and zone overlays.
+- [ ] Full-rate live playback with real detection/zone overlays.
+- [x] Footage shot list supplied; local engineering clip provenance recorded.
+- [ ] Obtain event footage with commercial-demo permission.
 - [ ] Gate: measured <=5-second alerts and 30-minute three-stream soak.
 
 ## Phase 3 — AI enrichment

@@ -1,0 +1,12 @@
+# Local development only. Public deployment must add authenticated access.
+logLevel: warn
+rtspTransports: [tcp]
+api: yes
+apiAddress: :9997
+rtmp: yes
+hls: yes
+hlsVariant: lowLatency
+webrtc: yes
+webrtcAdditionalHosts: [localhost, 127.0.0.1]
+paths:
+  all_others:

@@ -1,0 +1,5 @@
+{
+  "persistedEvents": 56,
+  "maxRuleToPersistSeconds": 0.220177,
+  "scope": "Engineering full-frame zone, not all-event accuracy or end-to-end latency gate"
+}

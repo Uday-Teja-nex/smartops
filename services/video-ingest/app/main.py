@@ -254,6 +254,7 @@ def main() -> None:
                     source
                     for source in sources
                     if source.get("enabled") and source.get("status") != "paused"
+                    and source.get("sourceType") != "rtsp"
                 ]
                 log("scan_start", total=len(sources), active=len(active))
                 for source in active:

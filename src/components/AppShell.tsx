@@ -34,6 +34,7 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { name: "Overview", href: "/", icon: LayoutDashboard },
   { name: "Live Ops", href: "/live-ops", icon: Activity },
+  { name: "Camera view", href: "/cameras", icon: Camera },
   { name: "Sources", href: "/sources", icon: Camera },
   { name: "Monitoring", href: "/monitoring", icon: Radio },
   { name: "Safety & EHS", href: "/safety", icon: ShieldAlert },

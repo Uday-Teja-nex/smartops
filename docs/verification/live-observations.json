@@ -1,0 +1,40 @@
+{
+  "sourceId": "src-998150016d",
+  "samples": [
+    {
+      "sequence": 318,
+      "ageSeconds": 0.401609,
+      "detections": 9,
+      "tracks": 6,
+      "previewBytes": 205428
+    },
+    {
+      "sequence": 333,
+      "ageSeconds": 0.422481,
+      "detections": 8,
+      "tracks": 6,
+      "previewBytes": 206032
+    },
+    {
+      "sequence": 348,
+      "ageSeconds": 0.442616,
+      "detections": 9,
+      "tracks": 6,
+      "previewBytes": 207172
+    },
+    {
+      "sequence": 363,
+      "ageSeconds": 0.459136,
+      "detections": 10,
+      "tracks": 8,
+      "previewBytes": 207844
+    },
+    {
+      "sequence": 377,
+      "ageSeconds": 0.48938,
+      "detections": 11,
+      "tracks": 9,
+      "previewBytes": 209004
+    }
+  ]
+}
