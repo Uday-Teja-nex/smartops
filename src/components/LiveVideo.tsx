@@ -42,7 +42,9 @@ export function LiveVideo({ sourceId }: { sourceId: string }) {
         onTrack: (event) => {
           if (!cancelled && element) {
             element.srcObject = event.streams[0] ?? new MediaStream([event.track]);
-            void element.play().catch(() => setMessage("Select play to start live video"));
+            void element.play().catch(() => {
+              if (!cancelled) setMessage("Select play to start live video");
+            });
           }
         },
       });
@@ -57,10 +59,17 @@ export function LiveVideo({ sourceId }: { sourceId: string }) {
     };
   }, [sourceId, ready]);
   return <>
-    <Script id="mediamtx-reader" src="/vendor/mediamtx/reader.js" onReady={() => setReady(true)}
+    <Script id={`mediamtx-reader-${sourceId}`} src="/vendor/mediamtx/reader.js"
+      onLoad={() => setReady(true)} onReady={() => setReady(true)}
       onError={() => setMessage("Live player could not load")} />
     <video ref={video} autoPlay muted playsInline controls aria-label="Live camera video"
       className="absolute inset-0 h-full w-full object-contain" />
-    {message && <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/90 p-6 text-center text-sm text-slate-300">{message}</div>}
+    {message && <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-slate-950/90 p-6 text-center text-sm text-slate-300">
+      {message === "Select play to start live video" ? <button type="button"
+        className="pointer-events-auto rounded border border-slate-500 px-4 py-2"
+        onClick={() => { void video.current?.play().catch(() => setMessage("Select play to start live video")); }}>
+        Play live video
+      </button> : message}
+    </div>}
   </>;
 }

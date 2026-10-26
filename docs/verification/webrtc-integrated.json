@@ -1,0 +1,29 @@
+{
+  "verifiedVia": "Playwright DOM inspection in Edge",
+  "url": "http://localhost:3000/cameras",
+  "videos": [
+    {
+      "readyState": 4,
+      "currentTime": 41.38626,
+      "width": 960,
+      "height": 544,
+      "paused": false
+    },
+    {
+      "readyState": 4,
+      "currentTime": 26.503993,
+      "width": 960,
+      "height": 544,
+      "paused": false
+    },
+    {
+      "readyState": 4,
+      "currentTime": 44.126034,
+      "width": 960,
+      "height": 544,
+      "paused": false
+    }
+  ],
+  "captureToDisplayLatencyMeasured": false,
+  "fix": "Concurrent script loads now handle onLoad and onReady"
+}

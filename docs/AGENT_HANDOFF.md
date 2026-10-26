@@ -8,7 +8,7 @@ Branch: codex/smartops-live-demo. No push or PR authorized.
 Phase 0 audit is in docs/AUDIT.md, commit 0003037. The reported original
 startup crash and browser playback hang were not reproduced. Native Qwen
 loading failed after 180 seconds, requesting 9.9 GiB with default batching.
-There is no successful GPU inference benchmark yet.
+A later small-batch native Qwen probe completed on CPU in 112.12 seconds (92.67 seconds loading). Two repeat loading attempts timed out at about 152 seconds. There is no successful GPU inference benchmark yet.
 
 Phase 1 removes runtime mock data, template AI briefings, failure-generated
 incidents and catalog narratives. Model/detector failures are visible as
@@ -58,9 +58,7 @@ Median processing was about 3 FPS per stream, with 3/6/5 sampled intervals
 below 2 FPS. Error counters did not increase during the run. Memory varied;
 MinIO grew from 361 to 432 MiB, so a complete steady-state assessment remains
 required. Full evidence and assessment are under docs/verification/stream-soak*.
-Docker Desktop subsequently reported manually paused. The user has been
-asked asynchronously to unpause it for runtime checks; keep developing the
-independent parts without repeating that question.
+Docker Desktop was manually paused, then the user resumed it on 2026-10-26. The latest deployment succeeded. A new 30-minute measurement is running in stream-soak-delivery.json; it already has below-2-FPS samples and is not a pass. The legacy worker and video-ingest services were stopped to prevent competing old model loads.
 
 Measured thread tuning retained detector resolution at 640, using two CPU
 threads and serialized predictor initialization. Lower resolution changed
@@ -105,3 +103,24 @@ without the user's approval.
 GOAL_PROMPT.md and SPI Material Tracking Handbook.pdf are user-owned untracked
 files. Do not include them in commits. Keep working until the acceptance gates
 are met; a completed increment is not a reason to stop the goal.
+
+## Latest verification and fixes (2026-10-26)
+
+Zone editor drawing/save/reload/delete passed through the real browser and API;
+see verification/zone-editor.json. The temporary no-rule zone was deleted.
+Real evidence downloaded and decoded with visibly burned-in detector boxes.
+One clip was only one second long: encoding backlog outlived the 12-second
+ring. A regression now requires complete pre/post coverage and rejects capture
+gaps; default retention is 32 seconds with the unchanged 16 MiB cap. Stream
+suite passes 29 tests. These fixes are built but await deployment verification.
+
+Integrated WebRTC played two of three tiles. The remaining tile reproduced a
+Next Script concurrent-load callback race. LiveVideo now handles onLoad as
+well as onReady with per-source script IDs; autoplay rejection has an actual
+play button. Production rebuild and deployment passed. All three video elements reached readyState 4 at 960x544 with advancing playback. See webrtc-integrated.json/png. The screenshot also honestly shows stale detections during the loaded soak; smooth video does not prove detector throughput.
+Frontend lint and TypeScript passed after the fixes.
+
+Ollama requests now default to 30-second HTTP timeout, 2048 context, batch 32,
+256 generated tokens and ten-minute residency. Invalid timeouts fail startup.
+Orchestrator suite passes 17 tests. These changes are not GPU/latency acceptance
+and are not yet deployed. See ADR 0008 and native-ollama verification reports.

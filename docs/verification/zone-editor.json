@@ -1,0 +1,29 @@
+{
+  "sourceId": "src-998150016d",
+  "savedViaBrowser": true,
+  "persistedZone": {
+    "id": "verification-zone",
+    "polygon": [
+      [
+        0.10170510529041457,
+        0.1030338751660184
+      ],
+      [
+        0.40170670263780905,
+        0.1030338751660184
+      ],
+      [
+        0.40170670263780905,
+        0.4030282053410492
+      ],
+      [
+        0.10170510529041457,
+        0.4030282053410492
+      ]
+    ],
+    "rules": []
+  },
+  "reloadedInBrowser": true,
+  "deletedViaBrowser": true,
+  "apiConfirmedDeletion": true
+}
