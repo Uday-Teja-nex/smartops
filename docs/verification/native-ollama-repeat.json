@@ -1,0 +1,14 @@
+{
+  "model": "qwen2.5vl:3b",
+  "runs": [
+    {
+      "elapsedSeconds": 152.5205254999455,
+      "error": "ReadTimeout"
+    },
+    {
+      "elapsedSeconds": 152.25560489995405,
+      "error": "ReadTimeout"
+    }
+  ],
+  "accuracyValidated": false
+}

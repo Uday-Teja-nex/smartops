@@ -1,0 +1,14 @@
+{
+  "elapsedSeconds": 112.12177059997339,
+  "model": "qwen2.5vl:3b",
+  "options": {
+    "temperature": 0,
+    "num_ctx": 2048,
+    "num_batch": 32,
+    "num_predict": 128
+  },
+  "response": "{\n  \"scene\": \"a grocery store with people shopping and a display of snacks\",\n  \"verdict\": \"doubt\"\n  ,\n  \"confidence\": 0.5\n}",
+  "loadDuration": 92674310300,
+  "evalCount": 45,
+  "evalDuration": 2082381200
+}

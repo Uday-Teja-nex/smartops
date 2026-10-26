@@ -16,7 +16,7 @@ class OllamaModelProvider(ModelProvider):
         host: str,
         text_model: str,
         vision_model: str,
-        timeout_seconds: float = 120.0,
+        timeout_seconds: float = 30.0,
     ) -> None:
         self.host = host.rstrip("/")
         self.text_model = text_model
@@ -53,22 +53,7 @@ class OllamaModelProvider(ModelProvider):
         image_paths: list[Path],
         schema: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        payload: dict[str, Any] = {
-            "model": self.vision_model,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": prompt,
-                    "images": self._read_images(image_paths),
-                }
-            ],
-            "stream": False,
-            "options": {"temperature": 0},
-        }
-        if schema is not None:
-            payload["format"] = schema
-
-        return self._parse_message_content(self._post_chat(payload))
+        return self.review_event_evidence_base64(prompt, self._read_images(image_paths), schema)
 
     def review_event_evidence_base64(
         self,
@@ -86,7 +71,8 @@ class OllamaModelProvider(ModelProvider):
                 }
             ],
             "stream": False,
-            "options": {"temperature": 0},
+            "options": {"temperature": 0, "num_batch": 32, "num_ctx": 2048, "num_predict": 256},
+            "keep_alive": "10m",
         }
         if schema is not None:
             payload["format"] = schema
@@ -102,7 +88,8 @@ class OllamaModelProvider(ModelProvider):
             "model": self.text_model,
             "messages": [{"role": "user", "content": prompt}],
             "stream": False,
-            "options": {"temperature": 0},
+            "options": {"temperature": 0, "num_batch": 32, "num_ctx": 2048, "num_predict": 256},
+            "keep_alive": "10m",
         }
         if schema is not None:
             payload["format"] = schema

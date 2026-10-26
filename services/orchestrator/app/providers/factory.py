@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import math
 
 from app.providers.base import ModelProvider
 from app.providers.ollama import OllamaModelProvider
@@ -8,9 +9,12 @@ from app.providers.ollama import OllamaModelProvider
 
 def _env_float(name: str, default: float) -> float:
     try:
-        return float(os.getenv(name, str(default)))
-    except ValueError:
-        return default
+        value = float(os.getenv(name, str(default)))
+    except ValueError as exc:
+        raise ValueError(f"{name} must be a positive finite number") from exc
+    if not math.isfinite(value) or value <= 0:
+        raise ValueError(f"{name} must be a positive finite number")
+    return value
 
 
 def get_model_provider() -> ModelProvider:
@@ -27,10 +31,8 @@ def get_model_provider() -> ModelProvider:
         )
 
     return OllamaModelProvider(
-        host=os.getenv("SMARTOPS_OLLAMA_HOST", "http://ollama:11434"),
+        host=os.getenv("SMARTOPS_OLLAMA_HOST", "http://host.docker.internal:11434"),
         text_model=os.getenv("SMARTOPS_TEXT_MODEL", "llama3.2:3b"),
         vision_model=os.getenv("SMARTOPS_VISION_MODEL", "qwen2.5vl:3b"),
-        # CPU inference is slow, and the first call also loads the model into
-        # memory; keep this generous for local development.
-        timeout_seconds=_env_float("SMARTOPS_MODEL_TIMEOUT_SECONDS", 480.0),
+        timeout_seconds=_env_float("SMARTOPS_MODEL_TIMEOUT_SECONDS", 30.0),
     )
