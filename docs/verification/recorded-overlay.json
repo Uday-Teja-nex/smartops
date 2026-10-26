@@ -1,0 +1,25 @@
+{
+  "evidence": {
+    "id": "evd-646e6f3be9",
+    "incidentId": "inc-rule-3c26026bc6fb4452bb8cd989921d2d23",
+    "sourceId": "src-998150016d",
+    "candidateId": null,
+    "kind": "clip",
+    "contentType": "video/mp4",
+    "width": null,
+    "height": null,
+    "durationSeconds": 1.0062227249145508,
+    "sizeBytes": 157072,
+    "restricted": true,
+    "meta": {
+      "captureStart": 1792997067.5511608,
+      "captureEnd": 1792997068.5573835,
+      "sampledFrames": 2,
+      "overlaysBurnedIn": true
+    },
+    "createdAt": "2026-10-26T06:44:40.053460Z"
+  },
+  "downloadedBytes": 157072,
+  "decodedFrames": 2,
+  "fps": 1.9230769230769231
+}

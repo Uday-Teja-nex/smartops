@@ -9,9 +9,11 @@ from urllib.parse import urlparse
 import httpx
 from minio import Minio
 from urllib3 import PoolManager, Timeout
+from app.ring import require_evidence_window
 
 
-def upload_evidence(source_id, incident_id, frames, snapshot, detections):
+def upload_evidence(source_id, incident_id, frames, snapshot, detections, triggered_at):
+    require_evidence_window(frames, triggered_at)
     endpoint = urlparse(os.getenv('SMARTOPS_MINIO_ENDPOINT', 'http://minio:9000'))
     storage = Minio(endpoint.netloc, access_key=os.getenv('SMARTOPS_MINIO_ACCESS_KEY', 'smartops'),
                     secret_key=os.getenv('SMARTOPS_MINIO_SECRET_KEY', 'smartopsminio'),

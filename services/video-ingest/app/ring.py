@@ -2,8 +2,16 @@
 from collections import deque
 
 
+def require_evidence_window(frames, triggered_at, tolerance=.75):
+    """Require five seconds either side, allowing one normal sampling interval."""
+    if len(frames) < 2 or frames[0][0] > triggered_at - 5 + tolerance or frames[-1][0] < triggered_at + 5 - tolerance:
+        raise ValueError('Incomplete pre/post-event footage')
+    if any(b[0] - a[0] > 1.5 or b[0] <= a[0] for a, b in zip(frames, frames[1:])):
+        raise ValueError('Evidence capture gap')
+
+
 class FrameRing:
-    def __init__(self, seconds=12, max_bytes=16 * 1024 * 1024):
+    def __init__(self, seconds=32, max_bytes=16 * 1024 * 1024):
         if seconds <= 0 or max_bytes <= 0:
             raise ValueError('Ring limits must be positive')
         self.seconds = seconds

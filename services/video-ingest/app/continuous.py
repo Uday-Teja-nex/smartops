@@ -152,7 +152,7 @@ def run(source, client, stop, *, detector_url, fps=3):
                         payload, triggered_at, snapshot, boxes = job
                         if frame.captured_at >= triggered_at + 5 and not pending and len(evidence_running) < 2:
                             frames = ring.frames(triggered_at - 5, triggered_at + 5)
-                            future = evidence_pool.submit(upload_evidence, source['id'], payload['id'], frames, snapshot, boxes)
+                            future = evidence_pool.submit(upload_evidence, source['id'], payload['id'], frames, snapshot, boxes, triggered_at)
                             evidence_running.append((future, payload))
                             evidence_waiting.remove(job)
                     response = client.post(detector_url + '/v1/detect', json={

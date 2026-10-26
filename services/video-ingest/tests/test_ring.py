@@ -1,4 +1,21 @@
 from app.ring import FrameRing
+import pytest
+from app.ring import require_evidence_window
+
+
+def test_evidence_requires_pre_and_post_event_coverage():
+    full = [(t / 2, b'frame') for t in range(10, 31)]
+    require_evidence_window(full, 10)
+    for partial in (full[8:], full[:-8], [], full[::4]):
+        with pytest.raises(ValueError):
+            require_evidence_window(partial, 10)
+
+
+def test_default_ring_retains_window_until_encoding_deadline():
+    ring = FrameRing()
+    for half_second in range(61):
+        ring.append(half_second / 2, b'frame')
+    require_evidence_window(ring.frames(5, 15), 10)
 
 
 def test_ring_bounds_age_and_bytes():
