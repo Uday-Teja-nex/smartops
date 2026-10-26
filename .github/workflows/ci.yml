@@ -86,3 +86,4 @@ jobs:
           python-version: "3.11"
       - run: pip install pytest
       - run: python -m pytest services/detector/tests -q
+      - run: python -m pytest services/stream-publisher/tests -q
