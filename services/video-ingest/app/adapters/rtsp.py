@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import time
+import os
 from dataclasses import dataclass
 from threading import Event, Lock, Thread
 
@@ -12,10 +13,14 @@ from app.adapters.base import CandidateWindow, HealthResult, SourceAdapter
 
 
 def open_capture(uri: str):
+    threads = int(os.getenv('SMARTOPS_RTSP_DECODE_THREADS', '1'))
+    if not 1 <= threads <= 16:
+        raise ValueError('SMARTOPS_RTSP_DECODE_THREADS must be between 1 and 16')
     # FFmpeg open/read timeouts are constructor parameters, not later setters.
     return cv2.VideoCapture(uri, cv2.CAP_FFMPEG, [
         cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 5000,
         cv2.CAP_PROP_READ_TIMEOUT_MSEC, 3000,
+        cv2.CAP_PROP_N_THREADS, threads,
     ])
 
 

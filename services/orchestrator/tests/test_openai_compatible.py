@@ -50,6 +50,8 @@ def test_openrouter_sends_privacy_and_parameter_constraints():
     def handler(request):
         body = json.loads(request.content)
         assert body['provider'] == {'data_collection': 'deny', 'require_parameters': True}
+        assert body['reasoning'] == {'effort': 'none'}
+        assert body['max_tokens'] == 1024
         assert 'models' not in body
         return httpx.Response(200, json={'choices': [{'finish_reason': 'stop', 'message': {'content': '{}'}}]})
     provider = OpenAICompatibleProvider('https://openrouter.ai/api/v1', 'key', 'model:free',

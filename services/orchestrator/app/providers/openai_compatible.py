@@ -33,7 +33,7 @@ class OpenAICompatibleProvider(ModelProvider):
 
     def _chat(self, model, content, schema):
         payload = {'model': model, 'messages': [{'role': 'user', 'content': content}],
-                   'stream': False, 'max_tokens': 512}
+                   'stream': False, 'max_tokens': 1024}
         if schema is not None:
             payload['response_format'] = {'type': 'json_schema', 'json_schema': {
                 'name': 'smartops_review', 'strict': False, 'schema': schema}}
@@ -41,6 +41,9 @@ class OpenAICompatibleProvider(ModelProvider):
             payload['response_format'] = {'type': 'json_object'}
         if self.openrouter:
             payload['provider'] = {'data_collection': self.data_collection, 'require_parameters': True}
+            # This low-latency review preset needs visible JSON, not a token
+            # budget consumed entirely by optional reasoning.
+            payload['reasoning'] = {'effort': 'none'}
         headers = {'Authorization': f'Bearer {self.api_key}'} if self.api_key else {}
         with httpx.Client(timeout=self.timeout_seconds, transport=self.transport) as client:
             response = client.post(self.host + '/chat/completions', headers=headers, json=payload)

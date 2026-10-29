@@ -1,0 +1,34 @@
+{
+  "sourceReport": "stream-soak-delivery.json",
+  "elapsedSeconds": 1802.58,
+  "samples": 115,
+  "passed": false,
+  "limitations": [
+    "Includes concurrent build activity",
+    "Final samples affected by Docker pause",
+    "Three transports use identical engineering footage"
+  ],
+  "sources": [
+    {
+      "id": "src-998150016d",
+      "medianFps": 0.5771471565344504,
+      "below2Fps": 105,
+      "fpsSamples": 112,
+      "errorSamples": 3
+    },
+    {
+      "id": "src-58b3c52406",
+      "medianFps": 0.5866586273953122,
+      "below2Fps": 106,
+      "fpsSamples": 113,
+      "errorSamples": 2
+    },
+    {
+      "id": "src-22abea8b8a",
+      "medianFps": 0.5679620446145373,
+      "below2Fps": 107,
+      "fpsSamples": 113,
+      "errorSamples": 2
+    }
+  ]
+}

@@ -1,8 +1,30 @@
 from threading import Event
+import pytest
+import cv2
 
 import numpy as np
 
 from app.adapters.rtsp import RtspAdapter, StreamReader
+
+
+def test_decoder_budget_is_passed_at_open(monkeypatch):
+    from app.adapters.rtsp import open_capture
+    calls = []
+    monkeypatch.setenv('SMARTOPS_RTSP_DECODE_THREADS', '2')
+    monkeypatch.setattr(cv2, 'VideoCapture', lambda *args: calls.append(args))
+    open_capture('rtsp://camera/live')
+    parameters = dict(zip(calls[0][2][::2], calls[0][2][1::2]))
+    assert parameters[cv2.CAP_PROP_N_THREADS] == 2
+    assert parameters[cv2.CAP_PROP_READ_TIMEOUT_MSEC] == 3000
+
+
+@pytest.mark.parametrize('value', ['0', '17', 'invalid'])
+def test_invalid_decoder_budget_fails_before_open(monkeypatch, value):
+    from app.adapters.rtsp import open_capture
+    monkeypatch.setenv('SMARTOPS_RTSP_DECODE_THREADS', value)
+    monkeypatch.setattr(cv2, 'VideoCapture', lambda *args: pytest.fail('must not open'))
+    with pytest.raises(ValueError):
+        open_capture('rtsp://camera/live')
 
 
 class Capture:

@@ -85,6 +85,25 @@ CI claim is made because no changes have been pushed.
 
 ## Remaining work
 
+### Runtime follow-up (2026-10-30)
+
+OpenRouter enrichment initially exhausted 512 tokens on optional reasoning and
+returned empty content with finish_reason length. The deployed fix requests
+reasoning effort none and 1024 output tokens. A saved-image enrichment then
+returned validated observations/actions/limitations in 8.4 seconds; see
+verification/openrouter-enrichment.json. Automatic reviews reached the shared
+40-attempt cap on October 29; that budget was not reset or bypassed. Successful
+automatic enrichment after this fix still needs live confirmation.
+
+Three-minute smoke showed periods near 3 FPS but intermittent sub-2 FPS samples;
+it is not acceptance. October 30 Docker container listing returns HTTP 500.
+User was asked to restart Docker Desktop. Added configurable RTSP decoder thread
+limit (default one, validated 1–16), pending deployment and comparison.
+OpenCV 4.10 documents CAP_PROP_N_THREADS as an open-only FFmpeg property:
+https://docs.opencv.org/4.10.0/d4/d15/group__videoio__flags__base.html
+Reasoning budget reference:
+https://openrouter.ai/docs/guides/best-practices/reasoning-tokens
+
 ### Authorized hosted configuration and enrichment (2026-10-29)
 
 User explicitly authorized sending selected incident images with provider data

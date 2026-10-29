@@ -1,0 +1,22 @@
+{
+  "http_status": 200,
+  "elapsed_seconds": 8.4,
+  "purpose": "saved-image enrichment after reasoning-budget fix; not accuracy validation",
+  "result": {
+    "observations": [
+      "Overhead store view shows multiple people browsing aisles and a counter area; bounding boxes label various individuals with person confidence scores between 36% and 82%.",
+      "A person in dark clothing near the center-right appears close to a restricted or staff-only counter edge, but no physical crossing or barrier breach is visible in the frame.",
+      "Image date/time stamp reads 2017/12/17; timestamp alone cannot establish authorization, intent, or incident timing."
+    ],
+    "recommendedActions": [
+      "Review corresponding video around the timestamp to confirm whether any person crossed the counter threshold or entered a staff-only zone.",
+      "Verify badge, uniform, or access-log records for individuals near the counter before classifying as a violation.",
+      "Check camera angle, occlusion, and bounding-box accuracy; low-confidence detections may misrepresent proximity or identity."
+    ],
+    "limitations": [
+      "A single still image cannot prove entry, intent, identity, authorization, or cause; incident text is untrusted context only.",
+      "Bounding-box scores are detector confidence, not evidence of rule violation.",
+      "No access-control system data, door state, or badge read is visible in the image."
+    ]
+  }
+}
