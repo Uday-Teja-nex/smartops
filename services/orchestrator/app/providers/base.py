@@ -7,6 +7,10 @@ from typing import Any
 
 class ModelProvider(ABC):
     @abstractmethod
+    def review_event_evidence_base64(self, prompt: str, images: list[str], schema: dict[str, Any] | None = None) -> dict[str, Any]:
+        raise NotImplementedError
+
+    @abstractmethod
     def review_event_evidence(
         self,
         prompt: str,

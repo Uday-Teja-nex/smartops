@@ -9,16 +9,33 @@ class Outbox:
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.execute('CREATE TABLE IF NOT EXISTS pending (id TEXT PRIMARY KEY, payload TEXT NOT NULL)')
         self.db.execute('CREATE TABLE IF NOT EXISTS evidence_jobs (id TEXT PRIMARY KEY, payload TEXT NOT NULL)')
+        self.db.execute('CREATE TABLE IF NOT EXISTS review_images (id TEXT PRIMARY KEY, image TEXT NOT NULL)')
+        self.db.execute('CREATE TABLE IF NOT EXISTS review_jobs (id TEXT PRIMARY KEY, source TEXT NOT NULL, payload TEXT NOT NULL, image TEXT NOT NULL, claimed INTEGER NOT NULL DEFAULT 0)')
+        self.db.execute('CREATE TABLE IF NOT EXISTS review_budget (day TEXT PRIMARY KEY, used INTEGER NOT NULL)')
         self.db.commit()
 
-    def track_evidence(self, payload):
+    def track_evidence(self, payload, image=None):
         with self.db:
+            if image is not None:
+                queued = self.db.execute('SELECT (SELECT count(*) FROM review_images) + (SELECT count(*) FROM review_jobs)').fetchone()[0]
+                if queued < 20 and len(image) <= 1000000:
+                    self.db.execute('INSERT OR REPLACE INTO review_images VALUES (?, ?)', (payload['id'], image))
+                    payload['reviewNotes'] = ['AI review pending evidence completion.']
+                else:
+                    payload['reviewNotes'] = ['AI review unavailable: queue capacity reached.']
             self.db.execute('INSERT OR REPLACE INTO evidence_jobs VALUES (?, ?)',
                             (payload['id'], json.dumps(payload)))
 
     def finish_evidence(self, payload):
         # Delivery and journal removal commit together, including on shutdown.
         with self.db:
+            image = self.db.execute('SELECT image FROM review_images WHERE id=?', (payload['id'],)).fetchone()
+            if image:
+                payload['reviewNotes'] = [note for note in payload.get('reviewNotes', []) if not note.startswith('AI review')]
+                payload['reviewNotes'].append('AI review queued; measured rule incident remains active.')
+                self.db.execute('INSERT OR IGNORE INTO review_jobs (id,source,payload,image) VALUES (?,?,?,?)',
+                                (payload['id'], payload['sourceId'], json.dumps(payload), image[0]))
+                self.db.execute('DELETE FROM review_images WHERE id=?', (payload['id'],))
             self.db.execute('INSERT INTO pending VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload',
                             (payload['id'], json.dumps(payload)))
             self.db.execute('DELETE FROM evidence_jobs WHERE id=?', (payload['id'],))

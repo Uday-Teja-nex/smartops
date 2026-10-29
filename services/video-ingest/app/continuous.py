@@ -26,6 +26,7 @@ from app.outbox import Outbox
 from app.frame_health import FrameHealth
 from app.delivery import IncidentDelivery
 from app.overlays import annotate
+from app.enrichment import IncidentEnrichment
 
 
 def incident_payload(source, event, captured_at):
@@ -64,6 +65,8 @@ def run(source, client, stop, *, detector_url, fps=3):
     pending = Outbox(outbox_path)
     pending.recover_evidence()
     delivery = IncidentDelivery(outbox_path, source['id']).start()
+    enrichment = (IncidentEnrichment(outbox_path, source['id']).start()
+                  if os.getenv('SMARTOPS_STREAM_ENRICHMENT', 'false').lower() == 'true' else None)
     ring = FrameRing()
     evidence_waiting = []
     evidence_running = []
@@ -81,6 +84,8 @@ def run(source, client, stop, *, detector_url, fps=3):
         while not stop.is_set():
             if not delivery.thread.is_alive():
                 raise RuntimeError('Incident delivery stopped unexpectedly')
+            if enrichment and not enrichment.thread.is_alive():
+                raise RuntimeError('Incident enrichment stopped unexpectedly')
             tick = time.monotonic()
             frame = reader.latest()
             fresh = frame is not None and tick - frame.monotonic_at < 1.5
@@ -176,7 +181,7 @@ def run(source, client, stop, *, detector_url, fps=3):
                         for event in engine.update(frame.monotonic_at, observations, wall_time=frame.captured_at):
                             payload = incident_payload(source, event, frame.captured_at)
                             if len(evidence_waiting) + len(evidence_running) < 20:
-                                pending.track_evidence(payload)
+                                pending.track_evidence(payload, base64.b64encode(evidence_jpeg).decode('ascii') if enrichment else None)
                                 evidence_waiting.append((payload, frame.captured_at, evidence_jpeg, response.json()['detections']))
                             else:
                                 payload['reviewNotes'].append('Evidence unavailable: evidence queue capacity reached')
@@ -197,6 +202,8 @@ def run(source, client, stop, *, detector_url, fps=3):
                 log('continuous_processing_error', level='error', sourceId=source['id'], error=type(exc).__name__)
             stop.wait(max(0, 1 / fps - (time.monotonic() - tick)))
     finally:
+        if enrichment:
+            enrichment.close()
         delivery.close()
         reader.close()
         evidence_pool.shutdown(wait=True, cancel_futures=True)

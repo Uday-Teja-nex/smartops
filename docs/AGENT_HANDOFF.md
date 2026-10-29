@@ -85,6 +85,41 @@ CI claim is made because no changes have been pushed.
 
 ## Remaining work
 
+### Authorized hosted configuration and enrichment (2026-10-29)
+
+User explicitly authorized sending selected incident images with provider data
+collection allowed. Parent scope/.env contains their key. Project ignored .env
+now contains a local copy plus OpenRouter explicit nemotron free model IDs,
+free-only true, data collection allow, local YOLO, and stream enrichment true.
+Never print either env file or resolved Compose configuration.
+
+Orchestrator deployment succeeded; saved engineering image review returned HTTP
+200 in 4.31 seconds with no supported event. See openrouter-image-review.json.
+This is connectivity/contract evidence, not accuracy acceptance. New enrichment
+endpoint uses one call for supplemental observations/actions/limitations.
+Stream integration queues bounded images in durable per-source journals after
+evidence, waits for incident delivery, and uses a shared 40-attempt UTC-day budget.
+No model result changes measured rule event fields. Deployment verification of
+the new asynchronous path remains required. Previous statements below that
+Docker is unavailable or continuous enrichment is unimplemented are historical.
+
+### Hosted API increment (2026-10-29)
+
+OpenRouter/OpenAI-compatible review adapter and optional Hugging Face object
+detection adapter added with mocked contract tests and Compose configuration.
+Local defaults unchanged. Setup is in FREE_API_SETUP.md. Actual .env credentials
+were not read or changed. OpenRouter free-only defaults on; data collection
+defaults deny; no paid fallback or automatic relaxation. Meta is not a verified
+free API. Continuous async enrichment remains unfinished.
+
+Browser access to the user's OpenRouter keys page was blocked by automatic
+approval review's usage limit; do not bypass that origin gate using another
+browser tool. User was asked to create the key manually and save it in .env.
+Docker check October 29 failed because dockerDesktopLinuxEngine pipe was absent;
+no containers were rebuilt or deployed in this increment. The prior delivery
+soak finished but failed throughput and had timeout samples when Docker paused;
+do not count it as Phase 2 acceptance.
+
 Complete Phase 2 runtime verification, 30-minute three-stream soak, <=5-second
 visible-event latency checks, and actual Tier 1 positive/negative footage
 validation. Retire the old file-window pipeline once file publishing/source

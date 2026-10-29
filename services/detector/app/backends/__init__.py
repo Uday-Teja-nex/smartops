@@ -1,7 +1,7 @@
 """Detector backend registry.
 
 The active backend is selected with SMARTOPS_DETECTOR_BACKEND. Only the
-CPU ultralytics backend is implemented today; the registry names the planned
+CPU ultralytics and opt-in Hugging Face backends are implemented; the registry names the planned
 alternatives so switching later is configuration, not a rewrite.
 """
 
@@ -16,6 +16,12 @@ PLANNED_BACKENDS = ("onnxruntime", "openvino", "cuda", "remote")
 
 def get_backend() -> DetectorBackend:
     name = os.getenv("SMARTOPS_DETECTOR_BACKEND", "ultralytics-cpu")
+    if name == 'huggingface':
+        from app.backends.huggingface import HuggingFaceBackend
+
+        return HuggingFaceBackend(os.getenv('SMARTOPS_HF_TOKEN', ''),
+                                 os.getenv('SMARTOPS_HF_MODEL', 'facebook/detr-resnet-50'),
+                                 float(os.getenv('SMARTOPS_HF_TIMEOUT_SECONDS', '10')))
     if name == "ultralytics-cpu":
         from app.backends.ultralytics_cpu import UltralyticsCpuBackend
 

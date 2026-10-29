@@ -1,0 +1,10 @@
+{
+  "http_status": 200,
+  "elapsed_seconds": 4.31,
+  "detector_context": "disabled for saved-image probe",
+  "route": "ignored",
+  "notes": [
+    "VLM did not detect a supported operational event."
+  ],
+  "created": false
+}

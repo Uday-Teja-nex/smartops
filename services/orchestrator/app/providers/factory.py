@@ -5,6 +5,7 @@ import math
 
 from app.providers.base import ModelProvider
 from app.providers.ollama import OllamaModelProvider
+from app.providers.openai_compatible import OpenAICompatibleProvider
 
 
 def _env_float(name: str, default: float) -> float:
@@ -18,12 +19,20 @@ def _env_float(name: str, default: float) -> float:
 
 
 def get_model_provider() -> ModelProvider:
-    """Provider selection is configuration-driven.
-
-    Only local Ollama is implemented today; hosted providers (Anthropic,
-    OpenAI, ...) plug in here behind the same ModelProvider contract.
-    """
+    """Select one provider explicitly; never silently switch billing or data policy."""
     provider = os.getenv("SMARTOPS_MODEL_PROVIDER", "ollama").lower()
+    if provider in {'openrouter', 'openai-compatible', 'meta'}:
+        defaults = {'openrouter': 'https://openrouter.ai/api/v1',
+                    'meta': 'https://api.meta.ai/v1', 'openai-compatible': ''}
+        api_key = os.getenv('SMARTOPS_MODEL_API_KEY', '')
+        if provider != 'openai-compatible' and not api_key:
+            raise ValueError('SMARTOPS_MODEL_API_KEY is required for the selected provider')
+        return OpenAICompatibleProvider(
+            host=os.getenv('SMARTOPS_MODEL_BASE_URL') or defaults[provider], api_key=api_key,
+            text_model=os.getenv('SMARTOPS_TEXT_MODEL', ''), vision_model=os.getenv('SMARTOPS_VISION_MODEL', ''),
+            timeout_seconds=_env_float('SMARTOPS_MODEL_TIMEOUT_SECONDS', 30),
+            free_only=provider == 'openrouter' and os.getenv('SMARTOPS_OPENROUTER_FREE_ONLY', 'true').lower() != 'false',
+            data_collection=os.getenv('SMARTOPS_OPENROUTER_DATA_COLLECTION', 'deny'))
     if provider != "ollama":
         raise ValueError(
             f"Unsupported model provider: {provider}. "

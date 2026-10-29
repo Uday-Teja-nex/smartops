@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+import os
+from fastapi import FastAPI, HTTPException
+from app.enrichment import EnrichmentRequest, EnrichmentResponse, enrich
 
 from app.graph import REVIEW_CONFIDENCE_THRESHOLD, build_graph, describe_graph
 from app.providers.factory import get_model_provider
@@ -7,6 +9,14 @@ from app.schemas import CandidateReviewRequest, CandidateReviewResponse, Evidenc
 app = FastAPI(title="SmartOps Orchestrator", version="0.2.0")
 provider = get_model_provider()
 graph = build_graph(provider)
+
+
+@app.post('/v1/incidents/enrich', response_model=EnrichmentResponse)
+def enrich_incident(payload: EnrichmentRequest):
+    try:
+        return enrich(provider, payload)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail='AI enrichment unavailable: ' + type(exc).__name__) from None
 
 
 @app.get("/health")
@@ -43,7 +53,7 @@ def review_candidate(payload: CandidateReviewRequest) -> CandidateReviewResponse
             "frame_images": [frame.imageBase64 for frame in payload.frames],
             "frame_timestamps": [frame.timestampSeconds for frame in payload.frames],
             "detection_context": payload.detectionContext.model_dump(),
-            "model_provider": "ollama",
+            "model_provider": os.getenv('SMARTOPS_MODEL_PROVIDER', 'ollama'),
             "model_version": f"{provider.vision_model}/{provider.text_model}",
         }
     )

@@ -1,0 +1,7 @@
+{
+  "model": "nvidia/nemotron-3.5-super-vl:free",
+  "data_collection": "allow",
+  "input": "synthetic text only",
+  "passed": true,
+  "elapsed_seconds": 1.45
+}
