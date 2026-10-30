@@ -53,7 +53,7 @@ def me(
 @users_router.get("/users", response_model=list[UserResponse])
 def list_users(
     session: Session = Depends(get_db_session),
-    _: Principal = Depends(require_admin),
+    principal: Principal = Depends(require_admin),
 ) -> list[UserResponse]:
-    users = session.scalars(select(UserModel).order_by(UserModel.email)).all()
+    users = session.scalars(select(UserModel).where(UserModel.org_id == principal.org_id).order_by(UserModel.email)).all()
     return [serialize_user(user) for user in users]

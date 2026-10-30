@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.auth import Principal, require_admin, require_supervisor, require_viewer
 from app.config import get_settings
-from app.db import get_db_session
+from app.tenancy import get_tenant_session as get_db_session
 from app.events import publish_event
 from app.ids import new_id
 from app.models import BuildingModel, FloorModel, IncidentModel, SourceModel, ZoneModel

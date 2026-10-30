@@ -44,12 +44,12 @@ def pipeline_status() -> dict[str, object]:
     }
 
 
-def _snapshot_payload() -> str:
+def _snapshot_payload(org_id: str) -> str:
     with Session(engine) as session:
         incidents = session.scalars(
-            select(IncidentModel).order_by(IncidentModel.start_time.desc()).limit(200)
+            select(IncidentModel).where(IncidentModel.org_id == org_id).order_by(IncidentModel.start_time.desc()).limit(200)
         ).all()
-        sources = session.scalars(select(SourceModel).order_by(SourceModel.name)).all()
+        sources = session.scalars(select(SourceModel).where(SourceModel.org_id == org_id).order_by(SourceModel.name)).all()
         return json.dumps(
             {
                 "incidents": [
@@ -75,7 +75,7 @@ async def stream_events(principal: Principal = Depends(require_viewer)) -> Strea
     """
 
     async def event_generator():
-        yield f"event: snapshot\ndata: {_snapshot_payload()}\n\n"
+        yield f"event: snapshot\ndata: {_snapshot_payload(principal.org_id)}\n\n"
 
         client = aioredis.from_url(settings.redis_url, decode_responses=True)
         pubsub = client.pubsub()
@@ -93,6 +93,14 @@ async def stream_events(principal: Principal = Depends(require_viewer)) -> Strea
                     kind = body.get("kind", "incident")
                     if (kind == "observation" and principal.kind != "service"
                             and body.get("data", {}).get("orgId") != principal.org_id):
+                        continue
+                    if kind in {'incident', 'source'}:
+                        model = IncidentModel if kind == 'incident' else SourceModel
+                        with Session(engine) as session:
+                            owner = session.scalar(select(model.org_id).where(model.id == body.get('data', {}).get('id')))
+                        if owner != principal.org_id:
+                            continue
+                    elif kind != 'observation':
                         continue
                     data = json.dumps(body.get("data", {}))
                 except (json.JSONDecodeError, TypeError):

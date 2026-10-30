@@ -45,6 +45,12 @@ def _incident_payload(source_id: str, **overrides):
     return payload
 
 
+def test_incident_cannot_claim_a_different_building(client, pipeline_source, service_headers):
+    response = client.post('/v1/incidents', headers=service_headers,
+                           json=_incident_payload(pipeline_source['id'], buildingId='foreign-building'))
+    assert response.status_code == 422
+
+
 def test_full_incident_lifecycle_with_audit(
     client, pipeline_source, service_headers, operator_headers, viewer_headers
 ):

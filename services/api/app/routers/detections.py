@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.auth import Principal, require_supervisor, require_viewer
-from app.db import get_db_session
+from app.tenancy import get_tenant_session as get_db_session
 from app.ids import new_id
 from app.models import DetectionModel, SourceModel
 from app.schemas import DetectionBatchCreateRequest, DetectionResponse

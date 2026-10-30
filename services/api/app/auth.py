@@ -99,6 +99,7 @@ def get_current_principal(
     authorization: str | None = Header(default=None),
     x_internal_token: str | None = Header(default=None),
     token: str | None = Query(default=None),
+    session: Session = Depends(get_db_session),
 ) -> Principal:
     if x_internal_token:
         if x_internal_token != settings.internal_token:
@@ -111,7 +112,12 @@ def get_current_principal(
     raw = bearer or token
     if not raw:
         raise HTTPException(status_code=401, detail="Authentication required")
-    return _principal_from_token(raw)
+    claims = _principal_from_token(raw)
+    user = session.get(UserModel, claims.id)
+    if user is None or not user.active:
+        raise HTTPException(status_code=401, detail='Account unavailable')
+    return Principal(id=user.id, name=user.name, email=user.email, role=user.role,
+                     org_id=user.org_id, kind='user')
 
 
 def require_role(minimum: str, *, allow_service: bool = True):
@@ -135,6 +141,7 @@ def require_role(minimum: str, *, allow_service: bool = True):
 
 require_viewer = require_role("viewer")
 require_operator = require_role("operator")
+require_human_operator = require_role("operator", allow_service=False)
 require_supervisor = require_role("supervisor")
 require_admin = require_role("admin", allow_service=False)
 

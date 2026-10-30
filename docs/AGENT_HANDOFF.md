@@ -85,6 +85,22 @@ CI claim is made because no changes have been pushed.
 
 ## Remaining work
 
+### Offline authentication and tenant boundaries (2026-10-30)
+
+Docker recovery failed; user asked to work elsewhere. No further Docker work in
+this increment. Local API work now resolves current user activity, role and org
+from the database on every authenticated request. Human incident lifecycle actions
+reject service tokens. Organization settings, buildings and user lists follow the
+principal's workspace. New tenancy.py scopes request ORM reads for org-bearing
+models; bootstrap, source, incident, evidence, detection and live routes use it.
+SSE snapshots and incident/source fanout are org-filtered. Incident building must
+match its source. This is partial hardening, not complete tenancy acceptance:
+global pipeline status diagnostics, query-string access tokens, refresh/logout
+revocation, comprehensive cross-org write/link tests and production config remain.
+Redis publishing is mocked only in the local API test fixture, avoiding external
+service hangs. No runtime mocks added. All changes still require deployment
+verification when Docker recovers.
+
 ### Runtime follow-up (2026-10-30)
 
 OpenRouter enrichment initially exhausted 512 tokens on optional reasoning and

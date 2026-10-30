@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.auth import Principal, require_operator, require_supervisor, require_viewer
-from app.db import get_db_session
+from app.auth import Principal, require_human_operator, require_supervisor, require_viewer
+from app.tenancy import get_tenant_session as get_db_session
 from app.events import publish_event
 from app.ids import new_id
 from app.models import (
@@ -173,6 +173,8 @@ def create_incident(
     source = session.get(SourceModel, source_id)
     if source is None:
         raise HTTPException(status_code=404, detail="Source not found")
+    if payload.buildingId != source.building_id:
+        raise HTTPException(status_code=422, detail='Incident building must match its source')
 
     now = datetime.now(UTC)
     incident_id = payload.id or new_id("inc")
@@ -294,7 +296,7 @@ def _transition(
 def acknowledge_incident(
     incident_id: str = Path(...),
     session: Session = Depends(get_db_session),
-    principal: Principal = Depends(require_operator),
+    principal: Principal = Depends(require_human_operator),
 ) -> EventRecordResponse:
     actor = _actor_of(principal)
     incident = get_incident_or_404(incident_id, session)
@@ -308,7 +310,7 @@ def assign_incident(
     payload: IncidentAssignRequest,
     incident_id: str = Path(...),
     session: Session = Depends(get_db_session),
-    principal: Principal = Depends(require_operator),
+    principal: Principal = Depends(require_human_operator),
 ) -> EventRecordResponse:
     actor = _actor_of(principal)
     incident = get_incident_or_404(incident_id, session)
@@ -329,7 +331,7 @@ def assign_incident(
 def resolve_incident(
     incident_id: str = Path(...),
     session: Session = Depends(get_db_session),
-    principal: Principal = Depends(require_operator),
+    principal: Principal = Depends(require_human_operator),
 ) -> EventRecordResponse:
     actor = _actor_of(principal)
     incident = get_incident_or_404(incident_id, session)
@@ -342,7 +344,7 @@ def resolve_incident(
 def false_positive_incident(
     incident_id: str = Path(...),
     session: Session = Depends(get_db_session),
-    principal: Principal = Depends(require_operator),
+    principal: Principal = Depends(require_human_operator),
 ) -> EventRecordResponse:
     actor = _actor_of(principal)
     incident = get_incident_or_404(incident_id, session)
@@ -358,7 +360,7 @@ def update_incident_status(
     payload: IncidentStatusUpdateRequest,
     incident_id: str = Path(...),
     session: Session = Depends(get_db_session),
-    principal: Principal = Depends(require_operator),
+    principal: Principal = Depends(require_human_operator),
 ) -> EventRecordResponse:
     actor = _actor_of(principal)
     if payload.status not in INCIDENT_STATUSES:
@@ -385,7 +387,7 @@ def add_incident_comment(
     payload: IncidentCommentCreateRequest,
     incident_id: str = Path(...),
     session: Session = Depends(get_db_session),
-    principal: Principal = Depends(require_operator),
+    principal: Principal = Depends(require_human_operator),
 ) -> IncidentCommentResponse:
     actor = _actor_of(principal)
     incident = get_incident_or_404(incident_id, session)

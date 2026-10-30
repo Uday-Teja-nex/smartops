@@ -33,6 +33,14 @@ def client():
         _DB_PATH.unlink()
 
 
+@pytest.fixture(autouse=True)
+def isolate_event_transport(monkeypatch):
+    # Unit/API tests exercise persistence without waiting for a live Redis host.
+    from unittest.mock import Mock
+    from app import events
+    monkeypatch.setattr(events, '_redis', Mock())
+
+
 def login(client, email: str, password: str = "smartops-demo") -> dict[str, str]:
     response = client.post("/v1/auth/login", json={"email": email, "password": password})
     assert response.status_code == 200, response.text

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.auth import Principal, require_supervisor, require_viewer
 from app.config import get_settings
-from app.db import get_db_session
+from app.tenancy import get_tenant_session as get_db_session
 from app.models import OrganizationModel
 
 router = APIRouter(prefix="/v1", tags=["organization"], dependencies=[Depends(require_viewer)])
@@ -32,16 +32,16 @@ class RuntimeConfigResponse(BaseModel):
     evidenceUrlTtlSeconds: int
 
 
-def _get_org(session: Session) -> OrganizationModel:
-    org = session.scalars(select(OrganizationModel).limit(1)).first()
+def _get_org(session: Session, org_id: str) -> OrganizationModel:
+    org = session.get(OrganizationModel, org_id)
     if org is None:
         raise HTTPException(status_code=404, detail="No organization configured")
     return org
 
 
 @router.get("/org", response_model=OrgResponse)
-def get_org(session: Session = Depends(get_db_session)) -> OrgResponse:
-    org = _get_org(session)
+def get_org(session: Session = Depends(get_db_session), principal: Principal = Depends(require_viewer)) -> OrgResponse:
+    org = _get_org(session, principal.org_id)
     return OrgResponse(id=org.id, name=org.name, slug=org.slug, settings=org.settings or {})
 
 
@@ -49,9 +49,9 @@ def get_org(session: Session = Depends(get_db_session)) -> OrgResponse:
 def update_org_settings(
     payload: OrgSettingsUpdateRequest,
     session: Session = Depends(get_db_session),
-    _: Principal = Depends(require_supervisor),
+    principal: Principal = Depends(require_supervisor),
 ) -> OrgResponse:
-    org = _get_org(session)
+    org = _get_org(session, principal.org_id)
     org.settings = {**(org.settings or {}), **payload.settings}
     session.commit()
     session.refresh(org)

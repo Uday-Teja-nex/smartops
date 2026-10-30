@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.auth import require_viewer
 from app.config import get_settings
-from app.db import get_db_session
+from app.tenancy import get_tenant_session as get_db_session
 from app.models import BuildingModel, FloorModel, IncidentModel, SourceModel
 from app.schemas import BootstrapResponse, RuntimeSummaryResponse
 from app.serializers import (
