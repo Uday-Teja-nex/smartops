@@ -216,8 +216,9 @@ Network failures, 401, 409, 429 and server errors still retry. Quarantine retain
 the rejected payload/status and does not remove a newer pending update. AI
 reviews wait while an incident has unresolved dead letters. Explicit
 Outbox.replay_dead_letter(sequence) recovery refuses to overwrite pending data;
-operator UI/CLI for inspecting and replaying these records remains to be built.
-Video-ingest suite passes 39 tests; these changes are not deployed.
+the recovery CLI now provides summary-only inspection and explicit replay.
+See INCIDENT_RECOVERY.md. An operator UI remains unimplemented.
+Video-ingest suite passes 41 tests; these changes are not deployed.
 MediaMTX ports remain
 loopback-only. Do not treat this build as production-ready or client-demo-ready.
 
