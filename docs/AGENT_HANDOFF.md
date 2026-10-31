@@ -220,7 +220,12 @@ totals, with loading/error/empty states and explicit refresh. Tests prove a
 pass. CSV export now uses the displayed report snapshot, includes interval and
 metric definitions, preserves null timing samples as blank, and neutralizes
 spreadsheet formulas in labels. Two export tests, typecheck and targeted lint
-pass. PDF export, browser download QA, and production-load checks remain pending.
+pass. Print / Save PDF now opens an isolated printable report using the browser
+print dialog. Three export tests, typecheck and targeted lint pass. Edge rendered
+the explicitly synthetic empty-report fixture and generated report-print-layout.pdf;
+the screenshot was inspected (only console error: temporary-server favicon 404).
+Actual app print-dialog flow, populated/long PDF pagination, CSV browser download,
+and production-load checks remain pending. This is not direct PDF download.
 
 Continuous incident delivery now quarantines non-retryable HTTP rejections in
 the per-source SQLite dead_letters table so later incidents can proceed.

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSmartOps } from "@/app/providers";
 import { fetchIncidentReport, IncidentReport } from "@/lib/api";
 import { downloadReportCsv } from "@/lib/report-export";
+import { printReport } from "@/lib/report-print";
 
 const minutes = (value: number | null) => value === null ? "No data" : `${value.toFixed(1)} min`;
 const percent = (value: number | null) => value === null ? "No data" : `${(value * 100).toFixed(1)}%`;
@@ -40,6 +41,7 @@ export default function ReportsPage() {
         <p className="mt-2 text-sm text-slate-400">Computed from all stored incidents in the selected building and period. No AI-generated narrative.</p></div>
       <button onClick={refresh} disabled={loading} className="rounded-lg border border-slate-600 px-4 py-2 text-sm disabled:opacity-50">Refresh</button>
       <button onClick={() => current && downloadReportCsv(current.daily, current.weekly)} disabled={!current || loading || !!error} className="rounded-lg border border-slate-600 px-4 py-2 text-sm disabled:opacity-50">Export CSV</button>
+      <button onClick={() => current && printReport(current.daily, current.weekly)} disabled={!current || loading || !!error} className="rounded-lg border border-slate-600 px-4 py-2 text-sm disabled:opacity-50">Print / Save PDF</button>
     </div>
     {!selectedBuildingId ? <p>Select a building to view its report.</p>
       : error ? <p role="alert" className="rounded-xl border border-red-500/40 p-5 text-red-300">{error}</p>

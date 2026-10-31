@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { IncidentReport } from "./api";
 import { reportCsv } from "./report-export";
+import { reportPrintHtml } from "./report-print";
 
 const report: IncidentReport = {
   start: "2026-11-01T00:00:00Z", end: "2026-11-02T00:00:00Z", timezone: "UTC", buildingId: "building",
@@ -11,6 +12,17 @@ const report: IncidentReport = {
 };
 
 describe("report CSV", () => {
+  it("prints snapshot context and escapes untrusted report labels", () => {
+    const html = reportPrintHtml(report, { ...report, buildingId: '<script>alert(1)</script>' });
+    expect(html).not.toContain('<script>');
+    expect(html).toContain('&lt;script&gt;');
+    expect(html).toContain('Last 24 hours');
+    expect(html).toContain('Last 7 days');
+    expect(html).toContain('No data');
+    expect(html).toContain('201');
+    expect(html).toContain(report.start);
+    expect(html).toContain('No AI-generated narrative');
+  });
   it("preserves the snapshot and distinguishes missing samples from zero", () => {
     const csv = reportCsv(report, report);
     expect(csv).toContain('"total_incidents","201","count"');
