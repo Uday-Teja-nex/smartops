@@ -51,6 +51,35 @@ def test_incident_cannot_claim_a_different_building(client, pipeline_source, ser
     assert response.status_code == 422
 
 
+def test_evidence_links_must_match_incident_source_and_candidate(client, pipeline_source, service_headers):
+    incident = client.post('/v1/incidents', headers=service_headers,
+                           json=_incident_payload(pipeline_source['id'], candidateId='cand-evidence-links')).json()
+    other = client.post('/v1/sources', headers=service_headers, json={
+        'name': 'Other evidence camera', 'buildingId': 'bldg-north-01',
+        'floor': 'L1', 'zone': 'Lobby Atrium', 'sourceType': 'file',
+        'sourceUri': '/app/sample-data/input/other.mp4',
+    }).json()
+    payload = {'sourceId': other['id'], 'incidentId': incident['id'],
+               'candidateId': 'cand-evidence-links', 'kind': 'snapshot',
+               'objectKey': 'tests/evidence.jpg', 'contentType': 'image/jpeg'}
+    assert client.post('/v1/evidence', headers=service_headers, json=payload).status_code == 422
+    payload['sourceId'] = pipeline_source['id']
+    payload['candidateId'] = 'wrong-candidate'
+    assert client.post('/v1/evidence', headers=service_headers, json=payload).status_code == 422
+    payload['candidateId'] = 'cand-evidence-links'
+    saved = client.post('/v1/evidence', headers=service_headers, json=payload)
+    assert saved.status_code == 201
+    # Candidate IDs alone must not join evidence from another camera.
+    foreign = client.post('/v1/evidence', headers=service_headers,
+                          json={**payload, 'sourceId': other['id'], 'incidentId': None})
+    assert foreign.status_code == 201
+    listed = client.get('/v1/evidence', headers=service_headers,
+                        params={'incidentId': incident['id']}).json()
+    assert {item['id'] for item in listed} == {saved.json()['id']}
+    detail = client.get('/v1/incidents/' + incident['id'], headers=service_headers).json()
+    assert {item['id'] for item in detail['evidenceItems']} == {saved.json()['id']}
+
+
 def test_full_incident_lifecycle_with_audit(
     client, pipeline_source, service_headers, operator_headers, viewer_headers
 ):

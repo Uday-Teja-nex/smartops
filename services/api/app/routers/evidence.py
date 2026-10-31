@@ -29,8 +29,14 @@ def create_evidence_item(
     source = session.get(SourceModel, payload.sourceId)
     if source is None:
         raise HTTPException(status_code=404, detail="Source not found")
-    if payload.incidentId and session.get(IncidentModel, payload.incidentId) is None:
-        raise HTTPException(status_code=404, detail="Incident not found")
+    if payload.incidentId:
+        incident = session.get(IncidentModel, payload.incidentId)
+        if incident is None:
+            raise HTTPException(status_code=404, detail="Incident not found")
+        if incident.source_id != source.id:
+            raise HTTPException(status_code=422, detail="Evidence source does not match incident")
+        if payload.candidateId and payload.candidateId != incident.candidate_id:
+            raise HTTPException(status_code=422, detail="Evidence candidate does not match incident")
 
     item = EvidenceItemModel(
         id=new_id("evd"),
@@ -71,7 +77,7 @@ def list_evidence(
         conditions = [EvidenceItemModel.incident_id == incident_id]
         if incident.candidate_id:
             conditions.append(EvidenceItemModel.candidate_id == incident.candidate_id)
-        query = query.where(or_(*conditions))
+        query = query.where(or_(*conditions), EvidenceItemModel.source_id == incident.source_id)
     if candidate_id:
         query = query.where(EvidenceItemModel.candidate_id == candidate_id)
     if source_id:

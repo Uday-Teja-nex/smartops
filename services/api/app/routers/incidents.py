@@ -141,6 +141,7 @@ def get_incident_detail(
             session.scalars(
                 select(DetectionModel)
                 .where(DetectionModel.candidate_id == incident.candidate_id)
+                .where(DetectionModel.source_id == incident.source_id)
                 .order_by(DetectionModel.frame_ts, DetectionModel.frame_index)
             ).all()
         )
@@ -154,6 +155,7 @@ def get_incident_detail(
         session.scalars(
             select(EvidenceItemModel)
             .where(or_(*evidence_conditions))
+            .where(EvidenceItemModel.source_id == incident.source_id)
             .order_by(EvidenceItemModel.created_at)
         ).all()
     )
