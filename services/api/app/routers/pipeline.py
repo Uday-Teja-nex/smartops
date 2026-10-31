@@ -1,4 +1,5 @@
 import json
+import time
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
@@ -10,19 +11,21 @@ from sqlalchemy.orm import Session
 from app.auth import Principal, require_viewer
 from app.config import get_settings
 from app.db import engine
+from app.tenancy import get_tenant_session
 from app.events import EVENTS_CHANNEL
 from app.models import IncidentModel, SourceModel
 from app.serializers import serialize_incident, serialize_source
 
-# require_viewer accepts the JWT as a `token` query parameter, which is how
-# the SSE stream authenticates (EventSource cannot set headers).
+# SSE accepts a short-lived, purpose-bound ticket; REST uses bearer auth.
 router = APIRouter(prefix="/v1", tags=["pipeline"], dependencies=[Depends(require_viewer)])
 settings = get_settings()
 redis_client = Redis.from_url(settings.redis_url, decode_responses=True)
 
 
 @router.get("/pipeline/status")
-def pipeline_status() -> dict[str, object]:
+def pipeline_status(principal: Principal = Depends(require_viewer),
+                    session: Session = Depends(get_tenant_session)) -> dict[str, object]:
+    source_ids = set(session.scalars(select(SourceModel.id)).all())
     status_keys = list(redis_client.scan_iter("smartops:candidate_status:*", count=100))
     statuses: list[dict[str, object]] = []
     for key in status_keys[:50]:
@@ -33,13 +36,14 @@ def pipeline_status() -> dict[str, object]:
             status = json.loads(raw)
         except json.JSONDecodeError:
             status = {"candidateId": key.rsplit(":", 1)[-1], "state": "unparseable"}
-        statuses.append(status)
+        if isinstance(status, dict) and status.get('sourceId') in source_ids:
+            statuses.append(status)
 
     statuses.sort(key=lambda item: str(item.get("updatedAt", "")), reverse=True)
     return {
         "queue": settings.candidate_queue,
-        "queued": redis_client.llen(settings.candidate_queue),
-        "deadLetter": redis_client.llen(settings.dead_letter_queue),
+        "queued": redis_client.llen(settings.candidate_queue) if principal.kind == "service" else None,
+        "deadLetter": redis_client.llen(settings.dead_letter_queue) if principal.kind == "service" else None,
         "recentStatuses": statuses,
     }
 
@@ -75,13 +79,14 @@ async def stream_events(principal: Principal = Depends(require_viewer)) -> Strea
     """
 
     async def event_generator():
+        deadline = time.monotonic() + 60
         yield f"event: snapshot\ndata: {_snapshot_payload(principal.org_id)}\n\n"
 
         client = aioredis.from_url(settings.redis_url, decode_responses=True)
         pubsub = client.pubsub()
         await pubsub.subscribe(EVENTS_CHANNEL)
         try:
-            while True:
+            while time.monotonic() < deadline:
                 message = await pubsub.get_message(
                     ignore_subscribe_messages=True, timeout=15.0
                 )

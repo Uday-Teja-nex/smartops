@@ -277,8 +277,8 @@ export type PipelineCandidateStatus = {
 
 export type PipelineStatus = {
   queue: string;
-  queued: number;
-  deadLetter: number;
+  queued: number | null;
+  deadLetter: number | null;
   recentStatuses: PipelineCandidateStatus[];
 };
 

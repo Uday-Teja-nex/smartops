@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
 import jwt
-from fastapi import Depends, Header, HTTPException, Query
+from fastapi import Depends, Header, HTTPException, Query, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -96,9 +96,11 @@ def _principal_from_token(token: str) -> Principal:
 
 
 def get_current_principal(
+    request: Request,
     authorization: str | None = Header(default=None),
     x_internal_token: str | None = Header(default=None),
     token: str | None = Query(default=None),
+    ticket: str | None = Query(default=None),
     session: Session = Depends(get_db_session),
 ) -> Principal:
     if x_internal_token:
@@ -109,7 +111,20 @@ def get_current_principal(
     bearer = None
     if authorization and authorization.lower().startswith("bearer "):
         bearer = authorization[7:].strip()
-    raw = bearer or token
+    if ticket and request.url.path == '/v1/incidents/stream':
+        try:
+            claims = jwt.decode(ticket, settings.jwt_secret, algorithms=['HS256'], audience='incident-stream',
+                                options={'require': ['exp', 'sub', 'org']})
+            user = session.get(UserModel, claims['sub'])
+            if user is None or not user.active or user.org_id != claims['org']:
+                raise HTTPException(status_code=401, detail='Account unavailable')
+            return Principal(user.id, user.name, user.email, user.role, user.org_id, 'user')
+        except jwt.InvalidTokenError as exc:
+            raise HTTPException(status_code=401, detail='Invalid or expired stream ticket') from exc
+    # Legacy local video URLs remain a separate migration; REST and SSE no
+    # longer accept long-lived query credentials.
+    clip_request = request.url.path.startswith('/v1/sources/') and request.url.path.endswith('/clip')
+    raw = bearer or (token if clip_request else None)
     if not raw:
         raise HTTPException(status_code=401, detail="Authentication required")
     claims = _principal_from_token(raw)

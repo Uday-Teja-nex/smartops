@@ -85,6 +85,19 @@ CI claim is made because no changes have been pushed.
 
 ## Remaining work
 
+### Stream credential and diagnostic isolation (2026-10-31)
+
+SSE UI now obtains a 30-second, incident-stream-audience JWT ticket through an
+authenticated POST. Long-lived query tokens are rejected on REST/SSE; legacy
+local source clip URLs still accept them and remain a migration task. Streams
+close after approximately one minute (plus a bounded Redis wait), forcing a
+fresh ticket/account check on reconnect. Tickets may be reused within their
+short expiry; they are not single-use. Browser reconnect acceptance is pending.
+Pipeline diagnostics filter status rows by accessible source IDs; global queue
+counts are null for user principals rather than exposing other tenants' totals.
+Monitoring already renders unavailable counts as a dash. These changes are local,
+not deployed; no Docker recovery attempted during this increment.
+
 ### Offline authentication and tenant boundaries (2026-10-30)
 
 Docker recovery failed; user asked to work elsewhere. No further Docker work in

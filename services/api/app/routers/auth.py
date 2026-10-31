@@ -13,6 +13,19 @@ router = APIRouter(prefix="/v1/auth", tags=["auth"])
 users_router = APIRouter(prefix="/v1", tags=["users"])
 
 
+@router.post('/stream-ticket')
+def stream_ticket(principal: Principal = Depends(get_current_principal)):
+    from datetime import UTC, datetime, timedelta
+    import jwt
+    from app.config import get_settings
+    if principal.kind != 'user':
+        raise HTTPException(status_code=403, detail='User session required')
+    expires = datetime.now(UTC) + timedelta(seconds=30)
+    token = jwt.encode({'sub': principal.id, 'org': principal.org_id, 'aud': 'incident-stream',
+                        'exp': expires}, get_settings().jwt_secret, algorithm='HS256')
+    return {'ticket': token, 'expiresInSeconds': 30}
+
+
 class LoginRequest(BaseModel):
     email: str = Field(min_length=3, max_length=160)
     password: str = Field(min_length=1)

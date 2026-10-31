@@ -45,12 +45,12 @@ def test_invalid_internal_token_rejected(client):
     assert response.status_code == 401
 
 
-def test_sse_token_query_param_authenticates(client, viewer_headers):
+def test_access_token_query_param_rejected(client, viewer_headers):
     # SSE/video clients cannot set headers, so auth accepts ?token=.
     # Use a Redis-free endpoint: unit tests run without a Redis server.
     token = viewer_headers["Authorization"].removeprefix("Bearer ")
     response = client.get(f"/v1/bootstrap?token={token}")
-    assert response.status_code == 200
+    assert response.status_code == 401
     assert client.get("/v1/bootstrap?token=not-a-jwt").status_code == 401
 
 
@@ -60,3 +60,40 @@ def test_users_list_is_admin_only(client, admin_headers, operator_headers):
     assert response.status_code == 200
     roles = {user["role"] for user in response.json()}
     assert {"admin", "supervisor", "operator", "viewer", "security", "ehs"} <= roles
+
+
+def test_stream_ticket_is_short_lived_and_not_a_rest_credential(client, viewer_headers):
+    import jwt
+    from app.config import get_settings
+    response = client.post('/v1/auth/stream-ticket', headers=viewer_headers)
+    assert response.status_code == 200
+    ticket = response.json()['ticket']
+    claims = jwt.decode(ticket, get_settings().jwt_secret, algorithms=['HS256'], audience='incident-stream')
+    assert claims['org'] == 'org-demo'
+    assert response.json()['expiresInSeconds'] == 30
+    assert client.get('/v1/bootstrap', headers={'Authorization': 'Bearer ' + ticket}).status_code == 401
+    assert client.get('/v1/bootstrap', params={'ticket': ticket}).status_code == 401
+
+
+def test_stream_ticket_rejects_expiry_wrong_audience_and_disabled_user(client, viewer_headers):
+    import jwt
+    from datetime import UTC, datetime, timedelta
+    from sqlalchemy.orm import Session
+    from app.config import get_settings
+    from app.db import engine
+    from app.models import UserModel
+    ticket = client.post('/v1/auth/stream-ticket', headers=viewer_headers).json()['ticket']
+    claims = jwt.decode(ticket, get_settings().jwt_secret, algorithms=['HS256'], audience='incident-stream')
+    expired = jwt.encode({**claims, 'exp': datetime.now(UTC) - timedelta(seconds=1)}, get_settings().jwt_secret, algorithm='HS256')
+    assert client.get('/v1/incidents/stream', params={'ticket': expired}).status_code == 401
+    wrong = jwt.encode({**claims, 'aud': 'another-purpose'}, get_settings().jwt_secret, algorithm='HS256')
+    assert client.get('/v1/incidents/stream', params={'ticket': wrong}).status_code == 401
+    with Session(engine) as session:
+        session.get(UserModel, claims['sub']).active = False
+        session.commit()
+    try:
+        assert client.get('/v1/incidents/stream', params={'ticket': ticket}).status_code == 401
+    finally:
+        with Session(engine) as session:
+            session.get(UserModel, claims['sub']).active = True
+            session.commit()

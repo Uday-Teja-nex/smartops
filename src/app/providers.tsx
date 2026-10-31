@@ -63,7 +63,13 @@ const SessionProvider = ({ children, token }: { children: React.ReactNode; token
           ? current : bootstrap.buildings[0]?.id ?? "");
         // Start streaming only after bootstrap to avoid a stale REST response
         // overwriting a newer stream event.
-        stream = new EventSource(`${getApiBaseUrl()}/v1/incidents/stream?token=${encodeURIComponent(token)}`);
+        const ticketResponse = await fetch(`${getApiBaseUrl()}/v1/auth/stream-ticket`, {
+          method: 'POST', headers: { Authorization: `Bearer ${token}` }, cache: 'no-store',
+        });
+        if (!ticketResponse.ok) throw new Error('Stream authorization unavailable');
+        const { ticket } = await ticketResponse.json() as { ticket: string };
+        if (!active) return;
+        stream = new EventSource(`${getApiBaseUrl()}/v1/incidents/stream?ticket=${encodeURIComponent(ticket)}`);
         stream.addEventListener("snapshot", (event) => {
           try {
             const snapshot = JSON.parse(event.data) as { incidents: EventRecord[]; sources: SourceRecord[] };
