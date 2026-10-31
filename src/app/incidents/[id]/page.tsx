@@ -31,6 +31,7 @@ import { SkeletonPanel } from "@/components/ui/Skeleton";
 import {
   addIncidentComment,
   fetchEvidenceUrl,
+  ApiError,
   fetchIncidentDetail,
   patchIncidentAction,
 } from "@/lib/api";
@@ -60,6 +61,7 @@ export default function IncidentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [clipUrl, setClipUrl] = useState<string | null>(null);
+  const [evidenceMessage, setEvidenceMessage] = useState("Loading evidence…");
   const [comment, setComment] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -70,13 +72,20 @@ export default function IncidentDetailPage() {
       setError(null);
 
       let resolved: string | null = null;
+      setClipUrl(null);
+      setEvidenceMessage("Loading evidence…");
       const clip = next.evidenceItems.find((item) => item.kind === "clip");
       if (clip) {
         try {
           resolved = (await fetchEvidenceUrl(clip.id)).url;
-        } catch {
+        } catch (error) {
           resolved = null;
+          setEvidenceMessage(error instanceof ApiError && error.status === 403
+            ? "Restricted evidence requires an operator role or higher."
+            : "Evidence could not be loaded. Reload this page to retry.");
         }
+      } else {
+        setEvidenceMessage("No playable evidence clip has been recorded for this incident.");
       }
       setClipUrl(resolved);
     } catch (err) {
@@ -277,7 +286,7 @@ export default function IncidentDetailPage() {
               />
             ) : (
               <div className="mt-3 rounded-xl border border-dashed border-[color:var(--glass-border)] p-8 text-center text-xs text-slate-500">
-                No playable evidence clip is available for this incident.
+                {evidenceMessage}
               </div>
             )}
             <p className="mt-3 text-[11px] text-slate-600">

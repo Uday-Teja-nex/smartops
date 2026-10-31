@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
-  Lock,
   ClipboardCheck,
   UserCheck,
   CheckCircle2,
@@ -14,6 +13,7 @@ import { SourceRecord, EventRecord, IncidentDetail } from "@/lib/types";
 import {
   fetchEvidenceUrl,
   fetchIncidentDetail,
+  ApiError,
 } from "@/lib/api";
 import { formatConfidence, formatDateTime } from "@/lib/utils";
 import { Badge } from "@/components/Badge";
@@ -48,6 +48,7 @@ export const EventDetailDrawer = ({
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const [detail, setDetail] = useState<IncidentDetail | null>(null);
   const [clipUrl, setClipUrl] = useState<string | null>(null);
+  const [evidenceMessage, setEvidenceMessage] = useState("Loading evidence…");
 
   useEffect(() => {
     if (open) {
@@ -66,6 +67,7 @@ export const EventDetailDrawer = ({
       if (active) {
         setDetail(null);
         setClipUrl(null);
+        setEvidenceMessage("Loading evidence…");
       }
       if (!open || !eventId) return;
       let resolved: string | null = null;
@@ -80,9 +82,13 @@ export const EventDetailDrawer = ({
           const presigned = await fetchEvidenceUrl(clip.id);
           if (!active) return;
           resolved = presigned.url;
+        } else {
+          setEvidenceMessage("No playable evidence clip has been recorded for this incident.");
         }
-      } catch {
-        // Leave evidence unavailable when the request fails.
+      } catch (error) {
+        if (active) setEvidenceMessage(error instanceof ApiError && error.status === 403
+          ? "Restricted evidence requires an operator role or higher."
+          : "Evidence could not be loaded. Close and reopen this incident to retry.");
       }
       if (active) setClipUrl(resolved);
     };
@@ -213,19 +219,8 @@ export const EventDetailDrawer = ({
               burnedInOverlays={detail?.evidenceItems.find((item) => item.kind === "clip")?.meta.overlaysBurnedIn === true}
             />
           ) : (
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              {[0, 1].map((index) => (
-                <div
-                  key={`${event.id}-evidence-${index}`}
-                  className="relative overflow-hidden rounded-xl border border-[color:var(--border)]"
-                >
-                  <div className="h-28 w-full bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950" />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-950/60 text-xs font-semibold uppercase tracking-wide text-white">
-                    <Lock className="h-4 w-4" aria-hidden />
-                    Restricted
-                  </div>
-                </div>
-              ))}
+            <div role="status" className="mt-3 rounded-xl border border-[color:var(--border)] p-6 text-sm text-slate-400">
+              {evidenceMessage}
             </div>
           )}
           <p className="mt-2 text-xs text-slate-400">

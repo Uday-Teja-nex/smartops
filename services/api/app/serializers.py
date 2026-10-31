@@ -150,8 +150,10 @@ def _incident_fields(model: IncidentModel) -> dict:
         "recommendedActions": model.recommended_actions,
         "reviewNotes": model.review_notes or [],
         "evidence": EvidenceResponse(
-            thumbnailUrl=model.evidence_thumbnail_url,
-            clipUrl=model.evidence_clip_url,
+            # Legacy stored URLs bypass per-object access checks. Clients obtain
+            # media through /evidence/{id}/url after authorization and auditing.
+            thumbnailUrl="",
+            clipUrl="",
             restricted=model.evidence_restricted,
         ),
         "assignedTo": model.assigned_to,

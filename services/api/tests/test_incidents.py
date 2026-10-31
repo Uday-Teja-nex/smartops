@@ -94,6 +94,9 @@ def test_full_incident_lifecycle_with_audit(
     assert incident["subcategory"] == "blocked_exit"
     assert "cameraId" not in incident
     assert incident["sourceId"] == pipeline_source["id"]
+    # Legacy URLs must not bypass per-object authorization and issuance audit.
+    assert incident['evidence']['clipUrl'] == ''
+    assert incident['evidence']['thumbnailUrl'] == ''
 
     # viewer: read yes, mutate no
     assert client.get(f"/v1/incidents/{incident_id}", headers=viewer_headers).status_code == 200
