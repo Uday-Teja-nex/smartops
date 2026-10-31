@@ -9,6 +9,7 @@ def test_quarantine_is_durable_and_preserves_newer_pending_update(tmp_path):
     box.append({'id': 'one', 'version': 2})
     box.quarantine(old, 422)
     assert box[0]['version'] == 2
+    assert box.delivery_health() == {'pendingIncidents': 1, 'rejectedIncidentVersions': 1, 'pendingReviews': 0}
     box.close()
     box = Outbox(path)
     assert box.db.execute('SELECT id,status FROM dead_letters').fetchall() == [('one', 422)]

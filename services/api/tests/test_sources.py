@@ -170,6 +170,17 @@ def test_legacy_camera_alias_removed(client, service_headers):
     assert "sources" in bootstrap
     assert "cameras" not in bootstrap
 
+
+def test_delivery_health_is_persisted_for_monitoring(client, service_headers, viewer_headers):
+    created = client.post('/v1/sources', headers=service_headers, json=_source_payload(name='Delivery telemetry'))
+    source_id = created.json()['id']
+    counts = {'pendingIncidents': 2, 'rejectedIncidentVersions': 3, 'pendingReviews': 4}
+    reported = client.post(f'/v1/sources/{source_id}/health', headers=service_headers,
+                           json={'status': 'processing', 'adapter': 'continuous-rtsp', 'details': counts})
+    assert reported.status_code == 200
+    saved = client.get(f'/v1/sources/{source_id}', headers=viewer_headers).json()
+    assert {key: saved['health'][key] for key in counts} == counts
+
 def test_offline_and_image_quality_incidents_are_broadcast_and_distinct(client, supervisor_headers, service_headers, viewer_headers, monkeypatch):
     from app.routers import sources
     broadcasts = []

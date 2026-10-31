@@ -228,8 +228,16 @@ export default function MonitoringPage() {
                       <div><dt className="text-slate-500">Frame lag</dt><dd>{typeof source.health.processingLagMs === "number" ? `${Math.round(source.health.processingLagMs)} ms` : "Unavailable"}</dd></div>
                       <div><dt className="text-slate-500">Incident queue</dt><dd>{String(source.health.pendingIncidents ?? "Unavailable")}</dd></div>
                       <div><dt className="text-slate-500">Evidence queue</dt><dd>{String(source.health.pendingEvidence ?? "Unavailable")}</dd></div>
+                      <div><dt className="text-slate-500">AI review queue</dt><dd>{String(source.health.pendingReviews ?? "Unavailable")}</dd></div>
+                      <div><dt className="text-slate-500">Rejected deliveries</dt><dd>{String(source.health.rejectedIncidentVersions ?? "Unavailable")}</dd></div>
                       <div><dt className="text-slate-500">Errors this run</dt><dd>{String(source.health.processingErrors ?? "Unavailable")}</dd></div>
                     </dl>}
+                    {typeof source.health?.rejectedIncidentVersions === "number" && source.health.rejectedIncidentVersions > 0 && (
+                      <p role="status" className="mt-2 rounded-lg bg-amber-500/10 px-2 py-2 text-xs text-amber-200">
+                        {source.health.rejectedIncidentVersions} rejected incident delivery version(s) need attention.
+                        They are retained for recovery; later incidents continue processing. Ask an administrator to review the delivery journal.
+                      </p>
+                    )}
                     {source.health?.lastError ? (
                       <p className="mt-2 truncate rounded-lg bg-rose-500/10 px-2 py-1 text-[11px] text-rose-300">
                         {String(source.health.lastError)}

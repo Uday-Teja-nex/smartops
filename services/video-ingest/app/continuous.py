@@ -132,7 +132,7 @@ def run(source, client, stop, *, detector_url, fps=3):
                                    'failing' if quality['issues'] else 'processing' if fresh else 'offline'),
                         'adapter': 'continuous-rtsp',
                         'lastError': ', '.join(quality['issues']) if quality['issues'] else None if fresh else reader.last_error,
-                        'details': {'frameSequence': reader.sequence, 'pendingIncidents': len(pending),
+                        'details': {'frameSequence': reader.sequence, **pending.delivery_health(),
                                     'processedFrames': processed_frames,
                                     'processingFps': (processed_frames - last_processed_frames) / max(.001, tick - last_health),
                                     'detectorLatencyMs': detector_ms, 'processingLagMs': processing_lag_ms,

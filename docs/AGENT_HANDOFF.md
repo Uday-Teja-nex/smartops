@@ -219,6 +219,10 @@ Outbox.replay_dead_letter(sequence) recovery refuses to overwrite pending data;
 the recovery CLI now provides summary-only inspection and explicit replay.
 See INCIDENT_RECOVERY.md. An operator UI remains unimplemented.
 Video-ingest suite passes 41 tests; these changes are not deployed.
+Per-source health reports now carry measured pending delivery, rejected-version,
+and queued-review counts from SQLite. Monitoring shows these and a recovery
+warning when rejection counts are nonzero. The source API round-trip test passes
+(10 source tests); frontend typecheck and targeted lint pass. Browser QA pending.
 MediaMTX ports remain
 loopback-only. Do not treat this build as production-ready or client-demo-ready.
 

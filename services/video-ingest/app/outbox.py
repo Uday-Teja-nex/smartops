@@ -56,6 +56,12 @@ class Outbox:
     def __len__(self):
         return self.db.execute('SELECT count(*) FROM pending').fetchone()[0]
 
+    def delivery_health(self):
+        row = self.db.execute('SELECT (SELECT count(*) FROM pending), '
+                              '(SELECT count(*) FROM dead_letters), '
+                              '(SELECT count(*) FROM review_jobs)').fetchone()
+        return dict(zip(('pendingIncidents', 'rejectedIncidentVersions', 'pendingReviews'), row))
+
     def __getitem__(self, index):
         if index != 0:
             raise IndexError('Only the oldest pending incident can be read')
