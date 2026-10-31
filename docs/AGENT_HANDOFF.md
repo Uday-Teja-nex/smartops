@@ -217,7 +217,10 @@ missing timing samples. Daily buckets use UTC; boundary days may be partial.
 The page shows rolling 24-hour and 7-day summaries, category counts and daily
 totals, with loading/error/empty states and explicit refresh. Tests prove a
 201-row report and foreign-workspace isolation; TypeScript and targeted lint
-pass. CSV/PDF exports, browser QA, and production-load checks remain pending.
+pass. CSV export now uses the displayed report snapshot, includes interval and
+metric definitions, preserves null timing samples as blank, and neutralizes
+spreadsheet formulas in labels. Two export tests, typecheck and targeted lint
+pass. PDF export, browser download QA, and production-load checks remain pending.
 
 Continuous incident delivery now quarantines non-retryable HTTP rejections in
 the per-source SQLite dead_letters table so later incidents can proceed.
