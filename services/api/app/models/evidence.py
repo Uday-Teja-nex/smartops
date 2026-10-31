@@ -8,6 +8,18 @@ from app.db import Base
 EVIDENCE_KINDS = ("snapshot", "thumbnail", "clip", "metadata")
 
 
+class EvidenceAccessModel(Base):
+    """Records URL issuance, not proof that the recipient downloaded an object."""
+
+    __tablename__ = 'evidence_access'
+    id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    org_id: Mapped[str] = mapped_column(ForeignKey('organizations.id'), nullable=False, index=True)
+    evidence_id: Mapped[str] = mapped_column(ForeignKey('evidence_items.id'), nullable=False, index=True)
+    actor_id: Mapped[str] = mapped_column(String(80), nullable=False)
+    actor_role: Mapped[str] = mapped_column(String(32), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
 class EvidenceItemModel(Base):
     """Object-storage-backed evidence artifact (MinIO/S3).
 

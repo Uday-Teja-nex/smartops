@@ -177,7 +177,13 @@ reports, phone onboarding and repeated full demo E2E remain required.
 SSE now uses 30-second audience-bound tickets and periodically reconnects.
 Long-lived query credentials are rejected, including on local clip endpoints;
 the unused frontend clip URL helper was removed. Ticket responses use no-store.
-Local API tests pass (51); deployment and browser reconnect remain unverified.
+Local API suite passes (52), plus the added audit migration round-trip test;
+deployment and browser reconnect remain unverified.
+Evidence URL issuance now requires a human user; restricted items require
+operator level or higher. Issuance is persisted in tenant-scoped evidence_access
+before returning a no-store response, without storing the signed URL. Migration
+0002 upgrade/downgrade passed on SQLite; PostgreSQL deployment is still pending.
+An issuance record proves authorization to retrieve, not an actual download.
 API production startup now rejects default/short JWT and internal secrets,
 default/short enabled object-storage secrets, demo account seeding, and wildcard
 or empty CORS allowlists. Validation tracebacks hide configuration input values.

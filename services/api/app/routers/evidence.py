@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
@@ -8,7 +8,7 @@ from app.auth import Principal, require_supervisor, require_viewer
 from app.config import get_settings
 from app.tenancy import get_tenant_session as get_db_session
 from app.ids import new_id
-from app.models import EvidenceItemModel, IncidentModel, SourceModel
+from app.models import EvidenceAccessModel, EvidenceItemModel, IncidentModel, SourceModel
 from app.schemas import (
     EvidenceItemCreateRequest,
     EvidenceItemResponse,
@@ -89,17 +89,16 @@ def list_evidence(
 @router.get("/evidence/{evidence_id}/url", response_model=EvidenceUrlResponse)
 def get_evidence_url(
     evidence_id: str,
+    response: Response,
     session: Session = Depends(get_db_session),
+    principal: Principal = Depends(require_viewer),
 ) -> EvidenceUrlResponse:
-    """Issue a short-lived presigned URL for one evidence object.
-
-    Access control today: restricted evidence is still served because auth
-    lands in the RBAC phase; the access path is centralized here so role
-    checks bolt on in one place.
-    """
+    """Authorize and audit URL issuance; this does not assert a download occurred."""
     item = session.get(EvidenceItemModel, evidence_id)
     if item is None:
         raise HTTPException(status_code=404, detail="Evidence not found")
+    if principal.kind != 'user' or (item.restricted and principal.level < 1):
+        raise HTTPException(status_code=403, detail='Restricted evidence requires an operator role or higher')
     if not settings.evidence_storage_enabled:
         raise HTTPException(status_code=503, detail="Evidence storage is disabled")
 
@@ -108,7 +107,14 @@ def get_evidence_url(
     try:
         url = presign_get_url(item.object_key)
     except Exception as exc:  # noqa: BLE001 - storage outage surfaces as 503.
-        raise HTTPException(status_code=503, detail=f"Object storage unavailable: {exc}") from exc
+        raise HTTPException(status_code=503, detail="Object storage unavailable") from exc
+
+    session.add(EvidenceAccessModel(
+        id=new_id('eva'), org_id=item.org_id, evidence_id=item.id,
+        actor_id=principal.id, actor_role=principal.role, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    response.headers['Cache-Control'] = 'no-store'
 
     return EvidenceUrlResponse(
         id=item.id,

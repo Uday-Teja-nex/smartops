@@ -1,6 +1,6 @@
 from app.models.audit import IncidentCommentModel, IncidentEventModel
 from app.models.detections import DetectionModel
-from app.models.evidence import EvidenceItemModel
+from app.models.evidence import EvidenceAccessModel, EvidenceItemModel
 from app.models.incidents import IncidentModel
 from app.models.org import OrganizationModel, UserModel
 from app.models.sources import SourceModel
@@ -18,4 +18,5 @@ __all__ = [
     "IncidentEventModel",
     "IncidentCommentModel",
     "EvidenceItemModel",
+    "EvidenceAccessModel",
 ]

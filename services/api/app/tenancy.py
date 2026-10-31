@@ -5,7 +5,7 @@ from sqlalchemy.orm import with_loader_criteria
 
 from app.auth import Principal, get_current_principal
 from app.db import SessionLocal
-from app.models import BuildingModel, SourceModel, IncidentModel, EvidenceItemModel, DetectionModel, UserModel
+from app.models import BuildingModel, SourceModel, IncidentModel, EvidenceItemModel, EvidenceAccessModel, DetectionModel, UserModel
 
 
 def get_tenant_session(principal: Principal = Depends(get_current_principal)):
@@ -14,7 +14,7 @@ def get_tenant_session(principal: Principal = Depends(get_current_principal)):
             if state.is_select:
                 state.statement = state.statement.options(*[
                     with_loader_criteria(model, model.org_id == principal.org_id, include_aliases=True)
-                    for model in (BuildingModel, SourceModel, IncidentModel, EvidenceItemModel, DetectionModel, UserModel)
+                    for model in (BuildingModel, SourceModel, IncidentModel, EvidenceItemModel, EvidenceAccessModel, DetectionModel, UserModel)
                 ])
         event.listen(session, 'do_orm_execute', scope_query)
         yield session
