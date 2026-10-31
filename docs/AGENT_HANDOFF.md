@@ -177,7 +177,11 @@ reports, phone onboarding and repeated full demo E2E remain required.
 SSE now uses 30-second audience-bound tickets and periodically reconnects.
 Long-lived query credentials are rejected, including on local clip endpoints;
 the unused frontend clip URL helper was removed. Ticket responses use no-store.
-Local API tests pass (41); deployment and browser reconnect remain unverified.
+Local API tests pass (51); deployment and browser reconnect remain unverified.
+API production startup now rejects default/short JWT and internal secrets,
+default/short enabled object-storage secrets, demo account seeding, and wildcard
+or empty CORS allowlists. Validation tracebacks hide configuration input values.
+This is API configuration validation, not a verified production deployment.
 Evidence creation now rejects incident/source and incident/candidate mismatches.
 Incident evidence and detection reads also require the incident's source, so
 candidate IDs reused across cameras cannot mix their records (2026-11-01).

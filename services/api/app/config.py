@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -38,7 +39,29 @@ class Settings(BaseSettings):
         env_prefix="SMARTOPS_",
         extra="ignore",
         protected_namespaces=("settings_",),
+        hide_input_in_errors=True,
     )
+
+    @model_validator(mode='after')
+    def validate_production(self):
+        if self.environment.strip().lower() != 'production':
+            return self
+        for name, default in (
+            ('jwt_secret', 'smartops-dev-secret-change-me'),
+            ('internal_token', 'smartops-internal-dev-token'),
+        ):
+            value = getattr(self, name)
+            if value == default or len(value.strip()) < 32:
+                raise ValueError(f'Production requires a unique {name} of at least 32 characters')
+        if self.evidence_storage_enabled and (
+            self.minio_secret_key == 'smartopsminio' or len(self.minio_secret_key.strip()) < 16
+        ):
+            raise ValueError('Production requires a non-default object storage secret of at least 16 characters')
+        if self.seed_demo_data:
+            raise ValueError('Production requires seed_demo_data=false; demo accounts must not be seeded')
+        if not self.cors_origin_list or any('*' in origin for origin in self.cors_origin_list):
+            raise ValueError('Production requires explicit CORS origins without wildcards')
+        return self
 
     @property
     def cors_origin_list(self) -> list[str]:
