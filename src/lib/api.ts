@@ -41,6 +41,16 @@ export class ApiError extends Error {
   }
 }
 
+export const describeLoginError = (error: unknown): string => {
+  if (error instanceof ApiError) {
+    if (error.status === 401) return "Invalid email or password.";
+    if (error.status === 429) return "Too many sign-in attempts. Wait a minute before trying again.";
+    if (error.status === 503) return "Sign-in is temporarily unavailable. Please try again shortly.";
+    return "Sign-in failed. Please try again or contact your administrator.";
+  }
+  return "Could not reach the SmartOps API. Check your connection and try again.";
+};
+
 export const describeApiDetail = (detail: unknown): string => {
   if (typeof detail === "string") return detail;
   if (!Array.isArray(detail)) return "Request could not be validated";

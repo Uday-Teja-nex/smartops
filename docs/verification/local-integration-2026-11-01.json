@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-01",
+  "baselineCommit": "9f989c7",
+  "environment": "Windows local workspace; no Docker runtime verification",
+  "tests": {"api": 69, "videoIngest": 41, "orchestrator": 30, "worker": 9, "detector": 5, "frontend": 11},
+  "frontendProductionBuild": "passed: next build --webpack",
+  "frontendFullLint": "passed",
+  "browser": {
+    "engine": "Edge via Playwright CLI",
+    "url": "http://127.0.0.1:3002/login",
+    "result": "Production login rendered; API request failed visibly and sign-in was re-enabled; no fabricated authenticated state",
+    "screenshots": ["production-login.png", "production-login-unavailable.png"],
+    "limitation": "Build and screenshots predate login error-message refinement in this change",
+    "startupWarning": "next start warned that standalone output should use .next/standalone/server.js"
+  },
+  "subsequentChange": "Login distinguishes 401, 429, 503 and transport failures; 2 focused tests, typecheck and targeted lint passed",
+  "notProven": ["Docker deployment", "Redis Lua execution", "PostgreSQL migrations and concurrency", "full demo E2E", "stream throughput", "model latency and accuracy", "app PDF dialog flow"]
+}

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { Lock, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/app/auth";
+import { describeLoginError } from "@/lib/api";
 
 const DEMO_ACCOUNTS = [
   { email: "admin@smartops.local", role: "Admin" },
@@ -30,11 +31,7 @@ export default function LoginPage() {
       await login(email.trim().toLowerCase(), password);
       router.replace("/");
     } catch (err) {
-      setError(
-        err instanceof Error && err.message.includes("401")
-          ? "Invalid email or password."
-          : "Could not reach the SmartOps API. Is the Docker stack running?"
-      );
+      setError(describeLoginError(err));
     } finally {
       setBusy(false);
     }

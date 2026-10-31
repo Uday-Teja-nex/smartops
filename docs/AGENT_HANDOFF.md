@@ -184,6 +184,12 @@ operator level or higher. Issuance is persisted in tenant-scoped evidence_access
 before returning a no-store response, without storing the signed URL. Migration
 0002 upgrade/downgrade passed on SQLite; PostgreSQL deployment is still pending.
 An issuance record proves authorization to retrieve, not an actual download.
+Broader local checks on 2026-11-01 passed: API 69, ingest 41, orchestrator 30,
+worker 9, detector 5, frontend 11; full frontend lint and production webpack
+build passed. Production login rendered in Edge and showed a real unavailable-API
+error. See verification/local-integration-2026-11-01.json for scope and warnings.
+Subsequent login messaging distinguishes throttling/temporary sign-in failure
+from transport errors; focused tests, types and lint pass, rebuild still pending.
 Legacy incident thumbnail/clip URLs are no longer serialized; playback uses
 the authorized evidence endpoint. Both incident views distinguish denied access,
 missing clips, loading, and request failure. TypeScript passed; browser QA pending.
