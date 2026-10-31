@@ -46,12 +46,13 @@ def test_invalid_internal_token_rejected(client):
 
 
 def test_access_token_query_param_rejected(client, viewer_headers):
-    # SSE/video clients cannot set headers, so auth accepts ?token=.
-    # Use a Redis-free endpoint: unit tests run without a Redis server.
+    # Long-lived credentials must never authenticate through URL parameters.
     token = viewer_headers["Authorization"].removeprefix("Bearer ")
     response = client.get(f"/v1/bootstrap?token={token}")
     assert response.status_code == 401
     assert client.get("/v1/bootstrap?token=not-a-jwt").status_code == 401
+    assert client.get('/v1/sources/missing/clip', params={'token': token}).status_code == 401
+    assert client.get('/v1/sources/missing/clip', headers=viewer_headers).status_code == 404
 
 
 def test_users_list_is_admin_only(client, admin_headers, operator_headers):
@@ -68,6 +69,7 @@ def test_stream_ticket_is_short_lived_and_not_a_rest_credential(client, viewer_h
     response = client.post('/v1/auth/stream-ticket', headers=viewer_headers)
     assert response.status_code == 200
     ticket = response.json()['ticket']
+    assert response.headers['cache-control'] == 'no-store'
     claims = jwt.decode(ticket, get_settings().jwt_secret, algorithms=['HS256'], audience='incident-stream')
     assert claims['org'] == 'org-demo'
     assert response.json()['expiresInSeconds'] == 30

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -14,7 +14,7 @@ users_router = APIRouter(prefix="/v1", tags=["users"])
 
 
 @router.post('/stream-ticket')
-def stream_ticket(principal: Principal = Depends(get_current_principal)):
+def stream_ticket(response: Response, principal: Principal = Depends(get_current_principal)):
     from datetime import UTC, datetime, timedelta
     import jwt
     from app.config import get_settings
@@ -23,6 +23,7 @@ def stream_ticket(principal: Principal = Depends(get_current_principal)):
     expires = datetime.now(UTC) + timedelta(seconds=30)
     token = jwt.encode({'sub': principal.id, 'org': principal.org_id, 'aud': 'incident-stream',
                         'exp': expires}, get_settings().jwt_secret, algorithm='HS256')
+    response.headers['Cache-Control'] = 'no-store'
     return {'ticket': token, 'expiresInSeconds': 30}
 
 

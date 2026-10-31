@@ -177,17 +177,6 @@ export const fetchEvidenceUrl = (evidenceId: string) =>
     { cache: "no-store" }
   );
 
-/**
- * Direct URL for a local file-source clip. The JWT rides as a query param
- * because <video> elements cannot send Authorization headers.
- */
-export const getSourceClipUrl = (sourceId: string) => {
-  const token = getStoredToken();
-  return `${getApiBaseUrl()}/v1/sources/${sourceId}/clip${
-    token ? `?token=${encodeURIComponent(token)}` : ""
-  }`;
-};
-
 // ---------------------------------------------------------------------------
 // Pipeline
 // ---------------------------------------------------------------------------

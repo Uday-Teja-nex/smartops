@@ -5,8 +5,8 @@ Principals:
   - Pipeline services (worker, video-ingest, orchestrator callbacks)
     authenticate with a shared internal token header. They act as the
     'service' principal and may write pipeline data but are not operators.
-  - SSE connections pass the JWT as a `token` query parameter because
-    EventSource cannot set headers.
+  - SSE connections use short-lived, audience-bound stream tickets because
+    EventSource cannot set headers. Access tokens require a Bearer header.
 
 Role ladder (ascending): viewer < security/ehs/operator < supervisor < admin.
 security/ehs are operator-level but scoped by page in the UI; the API treats
@@ -99,7 +99,6 @@ def get_current_principal(
     request: Request,
     authorization: str | None = Header(default=None),
     x_internal_token: str | None = Header(default=None),
-    token: str | None = Query(default=None),
     ticket: str | None = Query(default=None),
     session: Session = Depends(get_db_session),
 ) -> Principal:
@@ -121,10 +120,7 @@ def get_current_principal(
             return Principal(user.id, user.name, user.email, user.role, user.org_id, 'user')
         except jwt.InvalidTokenError as exc:
             raise HTTPException(status_code=401, detail='Invalid or expired stream ticket') from exc
-    # Legacy local video URLs remain a separate migration; REST and SSE no
-    # longer accept long-lived query credentials.
-    clip_request = request.url.path.startswith('/v1/sources/') and request.url.path.endswith('/clip')
-    raw = bearer or (token if clip_request else None)
+    raw = bearer
     if not raw:
         raise HTTPException(status_code=401, detail="Authentication required")
     claims = _principal_from_token(raw)

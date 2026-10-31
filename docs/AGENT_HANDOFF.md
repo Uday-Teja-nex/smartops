@@ -174,7 +174,11 @@ validation. Retire the old file-window pipeline once file publishing/source
 management is unified. Native Ollama GPU inference, asynchronous enrichment,
 provider/backend switches, tenant isolation, auth hardening, notifications,
 reports, phone onboarding and repeated full demo E2E remain required.
-SSE currently accepts long-lived tokens in URLs. MediaMTX ports remain
+SSE now uses 30-second audience-bound tickets and periodically reconnects.
+Long-lived query credentials are rejected, including on local clip endpoints;
+the unused frontend clip URL helper was removed. Ticket responses use no-store.
+Local API tests pass (40); deployment and browser reconnect remain unverified.
+MediaMTX ports remain
 loopback-only. Do not treat this build as production-ready or client-demo-ready.
 
 Footage shot list is in docs/FOOTAGE_SHOT_LIST.md. The existing clip is only
