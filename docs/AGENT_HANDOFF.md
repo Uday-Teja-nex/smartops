@@ -177,7 +177,7 @@ reports, phone onboarding and repeated full demo E2E remain required.
 SSE now uses 30-second audience-bound tickets and periodically reconnects.
 Long-lived query credentials are rejected, including on local clip endpoints;
 the unused frontend clip URL helper was removed. Ticket responses use no-store.
-Local API suite passes (67), including streaming middleware and audit migration tests;
+Local API suite passes (69), including streaming middleware and audit migration tests;
 deployment and browser reconnect remain unverified.
 Evidence URL issuance now requires a human user; restricted items require
 operator level or higher. Issuance is persisted in tenant-scoped evidence_access
@@ -209,6 +209,15 @@ roll back before inspecting only the conflicting row's workspace ID: foreign
 IDs return 404, same-workspace races return retryable 409. Regression tests
 exercise the duplicate-key boundary and verify no duplicate creation audit;
 true concurrent PostgreSQL load verification remains pending.
+
+Reports now query /v1/reports/summary over complete stored history rather than
+the 200-row bootstrap window. The endpoint enforces tenant/building scope,
+timezone-qualified half-open intervals up to 31 days, and returns null for
+missing timing samples. Daily buckets use UTC; boundary days may be partial.
+The page shows rolling 24-hour and 7-day summaries, category counts and daily
+totals, with loading/error/empty states and explicit refresh. Tests prove a
+201-row report and foreign-workspace isolation; TypeScript and targeted lint
+pass. CSV/PDF exports, browser QA, and production-load checks remain pending.
 
 Continuous incident delivery now quarantines non-retryable HTTP rejections in
 the per-source SQLite dead_letters table so later incidents can proceed.

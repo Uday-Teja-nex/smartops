@@ -185,6 +185,43 @@ def test_incident_requires_known_source(client, service_headers):
     assert response.status_code == 404
 
 
+def test_report_counts_beyond_bootstrap_limit(client, pipeline_source, service_headers, viewer_headers):
+    from datetime import UTC, datetime, timedelta
+    from sqlalchemy import delete
+    from app.db import SessionLocal
+    from app.models import IncidentModel
+    payload = _incident_payload(pipeline_source['id'], id='report-template', startTime='2025-01-01T12:00:00Z')
+    assert client.post('/v1/incidents', headers=service_headers, json=payload).status_code == 201
+    with SessionLocal() as session:
+        template = session.get(IncidentModel, 'report-template')
+        values = {column.name: getattr(template, column.name) for column in IncidentModel.__table__.columns}
+        for index in range(201):
+            started = datetime(2025, 1, 2, 12, tzinfo=UTC)
+            session.add(IncidentModel(**(values | {
+                'id': f'report-row-{index}', 'start_time': started,
+                'ack_time': started + timedelta(minutes=10), 'status': 'false_positive',
+            })))
+        session.commit()
+    try:
+        params = {'start': '2025-01-02T00:00:00Z', 'end': '2025-01-03T00:00:00Z'}
+        response = client.get('/v1/reports/summary', headers=viewer_headers, params=params)
+        assert response.status_code == 200
+        report = response.json()
+        assert report['totalIncidents'] == 201
+        assert report['averageAckMinutes'] == 10
+        assert report['averageResolveMinutes'] is None
+        assert report['falsePositiveRate'] == 1
+        assert report['daily'] == [{'date': '2025-01-02', 'count': 201}]
+        assert client.get('/v1/reports/summary', headers=viewer_headers,
+                          params=params | {'buildingId': 'unknown'}).status_code == 404
+        assert client.get('/v1/reports/summary', headers=viewer_headers,
+                          params=params | {'end': '2026-01-03T00:00:00Z'}).status_code == 422
+    finally:
+        with SessionLocal() as session:
+            session.execute(delete(IncidentModel).where(IncidentModel.id.like('report-row-%')))
+            session.commit()
+
+
 def test_replay_cannot_rebind_incident_identity(client, pipeline_source, service_headers):
     payload = _incident_payload(pipeline_source['id'], id='inc-identity-locked')
     first = client.post('/v1/incidents', headers=service_headers, json=payload)

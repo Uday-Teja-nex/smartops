@@ -184,6 +184,18 @@ export const fetchEvidenceUrl = (evidenceId: string) =>
 export const fetchPipelineStatus = () =>
   request<PipelineStatus>("/v1/pipeline/status", { cache: "no-store" });
 
+export type IncidentReport = {
+  start: string; end: string; timezone: string; buildingId: string | null;
+  totalIncidents: number; categories: Record<string, number>; types: Record<string, number>;
+  statuses: Record<string, number>; daily: { date: string; count: number }[];
+  acknowledgedCount: number; resolvedTimeCount: number;
+  averageAckMinutes: number | null; averageResolveMinutes: number | null;
+  completionRate: number | null; falsePositiveRate: number | null;
+};
+
+export const fetchIncidentReport = (start: string, end: string, buildingId: string) =>
+  request<IncidentReport>(`/v1/reports/summary?${new URLSearchParams({ start, end, buildingId })}`, { cache: "no-store" });
+
 // ---------------------------------------------------------------------------
 // Organization / runtime config
 // ---------------------------------------------------------------------------

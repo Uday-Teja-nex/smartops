@@ -18,6 +18,7 @@ from app.routers import (
     live,
     org,
     pipeline,
+    reports,
     sources,
     topology,
 )
@@ -49,6 +50,7 @@ app.include_router(incidents.router)
 app.include_router(detections.router)
 app.include_router(evidence.router)
 app.include_router(org.router)
+app.include_router(reports.router)
 
 
 def run_migrations() -> None:

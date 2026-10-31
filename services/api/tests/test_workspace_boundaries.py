@@ -22,6 +22,10 @@ def test_org_and_topology_follow_authenticated_workspace(client, admin_headers):
     try:
         assert client.get('/v1/org').json()['id'] == 'org-boundary'
         assert client.get('/v1/users').json() == []
+        report = client.get('/v1/reports/summary', params={
+            'start': '2026-07-01T00:00:00Z', 'end': '2026-07-31T00:00:00Z'}).json()
+        assert report['totalIncidents'] == 0
+        assert report['averageAckMinutes'] is None
         bootstrap = client.get('/v1/bootstrap').json()
         assert bootstrap['sources'] == [] and bootstrap['incidents'] == []
         for route in ('sources', 'incidents', 'evidence'):

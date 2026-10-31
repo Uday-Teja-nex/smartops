@@ -1,305 +1,70 @@
-﻿"use client";
+"use client";
 
-import { useMemo } from "react";
-import { BarChart2, Timer, Target } from "lucide-react";
-import { ChartCard } from "@/components/ChartCard";
-import { KpiCard } from "@/components/KpiCard";
-import { SectionHeader } from "@/components/SectionHeader";
-import { LineTrendChart } from "@/components/charts/LineTrendChart";
-import { StackedBarChart } from "@/components/charts/StackedBarChart";
+import { useEffect, useState } from "react";
 import { useSmartOps } from "@/app/providers";
-import {
-  filterEventsByRange,
-  getCountsByCategory,
-  getSlaMetrics,
-  getHotspots,
-} from "@/lib/analytics";
-import { formatDurationMinutes, formatPercent, getNowTimestamp } from "@/lib/utils";
-import { CATEGORY_COLORS } from "@/lib/visuals";
+import { fetchIncidentReport, IncidentReport } from "@/lib/api";
 
-const BUCKETS = [
-  { label: "0-15m", max: 15 },
-  { label: "15-30m", max: 30 },
-  { label: "30-60m", max: 60 },
-  { label: "1-2h", max: 120 },
-  { label: "2h+", max: Infinity },
-];
+const minutes = (value: number | null) => value === null ? "No data" : `${value.toFixed(1)} min`;
+const percent = (value: number | null) => value === null ? "No data" : `${(value * 100).toFixed(1)}%`;
 
 export default function ReportsPage() {
-  const { events, selectedBuildingId } = useSmartOps();
-
-  const buildingEvents = useMemo(
-    () => events.filter((event) => event.buildingId === selectedBuildingId),
-    [events, selectedBuildingId]
-  );
-
-  const dailyEvents = useMemo(
-    () => filterEventsByRange(buildingEvents, "24h"),
-    [buildingEvents]
-  );
-  const weeklyEvents = useMemo(
-    () => filterEventsByRange(buildingEvents, "7d"),
-    [buildingEvents]
-  );
-
-  const dailyCounts = useMemo(
-    () => getCountsByCategory(dailyEvents),
-    [dailyEvents]
-  );
-  const weeklyCounts = useMemo(
-    () => getCountsByCategory(weeklyEvents),
-    [weeklyEvents]
-  );
-  const weeklySla = useMemo(() => getSlaMetrics(weeklyEvents), [weeklyEvents]);
-
-  const trendByCategory = useMemo(() => {
-    const days = new Array(7).fill(0).map((_, index) => ({
-      name: `D-${6 - index}`,
-      Housekeeping: 0,
-      Safety: 0,
-      Occupancy: 0,
-      Security: 0,
-      "Queue & Crowd": 0,
-      "System Health": 0,
-    }));
-    const now = getNowTimestamp();
-    weeklyEvents.forEach((event) => {
-      const diffDays = Math.floor(
-        (now - new Date(event.startTime).getTime()) / (24 * 60 * 60 * 1000)
-      );
-      if (diffDays >= 0 && diffDays < 7) {
-        days[6 - diffDays][event.category] += 1;
+  const { selectedBuildingId } = useSmartOps();
+  const [reports, setReports] = useState<{ building: string; daily: IncidentReport; weekly: IncidentReport } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [revision, setRevision] = useState(0);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      const end = new Date();
+      try {
+        const [daily, weekly] = await Promise.all([1, 7].map(days => fetchIncidentReport(
+          new Date(end.getTime() - days * 86400000).toISOString(), end.toISOString(), selectedBuildingId,
+        )));
+        if (active) { setReports({ building: selectedBuildingId, daily, weekly }); setError(null); }
+      } catch (failure) {
+        if (active) setError(failure instanceof Error ? failure.message : "Reports unavailable");
+      } finally {
+        if (active) setLoading(false);
       }
-    });
-    return days;
-  }, [weeklyEvents]);
-
-  const slaBuckets = useMemo(() => {
-    const ackCounts = BUCKETS.map(() => 0);
-    const resolveCounts = BUCKETS.map(() => 0);
-
-    weeklyEvents.forEach((event) => {
-      if (event.ackTime) {
-        const minutes =
-          (new Date(event.ackTime).getTime() -
-            new Date(event.startTime).getTime()) /
-          60000;
-        const bucketIndex = BUCKETS.findIndex((bucket) => minutes <= bucket.max);
-        if (bucketIndex >= 0) ackCounts[bucketIndex] += 1;
-      }
-      if (event.resolvedTime) {
-        const minutes =
-          (new Date(event.resolvedTime).getTime() -
-            new Date(event.startTime).getTime()) /
-          60000;
-        const bucketIndex = BUCKETS.findIndex((bucket) => minutes <= bucket.max);
-        if (bucketIndex >= 0) resolveCounts[bucketIndex] += 1;
-      }
-    });
-
-    return BUCKETS.map((bucket, index) => ({
-      name: bucket.label,
-      acknowledge: ackCounts[index],
-      resolve: resolveCounts[index],
-    }));
-  }, [weeklyEvents]);
-
-  const insightCards = useMemo(() => {
-    const peakDay = trendByCategory.reduce(
-      (max, day) => {
-        const total = day.Housekeeping + day.Safety + day.Occupancy;
-        if (total > max.total) return { day: day.name, total };
-        return max;
-      },
-      { day: "D-0", total: 0 }
-    );
-
-    const topHotspot = getHotspots(weeklyEvents, 1)[0];
-
-    const typeCounts = new Map<string, number>();
-    weeklyEvents.forEach((event) => {
-      typeCounts.set(event.type, (typeCounts.get(event.type) ?? 0) + 1);
-    });
-    const topType = Array.from(typeCounts.entries()).sort((a, b) => b[1] - a[1])[0];
-
-    const resolveTimes = weeklyEvents
-      .filter((event) => event.resolvedTime)
-      .map(
-        (event) =>
-          (new Date(event.resolvedTime!).getTime() -
-            new Date(event.startTime).getTime()) /
-          60000
-      )
-      .sort((a, b) => a - b);
-    const medianResolve = resolveTimes.length
-      ? resolveTimes[Math.floor(resolveTimes.length / 2)]
-      : 0;
-
-    return {
-      peakDay,
-      topHotspot,
-      topType,
-      medianResolve,
-    };
-  }, [trendByCategory, weeklyEvents]);
-
-  return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Reports
-        </p>
-        <h1 className="text-3xl font-semibold text-slate-100">
-          Weekly operations summary
-        </h1>
-        <p className="text-sm text-slate-400">
-          Generated from the same privacy-safe dataset. No individual tracking.
-        </p>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <KpiCard
-          title="Weekly total events"
-          value={`${weeklyEvents.length}`}
-          subtitle="Last 7 days"
-          status="blue"
-          icon={<BarChart2 className="h-4 w-4" aria-hidden />}
-        />
-        <KpiCard
-          title="Avg time to acknowledge"
-          value={formatDurationMinutes(weeklySla.avgAckMinutes)}
-          subtitle="Weekly SLA"
-          status="amber"
-          icon={<Timer className="h-4 w-4" aria-hidden />}
-        />
-        <KpiCard
-          title="Completion rate"
-          value={formatPercent(weeklySla.completionRate)}
-          subtitle="Resolved or closed"
-          status="green"
-          icon={<Target className="h-4 w-4" aria-hidden />}
-        />
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <ChartCard
-          title="Events by category"
-          subtitle="7-day trend"
-          footer={<span className="text-xs text-slate-400">Housekeeping vs Safety vs Occupancy</span>}
-        >
-          <LineTrendChart
-            data={trendByCategory}
-            lines={[
-              {
-                key: "Housekeeping",
-                color: CATEGORY_COLORS.Housekeeping,
-                label: "Housekeeping",
-              },
-              { key: "Safety", color: CATEGORY_COLORS.Safety, label: "Safety" },
-              {
-                key: "Occupancy",
-                color: CATEGORY_COLORS.Occupancy,
-                label: "Occupancy",
-              },
-            ]}
-          />
-        </ChartCard>
-
-        <ChartCard
-          title="SLA distribution"
-          subtitle="Time to acknowledge vs resolve"
-          footer={<span className="text-xs text-slate-400">Counts per bucket</span>}
-        >
-          <StackedBarChart
-            data={slaBuckets}
-            series={[
-              { key: "acknowledge", label: "Acknowledge", color: "#38bdf8" },
-              { key: "resolve", label: "Resolve", color: "#10b981" },
-            ]}
-          />
-        </ChartCard>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-4">
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)]/90 p-4 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)]">
-          <p className="text-xs font-semibold uppercase text-slate-400">Peak day</p>
-          <p className="mt-2 text-lg font-semibold text-slate-100">
-            {insightCards.peakDay.day}
-          </p>
-          <p className="text-xs text-slate-400">{insightCards.peakDay.total} events</p>
-        </div>
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)]/90 p-4 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)]">
-          <p className="text-xs font-semibold uppercase text-slate-400">Top hotspot</p>
-          <p className="mt-2 text-lg font-semibold text-slate-100">
-            {insightCards.topHotspot?.zone ?? "-"}
-          </p>
-          <p className="text-xs text-slate-400">
-            {insightCards.topHotspot?.count ?? 0} events
-          </p>
-        </div>
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)]/90 p-4 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)]">
-          <p className="text-xs font-semibold uppercase text-slate-400">Most common type</p>
-          <p className="mt-2 text-lg font-semibold text-slate-100">
-            {insightCards.topType?.[0]?.replace(/_/g, " ") ?? "-"}
-          </p>
-          <p className="text-xs text-slate-400">
-            {insightCards.topType?.[1] ?? 0} events
-          </p>
-        </div>
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)]/90 p-4 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)]">
-          <p className="text-xs font-semibold uppercase text-slate-400">Median resolve</p>
-          <p className="mt-2 text-lg font-semibold text-slate-100">
-            {formatDurationMinutes(insightCards.medianResolve)}
-          </p>
-          <p className="text-xs text-slate-400">Median time to resolve</p>
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)]/90 p-5 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)]">
-          <SectionHeader title="Daily summary" subtitle="Last 24 hours" />
-          <div className="mt-4 space-y-3 text-sm text-slate-200">
-            <p>
-              Housekeeping events: <strong>{dailyCounts.Housekeeping ?? 0}</strong>
-            </p>
-            <p>
-              Safety & EHS events: <strong>{dailyCounts.Safety ?? 0}</strong>
-            </p>
-            <p>
-              Occupancy events: <strong>{dailyCounts.Occupancy ?? 0}</strong>
-            </p>
-            <p className="text-xs text-slate-400">
-              Summary auto-generated from aggregated analytics only.
-            </p>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)]/90 p-5 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)]">
-          <SectionHeader title="Weekly narrative" subtitle="Last 7 days" />
-          <div className="mt-4 space-y-3 text-sm text-slate-200">
-            <p>
-              Housekeeping contributed {weeklyCounts.Housekeeping ?? 0} events,
-              with elevated activity in pantry and restroom entry zones.
-            </p>
-            <p>
-              Safety signals remained steady at {weeklyCounts.Safety ?? 0} events,
-              primarily tied to exit clearance and slip prevention.
-            </p>
-            <p>
-              Occupancy alerts totaled {weeklyCounts.Occupancy ?? 0} events, with
-              lobby congestion peaking around shift changes.
-            </p>
-          </div>
-        </div>
-      </div>
+    }
+    if (selectedBuildingId) void load();
+    return () => { active = false; };
+  }, [selectedBuildingId, revision]);
+  const current = reports?.building === selectedBuildingId ? reports : null;
+  const refresh = () => { setLoading(true); setError(null); setRevision(value => value + 1); };
+  return <div className="space-y-6">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div><h1 className="text-3xl font-semibold text-slate-100">Operations reports</h1>
+        <p className="mt-2 text-sm text-slate-400">Computed from all stored incidents in the selected building and period. No AI-generated narrative.</p></div>
+      <button onClick={refresh} disabled={loading} className="rounded-lg border border-slate-600 px-4 py-2 text-sm disabled:opacity-50">Refresh</button>
     </div>
-  );
+    {!selectedBuildingId ? <p>Select a building to view its report.</p>
+      : error ? <p role="alert" className="rounded-xl border border-red-500/40 p-5 text-red-300">{error}</p>
+      : loading || !current ? <p role="status">Loading stored history…</p>
+      : <>
+        <p className="text-xs text-slate-400">Snapshot through {new Date(current.weekly.end).toLocaleString()}. Daily buckets use UTC; boundary days may be partial.</p>
+        <div className="overflow-x-auto rounded-xl border border-slate-700">
+          <table className="w-full text-left text-sm"><thead className="bg-slate-800"><tr><th className="p-3">Computed summary</th><th>Last 24 hours</th><th>Last 7 days</th></tr></thead>
+            <tbody>{[
+              ["Incidents", current.daily.totalIncidents, current.weekly.totalIncidents],
+              ["Average acknowledgement", minutes(current.daily.averageAckMinutes), minutes(current.weekly.averageAckMinutes)],
+              ["Average resolution", minutes(current.daily.averageResolveMinutes), minutes(current.weekly.averageResolveMinutes)],
+              ["Resolved or marked false positive", percent(current.daily.completionRate), percent(current.weekly.completionRate)],
+              ["Marked false positive / all incidents", percent(current.daily.falsePositiveRate), percent(current.weekly.falsePositiveRate)],
+            ].map(([label, daily, weekly]) => <tr key={label} className="border-t border-slate-700"><th className="p-3 font-normal">{label}</th><td>{daily}</td><td>{weekly}</td></tr>)}</tbody>
+          </table>
+        </div>
+        <p className="text-xs text-slate-400">Timing averages include only recorded, non-negative durations. Weekly samples: {current.weekly.acknowledgedCount} acknowledgements and {current.weekly.resolvedTimeCount} resolutions. Statuses reflect the current stored state.</p>
+        {current.weekly.totalIncidents === 0 ? <p className="rounded-xl border border-slate-700 p-5">No incidents were recorded in this period.</p> : null}
+        <div className="grid gap-5 md:grid-cols-2">
+          <section className="rounded-xl border border-slate-700 p-4"><h2 className="mb-3 font-semibold">Daily incident counts (UTC)</h2>
+            <ul className="space-y-2">{current.weekly.daily.map(day => <li key={day.date} className="flex justify-between"><span>{day.date}</span><span>{day.count}</span></li>)}</ul>
+          </section>
+          <section className="rounded-xl border border-slate-700 p-4"><h2 className="mb-3 font-semibold">Weekly categories</h2>
+            <ul className="space-y-2">{Object.entries(current.weekly.categories).sort((a, b) => b[1] - a[1]).map(([category, count]) => <li key={category} className="flex justify-between"><span>{category}</span><span>{count}</span></li>)}</ul>
+          </section>
+        </div>
+      </>}
+  </div>;
 }
-
-
-
-
-
-
-
-
