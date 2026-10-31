@@ -177,7 +177,7 @@ reports, phone onboarding and repeated full demo E2E remain required.
 SSE now uses 30-second audience-bound tickets and periodically reconnects.
 Long-lived query credentials are rejected, including on local clip endpoints;
 the unused frontend clip URL helper was removed. Ticket responses use no-store.
-Local API suite passes (65), including streaming middleware and audit migration tests;
+Local API suite passes (67), including streaming middleware and audit migration tests;
 deployment and browser reconnect remain unverified.
 Evidence URL issuance now requires a human user; restricted items require
 operator level or higher. Issuance is persisted in tenant-scoped evidence_access
@@ -204,8 +204,11 @@ Incident evidence and detection reads also require the incident's source, so
 candidate IDs reused across cameras cannot mix their records (2026-11-01).
 Incident replay now rejects attempts to bind an existing ID to a different
 camera or candidate (409), leaving its data and audit trail unchanged. Valid
-enrichment updates still preserve operator lifecycle state. Concurrent insert
-collisions and cross-tenant ID collision handling remain to be hardened.
+enrichment updates still preserve operator lifecycle state. Insert collisions
+roll back before inspecting only the conflicting row's workspace ID: foreign
+IDs return 404, same-workspace races return retryable 409. Regression tests
+exercise the duplicate-key boundary and verify no duplicate creation audit;
+true concurrent PostgreSQL load verification remains pending.
 MediaMTX ports remain
 loopback-only. Do not treat this build as production-ready or client-demo-ready.
 

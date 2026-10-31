@@ -2,6 +2,7 @@ from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy import or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
 from app.auth import Principal, require_human_operator, require_supervisor, require_viewer
@@ -250,7 +251,21 @@ def create_incident(
     record_incident_event(
         session, incident, actor=actor, action="created", to_status=payload.status
     )
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        # Only inspect ownership after an insert conflict; never load or expose
+        # another workspace's incident. Core columns intentionally bypass ORM
+        # visibility so a foreign primary-key collision can become a 404.
+        table = IncidentModel.__table__
+        owner = session.scalar(select(table.c.org_id).where(table.c.id == incident_id))
+        if owner is None:
+            raise
+        if owner != principal.org_id:
+            raise HTTPException(status_code=404, detail='Incident not found') from None
+        raise HTTPException(status_code=409, detail='Concurrent incident creation; retry the request',
+                            headers={'Retry-After': '1'}) from None
     session.refresh(incident)
     response = serialize_incident(incident)
     publish_event("incident", response.model_dump(mode="json"))

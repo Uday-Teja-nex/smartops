@@ -202,6 +202,55 @@ def test_replay_cannot_rebind_incident_identity(client, pipeline_source, service
     assert [event['action'] for event in detail['events']] == ['created']
 
 
+def test_foreign_workspace_incident_id_collision_is_not_found(client, pipeline_source, service_headers):
+    from datetime import UTC, datetime
+    from app.db import SessionLocal
+    from app.models import IncidentModel, OrganizationModel
+    payload = _incident_payload(pipeline_source['id'], id='inc-foreign-collision')
+    assert client.post('/v1/incidents', headers=service_headers, json=payload).status_code == 201
+    with SessionLocal() as session:
+        session.add(OrganizationModel(id='org-collision', name='Other', slug='collision',
+                                      settings={}, created_at=datetime.now(UTC)))
+        session.get(IncidentModel, payload['id']).org_id = 'org-collision'
+        session.commit()
+    try:
+        response = client.post('/v1/incidents', headers=service_headers,
+                               json={**payload, 'shortSummary': 'must not overwrite'})
+        assert response.status_code == 404
+        with SessionLocal() as session:
+            assert session.get(IncidentModel, payload['id']).short_summary == payload['shortSummary']
+    finally:
+        with SessionLocal() as session:
+            session.get(IncidentModel, payload['id']).org_id = 'org-demo'
+            session.commit()
+            session.delete(session.get(OrganizationModel, 'org-collision'))
+            session.commit()
+
+
+def test_insert_race_returns_retryable_conflict_without_duplicate_audit(
+    client, pipeline_source, service_headers, monkeypatch,
+):
+    from sqlalchemy.orm import Session
+    from app.models import IncidentModel
+    payload = _incident_payload(pipeline_source['id'], id='inc-insert-race')
+    assert client.post('/v1/incidents', headers=service_headers, json=payload).status_code == 201
+    original_get = Session.get
+    def missed_lookup(session, entity, ident, *args, **kwargs):
+        # Reproduce the insert-race boundary: preflight sees no row, but the
+        # unique key is present when the transaction commits.
+        if entity is IncidentModel and ident == payload['id']:
+            return None
+        return original_get(session, entity, ident, *args, **kwargs)
+    with monkeypatch.context() as patch:
+        patch.setattr(Session, 'get', missed_lookup)
+        response = client.post('/v1/incidents', headers=service_headers, json=payload)
+    assert response.status_code == 409
+    assert response.headers['retry-after'] == '1'
+    detail = client.get('/v1/incidents/' + payload['id'], headers=service_headers).json()
+    assert [event['action'] for event in detail['events']] == ['created']
+    assert client.post('/v1/incidents', headers=service_headers, json=payload).status_code == 201
+
+
 def test_incident_filtering(client, pipeline_source, service_headers, viewer_headers):
     client.post(
         "/v1/incidents",
