@@ -24,7 +24,8 @@ def process_one(box, source_id, client, daily_limit=40, budget_path=None):
     box.db.execute('BEGIN IMMEDIATE')
     try:
         row = box.db.execute('SELECT id,payload,image FROM review_jobs WHERE source=? AND claimed=0 '
-                             'AND id NOT IN (SELECT id FROM pending) ORDER BY rowid LIMIT 1', (source_id,)).fetchone()
+                             'AND id NOT IN (SELECT id FROM pending) '
+                             'AND id NOT IN (SELECT id FROM dead_letters) ORDER BY rowid LIMIT 1', (source_id,)).fetchone()
         if row is None:
             box.db.commit()
             return False

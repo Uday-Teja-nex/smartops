@@ -1,6 +1,27 @@
 from app.outbox import Outbox
 
 
+def test_quarantine_is_durable_and_preserves_newer_pending_update(tmp_path):
+    path = tmp_path / 'quarantine.db'
+    box = Outbox(path)
+    old = {'id': 'one', 'version': 1}
+    box.append(old)
+    box.append({'id': 'one', 'version': 2})
+    box.quarantine(old, 422)
+    assert box[0]['version'] == 2
+    box.close()
+    box = Outbox(path)
+    assert box.db.execute('SELECT id,status FROM dead_letters').fetchall() == [('one', 422)]
+    assert box[0]['version'] == 2
+    sequence = box.db.execute('SELECT sequence FROM dead_letters').fetchone()[0]
+    assert box.replay_dead_letter(sequence) is False
+    box.acknowledge(box[0])
+    assert box.replay_dead_letter(sequence) is True
+    assert box[0]['version'] == 1
+    assert box.replay_dead_letter(sequence) is False
+    box.close()
+
+
 def test_unsent_incident_survives_restart_and_upsert_is_idempotent(tmp_path):
     path = tmp_path / 'outbox.db'
     box = Outbox(path)

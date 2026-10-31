@@ -8,6 +8,7 @@ class Outbox:
         self.db = sqlite3.connect(path)
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.execute('CREATE TABLE IF NOT EXISTS pending (id TEXT PRIMARY KEY, payload TEXT NOT NULL)')
+        self.db.execute('CREATE TABLE IF NOT EXISTS dead_letters (sequence INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT NOT NULL, payload TEXT NOT NULL, status INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)')
         self.db.execute('CREATE TABLE IF NOT EXISTS evidence_jobs (id TEXT PRIMARY KEY, payload TEXT NOT NULL)')
         self.db.execute('CREATE TABLE IF NOT EXISTS review_images (id TEXT PRIMARY KEY, image TEXT NOT NULL)')
         self.db.execute('CREATE TABLE IF NOT EXISTS review_jobs (id TEXT PRIMARY KEY, source TEXT NOT NULL, payload TEXT NOT NULL, image TEXT NOT NULL, claimed INTEGER NOT NULL DEFAULT 0)')
@@ -72,5 +73,25 @@ class Outbox:
             self.db.execute('DELETE FROM pending WHERE id=? AND payload=?',
                             (payload['id'], json.dumps(payload)))
 
+    def quarantine(self, payload, status):
+        """Retain the rejected version without deleting a newer concurrent update."""
+        raw = json.dumps(payload)
+        with self.db:
+            self.db.execute('INSERT INTO dead_letters(id,payload,status) VALUES (?,?,?)',
+                            (payload['id'], raw, status))
+            self.db.execute('DELETE FROM pending WHERE id=? AND payload=?', (payload['id'], raw))
+
     def close(self):
         self.db.close()
+
+    def replay_dead_letter(self, sequence):
+        """Explicit operator recovery; never overwrite a newer pending version."""
+        with self.db:
+            row = self.db.execute('SELECT id,payload FROM dead_letters WHERE sequence=?', (sequence,)).fetchone()
+            if row is None:
+                return False
+            inserted = self.db.execute('INSERT OR IGNORE INTO pending(id,payload) VALUES (?,?)', row)
+            if not inserted.rowcount:
+                return False
+            self.db.execute('DELETE FROM dead_letters WHERE sequence=?', (sequence,))
+            return True

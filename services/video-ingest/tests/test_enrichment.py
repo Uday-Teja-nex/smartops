@@ -13,6 +13,18 @@ def seed(box, identifier='one'):
     return payload
 
 
+def test_quarantined_incident_does_not_spend_review_budget(tmp_path):
+    from unittest.mock import Mock
+    box = Outbox(tmp_path / 'quarantined-review.db')
+    seed(box)
+    box.quarantine(box[0], 422)
+    client = Mock()
+    assert not process_one(box, 'camera', client)
+    client.post.assert_not_called()
+    assert box.db.execute('SELECT count(*) FROM review_budget').fetchone()[0] == 0
+    box.close()
+
+
 def test_review_waits_for_delivery_and_preserves_rule_and_evidence(tmp_path):
     box = Outbox(tmp_path / 'reviews.db')
     seed(box)

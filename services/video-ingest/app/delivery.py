@@ -44,8 +44,15 @@ class IncidentDelivery:
                         delay = .5
                         log('rule_incident_persisted', sourceId=self.source_id, incidentId=payload['id'])
                     except httpx.HTTPError as exc:
+                        status = exc.response.status_code if isinstance(exc, httpx.HTTPStatusError) else None
+                        if status in {400, 403, 404, 405, 410, 413, 415, 422}:
+                            box.quarantine(payload, status)
+                            log('incident_delivery_quarantined', level='error', sourceId=self.source_id,
+                                incidentId=payload['id'], status=status)
+                            delay = .5
+                            continue
                         log('incident_delivery_failed', level='error', sourceId=self.source_id,
-                            incidentId=payload['id'], error=type(exc).__name__)
+                            incidentId=payload['id'], error=type(exc).__name__, status=status)
                         self.stop.wait(delay)
                         delay = min(5, delay * 2)
         finally:

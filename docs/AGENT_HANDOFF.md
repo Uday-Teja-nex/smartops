@@ -209,6 +209,15 @@ roll back before inspecting only the conflicting row's workspace ID: foreign
 IDs return 404, same-workspace races return retryable 409. Regression tests
 exercise the duplicate-key boundary and verify no duplicate creation audit;
 true concurrent PostgreSQL load verification remains pending.
+
+Continuous incident delivery now quarantines non-retryable HTTP rejections in
+the per-source SQLite dead_letters table so later incidents can proceed.
+Network failures, 401, 409, 429 and server errors still retry. Quarantine retains
+the rejected payload/status and does not remove a newer pending update. AI
+reviews wait while an incident has unresolved dead letters. Explicit
+Outbox.replay_dead_letter(sequence) recovery refuses to overwrite pending data;
+operator UI/CLI for inspecting and replaying these records remains to be built.
+Video-ingest suite passes 39 tests; these changes are not deployed.
 MediaMTX ports remain
 loopback-only. Do not treat this build as production-ready or client-demo-ready.
 
