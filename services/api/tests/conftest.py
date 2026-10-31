@@ -20,12 +20,16 @@ os.environ.setdefault("SMARTOPS_EVIDENCE_STORAGE_ENABLED", "false")
 @pytest.fixture(scope="session")
 def client():
     from fastapi.testclient import TestClient
+    from unittest.mock import Mock, patch
 
     from app.db import Base, engine
     from app.main import app
 
     Base.metadata.drop_all(bind=engine)
-    with TestClient(app) as test_client:
+    limiter = Mock()
+    limiter.eval.return_value = 0
+    # Session-scoped login fixtures run before function-scoped transport mocks.
+    with patch('app.login_limits.client', return_value=limiter), TestClient(app) as test_client:
         yield test_client
     Base.metadata.drop_all(bind=engine)
     engine.dispose()
@@ -39,6 +43,10 @@ def isolate_event_transport(monkeypatch):
     from unittest.mock import Mock
     from app import events
     monkeypatch.setattr(events, '_redis', Mock())
+    from app import login_limits
+    limiter = Mock()
+    limiter.eval.return_value = 0
+    monkeypatch.setattr(login_limits, 'client', lambda: limiter)
 
 
 def login(client, email: str, password: str = "smartops-demo") -> dict[str, str]:

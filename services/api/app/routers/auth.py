@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -8,6 +8,7 @@ from app.db import get_db_session
 from app.models import UserModel
 from app.schemas import UserResponse
 from app.serializers import serialize_user
+from app.login_limits import enforce_login_limit
 
 router = APIRouter(prefix="/v1/auth", tags=["auth"])
 users_router = APIRouter(prefix="/v1", tags=["users"])
@@ -38,8 +39,10 @@ class LoginResponse(BaseModel):
 
 
 @router.post("/login", response_model=LoginResponse)
-def login(payload: LoginRequest, session: Session = Depends(get_db_session)) -> LoginResponse:
-    user = authenticate_user(session, payload.email.lower(), payload.password)
+def login(payload: LoginRequest, request: Request, session: Session = Depends(get_db_session)) -> LoginResponse:
+    email = payload.email.strip().lower()
+    enforce_login_limit(request.client.host if request.client else 'unknown', email)
+    user = authenticate_user(session, email, payload.password)
     if user is None:
         raise HTTPException(status_code=401, detail="Invalid email or password")
     return LoginResponse(token=create_access_token(user), user=serialize_user(user))

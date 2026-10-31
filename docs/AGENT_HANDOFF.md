@@ -177,7 +177,7 @@ reports, phone onboarding and repeated full demo E2E remain required.
 SSE now uses 30-second audience-bound tickets and periodically reconnects.
 Long-lived query credentials are rejected, including on local clip endpoints;
 the unused frontend clip URL helper was removed. Ticket responses use no-store.
-Local API suite passes (53), including the audit migration round-trip test;
+Local API suite passes (56), including the audit migration round-trip test;
 deployment and browser reconnect remain unverified.
 Evidence URL issuance now requires a human user; restricted items require
 operator level or higher. Issuance is persisted in tenant-scoped evidence_access
@@ -191,6 +191,9 @@ API production startup now rejects default/short JWT and internal secrets,
 default/short enabled object-storage secrets, demo account seeding, and wildcard
 or empty CORS allowlists. Validation tracebacks hide configuration input values.
 This is API configuration validation, not a verified production deployment.
+Login now uses shared Redis limits (5/account, 30/client address per minute),
+returns 429 with Retry-After, and fails closed with 503 on Redis outages.
+ADR 0011 records the tradeoffs; live Lua expiry/concurrency checks are pending.
 Evidence creation now rejects incident/source and incident/candidate mismatches.
 Incident evidence and detection reads also require the incident's source, so
 candidate IDs reused across cameras cannot mix their records (2026-11-01).
