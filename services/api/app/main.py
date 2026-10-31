@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.db import Base, engine
 from app.observability import install_observability
+from app.request_limits import RequestSizeLimit
 from app.routers import (
     auth,
     bootstrap,
@@ -25,6 +26,7 @@ from app.seed import seed_database
 settings = get_settings()
 
 app = FastAPI(title=settings.app_name, version="0.2.0")
+app.add_middleware(RequestSizeLimit, max_bytes=settings.request_max_bytes)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,

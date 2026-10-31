@@ -177,7 +177,8 @@ reports, phone onboarding and repeated full demo E2E remain required.
 SSE now uses 30-second audience-bound tickets and periodically reconnects.
 Long-lived query credentials are rejected, including on local clip endpoints;
 the unused frontend clip URL helper was removed. Ticket responses use no-store.
-Local API suite passes (56), including the audit migration round-trip test;
+Local API suite passes (63), plus the added streaming middleware regression,
+including the audit migration round-trip test;
 deployment and browser reconnect remain unverified.
 Evidence URL issuance now requires a human user; restricted items require
 operator level or higher. Issuance is persisted in tenant-scoped evidence_access
@@ -194,6 +195,11 @@ This is API configuration validation, not a verified production deployment.
 Login now uses shared Redis limits (5/account, 30/client address per minute),
 returns 429 with Retry-After, and fails closed with 503 on Redis outages.
 ADR 0011 records the tradeoffs; live Lua expiry/concurrency checks are pending.
+API request bodies are bounded before routing, including chunked requests and
+false Content-Length headers. Default 2 MiB, configurable through Compose with
+SMARTOPS_REQUEST_MAX_BYTES (1 KiB–16 MiB). Evidence media is uploaded directly
+to object storage; API requests contain metadata. Streaming responses are not
+buffered by this middleware. Runtime load/stream reconnect validation is pending.
 Evidence creation now rejects incident/source and incident/candidate mismatches.
 Incident evidence and detection reads also require the incident's source, so
 candidate IDs reused across cameras cannot mix their records (2026-11-01).

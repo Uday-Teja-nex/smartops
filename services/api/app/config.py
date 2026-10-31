@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import model_validator
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     candidate_queue: str = "smartops:candidate_jobs"
     dead_letter_queue: str = "smartops:candidate_jobs:dead"
     seed_demo_data: bool = True
+    request_max_bytes: int = Field(default=2 * 1024 * 1024, ge=1024, le=16 * 1024 * 1024)
     mediamtx_webrtc_public_url: str = 'http://localhost:8889'
     mediamtx_rtsp_host: str = 'mediamtx'
 
