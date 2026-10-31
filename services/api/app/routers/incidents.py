@@ -183,6 +183,8 @@ def create_incident(
     existing = session.get(IncidentModel, incident_id)
 
     if existing is not None:
+        if existing.source_id != source_id or existing.candidate_id != payload.candidateId:
+            raise HTTPException(status_code=409, detail='Incident ID belongs to a different source or candidate')
         # Idempotent re-submission from the pipeline updates the draft fields
         # but never rolls back operator lifecycle state.
         existing.category = payload.category
@@ -193,8 +195,6 @@ def create_incident(
         existing.building_id = payload.buildingId
         existing.floor = payload.floor
         existing.zone = payload.zone
-        existing.source_id = source_id
-        existing.candidate_id = payload.candidateId
         existing.short_summary = payload.shortSummary
         existing.detailed_narrative = payload.detailedNarrative
         existing.recommended_actions = payload.recommendedActions

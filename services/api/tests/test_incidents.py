@@ -185,6 +185,23 @@ def test_incident_requires_known_source(client, service_headers):
     assert response.status_code == 404
 
 
+def test_replay_cannot_rebind_incident_identity(client, pipeline_source, service_headers):
+    payload = _incident_payload(pipeline_source['id'], id='inc-identity-locked')
+    first = client.post('/v1/incidents', headers=service_headers, json=payload)
+    assert first.status_code == 201
+    other = client.post('/v1/sources', headers=service_headers, json={
+        'name': 'Replay camera', 'buildingId': 'bldg-north-01', 'floor': 'L1',
+        'zone': 'Lobby Atrium', 'sourceType': 'file', 'sourceUri': '/app/sample-data/input/replay.mp4',
+    }).json()
+    for changes in ({'sourceId': other['id']}, {'candidateId': 'another-candidate'}):
+        response = client.post('/v1/incidents', headers=service_headers, json={**payload, **changes})
+        assert response.status_code == 409
+    detail = client.get('/v1/incidents/' + payload['id'], headers=service_headers).json()
+    assert detail['sourceId'] == pipeline_source['id']
+    assert detail['candidateId'] == payload['candidateId']
+    assert [event['action'] for event in detail['events']] == ['created']
+
+
 def test_incident_filtering(client, pipeline_source, service_headers, viewer_headers):
     client.post(
         "/v1/incidents",
