@@ -1,0 +1,15 @@
+{
+  "measuredAt": "2026-11-06T02:41+05:30",
+  "stack": "docker compose (api, notifier, postgres) on the laptop; receiver = scripts/webhook_receiver.py on the Windows host",
+  "channel": "webhook created through Settings UI, URL http://host.docker.internal:8765/hook, HMAC secret set",
+  "uiSendTest": {"result": "Test message delivered", "signatureValid": true},
+  "incidentPath": {
+    "incident": "inc-verify-notify-1 (synthetic, created with the internal service token to exercise the outbox; deleted afterwards)",
+    "createHttp": 201,
+    "deliveredCount": 1,
+    "signatureValid": true,
+    "postToReceiptSeconds": 1.01,
+    "deliveryRow": {"status": "sent", "attempts": 1, "lastError": null}
+  },
+  "notVerified": "Telegram delivery to a real phone needs the user's bot token and chat id."
+}
