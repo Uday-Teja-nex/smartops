@@ -1,0 +1,15 @@
+{
+  "measuredAt": "2026-11-06T03:00+05:30",
+  "machine": "i7-12700H, 15.7 GB RAM, Docker Desktop 29.5.2 / WSL2 4 GB",
+  "preflight": "passed: engine, 3.8 GB VM, 91.5 GB disk, ports, hosted provider key present, GPU listed, footage present, mediamtx publishing mall-store",
+  "upAfterDown_seconds": 28,
+  "upAfterDown_note": "images already built; volumes kept (normal later run). Includes preflight, compose up, migrations+seed, console, stream readiness.",
+  "firstUpAttempt_seconds": 90,
+  "firstUpAttempt_note": "60 s of it was a readiness-check bug (PowerShell scoping), fixed in the same commit",
+  "reset_seconds": 6,
+  "reset_detail": "TRUNCATE + reseed 0.4 s, 40 evidence objects removed, processor journals and Redis cleared, pipeline restarted",
+  "notVerified": [
+    "Ollama provider path of up (start + warm-up): the current .env uses the hosted OpenRouter provider",
+    "a cold first up that has to build images"
+  ]
+}

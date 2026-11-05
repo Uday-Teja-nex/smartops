@@ -3,6 +3,23 @@ logLevel: warn
 rtspTransports: [tcp]
 api: yes
 apiAddress: :9997
+# Anyone may publish/read streams on this laptop-only setup (ports are bound
+# to 127.0.0.1 on the host). The control API and metrics are additionally
+# reachable from the Docker bridge so demo.ps1 can verify publishing.
+authInternalUsers:
+  - user: any
+    pass:
+    ips: []
+    permissions:
+      - action: publish
+      - action: read
+      - action: playback
+  - user: any
+    pass:
+    ips: ['127.0.0.1', '::1', '172.16.0.0/12', '192.168.0.0/16']
+    permissions:
+      - action: api
+      - action: metrics
 rtmp: yes
 hls: yes
 hlsVariant: lowLatency

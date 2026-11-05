@@ -1,0 +1,350 @@
+<#
+.SYNOPSIS
+  SmartOps demo control: preflight, up, reset, status, down, fix-docker.
+
+.EXAMPLE
+  .\demo.ps1 up          # checks, starts everything, warms models, prints READY
+  .\demo.ps1 preflight   # explains anything that would ruin a demo
+  .\demo.ps1 reset       # back to freshly seeded demo workspaces
+  .\demo.ps1 up -Build   # rebuild images after code changes
+#>
+param(
+    [Parameter(Position = 0)]
+    [ValidateSet('up', 'preflight', 'reset', 'status', 'down', 'fix-docker')]
+    [string]$Action = 'up',
+    [switch]$Build
+)
+
+$ErrorActionPreference = 'Stop'
+Set-Location -Path $PSScriptRoot
+$script:Problems = 0
+$script:Warnings = 0
+$ConsoleUrl = 'http://localhost:3000'
+$ApiUrl = 'http://localhost:8000'
+$OllamaUrl = 'http://127.0.0.1:11434'
+$OllamaExe = Join-Path $env:LOCALAPPDATA 'Programs\Ollama\ollama.exe'
+$Ports = @(3000, 8000, 8100, 8200, 8554, 8888, 8889, 9000, 9001, 9997, 1935)
+
+function Write-Ok([string]$Text)   { Write-Host "  [ok]   $Text" -ForegroundColor Green }
+function Write-Info([string]$Text) { Write-Host "  [info] $Text" -ForegroundColor Gray }
+function Write-Warn([string]$Text) { $script:Warnings++; Write-Host "  [warn] $Text" -ForegroundColor Yellow }
+function Write-Bad([string]$Text, [string]$Fix) {
+    $script:Problems++
+    Write-Host "  [FAIL] $Text" -ForegroundColor Red
+    if ($Fix) { Write-Host "         Fix: $Fix" -ForegroundColor Red }
+}
+function Write-Step([string]$Text) { Write-Host ''; Write-Host "== $Text" -ForegroundColor Cyan }
+
+function Get-EnvValue([string]$Name, [string]$Default = '') {
+    # Reads .env without printing it; secrets never reach the console.
+    if (Test-Path '.env') {
+        foreach ($line in Get-Content '.env') {
+            if ($line -match "^\s*$([regex]::Escape($Name))\s*=\s*(.*)$") {
+                return $Matches[1].Trim().Trim('"').Trim("'")
+            }
+        }
+    }
+    return $Default
+}
+
+function Invoke-WithTimeout([scriptblock]$Block, [int]$Seconds, [object[]]$Arguments = @()) {
+    $job = Start-Job -ScriptBlock $Block -ArgumentList $Arguments
+    if (Wait-Job $job -Timeout $Seconds) {
+        $output = Receive-Job $job -ErrorAction SilentlyContinue
+        Remove-Job $job -Force
+        return $output
+    }
+    Remove-Job $job -Force
+    return $null
+}
+
+function Test-Http([string]$Url, [int]$TimeoutSec = 5) {
+    try {
+        $response = Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec $TimeoutSec
+        return $response.StatusCode
+    } catch {
+        if ($_.Exception.Response) { return [int]$_.Exception.Response.StatusCode }
+        return 0
+    }
+}
+
+function Get-DockerEngineVersion {
+    return Invoke-WithTimeout { docker version --format '{{.Server.Version}}' 2>$null } 25
+}
+
+function Test-StaleDockerSockets {
+    $log = Join-Path $env:LOCALAPPDATA 'Docker\log\host\com.docker.backend.exe.log'
+    if (-not (Test-Path $log)) { return $false }
+    $tail = Get-Content $log -Tail 400 -ErrorAction SilentlyContinue
+    return [bool]($tail | Select-String -SimpleMatch 'The file cannot be accessed by the system' | Select-Object -Last 1)
+}
+
+function Get-StreamManifest {
+    $path = 'sample-data\streams.json'
+    if (-not (Test-Path $path)) { return @() }
+    return @((Get-Content $path -Raw | ConvertFrom-Json).streams)
+}
+
+# ---------------------------------------------------------------------------
+# preflight
+# ---------------------------------------------------------------------------
+function Invoke-Preflight([switch]$StackExpected) {
+    Write-Step 'Preflight'
+
+    if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+        Write-Bad 'Docker CLI not found.' 'Install Docker Desktop, then reopen PowerShell.'
+        return
+    }
+    $engine = Get-DockerEngineVersion
+    if ($engine) {
+        Write-Ok "Docker engine $engine is running."
+    } elseif (Test-StaleDockerSockets) {
+        Write-Bad 'Docker Desktop is crash-looping on stale socket files (known Docker Desktop 4.76 issue).' '.\demo.ps1 fix-docker'
+        return
+    } elseif (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue) {
+        Write-Bad 'Docker Desktop is open but its engine is not answering yet.' 'Wait 30 s and retry; if it persists, quit Docker Desktop from the tray and run .\demo.ps1 fix-docker.'
+        return
+    } else {
+        Write-Bad 'Docker Desktop is not running.' 'Start Docker Desktop and wait until it says "Engine running".'
+        return
+    }
+
+    $memBytes = Invoke-WithTimeout { docker info --format '{{.MemTotal}}' 2>$null } 20
+    if ($memBytes) {
+        $memGb = [math]::Round([double]$memBytes / 1GB, 1)
+        if ($memGb -lt 3.5) { Write-Bad "Docker VM has only $memGb GB of memory." 'Set memory=4GB (or more) under [wsl2] in C:\Users\<you>\.wslconfig, then run: wsl --shutdown' }
+        else { Write-Ok "Docker VM memory: $memGb GB (SmartOps uses about 1.2 GB)." }
+    }
+
+    $freeGb = [math]::Round((Get-PSDrive -Name C).Free / 1GB, 1)
+    if ($freeGb -lt 10) { Write-Bad "Only $freeGb GB free on C:." 'Free at least 10 GB (Docker images, evidence clips).' }
+    else { Write-Ok "Disk: $freeGb GB free on C:." }
+
+    $ours = @()
+    $running = Invoke-WithTimeout { docker ps --filter 'name=smartops-' --format '{{.Names}}' 2>$null } 20
+    if ($running) { $ours = @($running) }
+    foreach ($port in $Ports) {
+        $listener = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+        if (-not $listener) { continue }
+        $owner = (Get-Process -Id $listener.OwningProcess -ErrorAction SilentlyContinue).ProcessName
+        $dockerOwned = $owner -in @('com.docker.backend', 'wslrelay', 'vpnkit', 'docker-proxy')
+        if (-not ($dockerOwned -and $ours.Count -gt 0)) {
+            Write-Bad "Port $port is already used by '$owner'." "Stop that program or container, then retry."
+        }
+    }
+    if ($script:Problems -eq 0) { Write-Ok 'Required ports are free or held by SmartOps.' }
+
+    $provider = Get-EnvValue 'SMARTOPS_MODEL_PROVIDER' 'ollama'
+    $vision = Get-EnvValue 'SMARTOPS_VISION_MODEL' 'qwen2.5vl:3b'
+    if ($provider -eq 'ollama') {
+        if (-not (Test-Path $OllamaExe)) {
+            Write-Bad 'Native Ollama is not installed.' 'Install Ollama for Windows from ollama.com, then: ollama pull qwen2.5vl:3b'
+        } else {
+            try {
+                $tags = Invoke-RestMethod "$OllamaUrl/api/tags" -TimeoutSec 5
+                $names = @($tags.models | ForEach-Object { $_.name })
+                if ($names -contains $vision) { Write-Ok "Ollama is running with $vision." }
+                else { Write-Bad "Ollama is missing model $vision." "ollama pull $vision" }
+            } catch {
+                Write-Warn 'Ollama is installed but not running; "up" starts it.'
+            }
+        }
+    } elseif ($provider -eq 'openrouter' -or $provider -eq 'openai-compatible') {
+        if (Get-EnvValue 'SMARTOPS_MODEL_API_KEY') { Write-Ok "AI review uses hosted provider '$provider' (API key present)." }
+        else { Write-Bad "SMARTOPS_MODEL_PROVIDER=$provider but SMARTOPS_MODEL_API_KEY is empty." 'Add the key to .env, or set SMARTOPS_MODEL_PROVIDER=ollama.' }
+    } else {
+        Write-Info "AI review provider: $provider."
+    }
+
+    if (Get-Command nvidia-smi -ErrorAction SilentlyContinue) {
+        $gpu = (& nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>$null | Select-Object -First 1)
+        if ($gpu) { Write-Info "GPU visible: $gpu (the 4 GB VRAM cannot hold qwen2.5vl; Ollama runs it on CPU)." }
+    } else {
+        Write-Info 'No NVIDIA GPU visible; local AI review runs on CPU.'
+    }
+
+    $streams = @(Get-StreamManifest)
+    if ($streams.Count -eq 0) { Write-Warn 'sample-data\streams.json lists no footage; only live cameras will produce incidents.' }
+    foreach ($stream in $streams) {
+        $file = Join-Path 'sample-data\input' $stream.file
+        if (Test-Path -LiteralPath $file) { Write-Ok "Footage for '$($stream.path)': $($stream.file)" }
+        else { Write-Bad "Footage missing for '$($stream.path)': $file" 'Copy the clip into sample-data\input or remove it from sample-data\streams.json.' }
+    }
+
+    if ($StackExpected) {
+        try {
+            $paths = Invoke-RestMethod 'http://127.0.0.1:9997/v3/paths/list' -TimeoutSec 5
+            foreach ($stream in $streams) {
+                $item = $paths.items | Where-Object { $_.name -eq $stream.path }
+                if ($item -and $item.ready) { Write-Ok "mediamtx is publishing '$($stream.path)'." }
+                else { Write-Bad "mediamtx is not publishing '$($stream.path)'." 'docker compose logs stream-publisher' }
+            }
+        } catch {
+            Write-Bad 'mediamtx API is not reachable on 127.0.0.1:9997.' 'docker compose up -d mediamtx'
+        }
+    }
+}
+
+# ---------------------------------------------------------------------------
+# helpers for up/reset
+# ---------------------------------------------------------------------------
+function Start-NativeOllama {
+    try { Invoke-RestMethod "$OllamaUrl/api/version" -TimeoutSec 3 | Out-Null; return } catch { }
+    Write-Info 'Starting native Ollama...'
+    $env:OLLAMA_CONTEXT_LENGTH = '2048'
+    $env:OLLAMA_NUM_PARALLEL = '1'
+    $env:OLLAMA_MAX_LOADED_MODELS = '1'
+    $env:OLLAMA_FLASH_ATTENTION = '1'
+    $env:OLLAMA_KV_CACHE_TYPE = 'q8_0'
+    $logDir = Join-Path $PSScriptRoot 'sample-data\output'
+    New-Item -ItemType Directory -Force -Path $logDir | Out-Null
+    Start-Process -FilePath $OllamaExe -ArgumentList 'serve' -WindowStyle Hidden `
+        -RedirectStandardOutput (Join-Path $logDir 'ollama-native.stdout.log') `
+        -RedirectStandardError (Join-Path $logDir 'ollama-native.stderr.log')
+    for ($i = 0; $i -lt 30; $i++) {
+        Start-Sleep -Seconds 1
+        try { Invoke-RestMethod "$OllamaUrl/api/version" -TimeoutSec 2 | Out-Null; Write-Ok 'Ollama started.'; return } catch { }
+    }
+    Write-Warn 'Ollama did not answer within 30 s; incidents will show "AI review unavailable".'
+}
+
+function Invoke-ModelWarmup {
+    $provider = Get-EnvValue 'SMARTOPS_MODEL_PROVIDER' 'ollama'
+    if ($provider -ne 'ollama') {
+        Write-Info "Hosted provider '$provider': no local model to warm."
+        return
+    }
+    $vision = Get-EnvValue 'SMARTOPS_VISION_MODEL' 'qwen2.5vl:3b'
+    try {
+        $loaded = Invoke-RestMethod "$OllamaUrl/api/ps" -TimeoutSec 5
+        if (@($loaded.models | Where-Object { $_.name -eq $vision }).Count -gt 0) { Write-Ok "$vision already loaded."; return }
+    } catch { }
+    Write-Info "Loading $vision (about 2 minutes on a cold start)..."
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    try {
+        $body = @{ model = $vision; keep_alive = '60m'; prompt = '' } | ConvertTo-Json
+        Invoke-RestMethod "$OllamaUrl/api/generate" -Method Post -Body $body -ContentType 'application/json' -TimeoutSec 240 | Out-Null
+        Write-Ok ("{0} warmed in {1:N0} s; it stays loaded for 60 minutes." -f $vision, $watch.Elapsed.TotalSeconds)
+    } catch {
+        Write-Warn "Could not warm ${vision}: $($_.Exception.Message). Incidents still fire; AI review will report unavailable."
+    }
+}
+
+function Wait-ForUrl([string]$Url, [int]$Seconds, [string]$Name) {
+    $deadline = (Get-Date).AddSeconds($Seconds)
+    while ((Get-Date) -lt $deadline) {
+        if ((Test-Http $Url 3) -eq 200) { Write-Ok "$Name is up."; return $true }
+        Start-Sleep -Seconds 2
+    }
+    Write-Bad "$Name did not become healthy within $Seconds s." "docker compose logs --tail 80"
+    return $false
+}
+
+function Wait-ForStreams([int]$Seconds) {
+    $streams = @(Get-StreamManifest)
+    if ($streams.Count -eq 0) { return }
+    $deadline = (Get-Date).AddSeconds($Seconds)
+    while ((Get-Date) -lt $deadline) {
+        try {
+            $paths = Invoke-RestMethod 'http://127.0.0.1:9997/v3/paths/list' -TimeoutSec 3
+            $readyNames = @($paths.items | Where-Object { $_.ready } | ForEach-Object { $_.name })
+            $missing = @($streams | Where-Object { $readyNames -notcontains $_.path })
+            if ($missing.Count -eq 0) { Write-Ok "$($streams.Count) recorded stream(s) publishing."; return }
+        } catch { }
+        Start-Sleep -Seconds 2
+    }
+    Write-Warn 'Not every recorded stream is publishing yet (first start prepares each clip once).'
+}
+
+# ---------------------------------------------------------------------------
+# actions
+# ---------------------------------------------------------------------------
+function Invoke-Up {
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    Invoke-Preflight
+    if ($script:Problems -gt 0) {
+        Write-Host ''
+        Write-Host "Preflight found $($script:Problems) problem(s); fix them and run .\demo.ps1 up again." -ForegroundColor Red
+        exit 1
+    }
+    Write-Step 'Starting'
+    if ((Get-EnvValue 'SMARTOPS_MODEL_PROVIDER' 'ollama') -eq 'ollama') { Start-NativeOllama }
+    $composeArgs = @('compose', 'up', '-d', '--remove-orphans')
+    if ($Build) { $composeArgs += '--build' }
+    & docker @composeArgs
+    if ($LASTEXITCODE -ne 0) { Write-Bad 'docker compose up failed.' 'Read the error above; then: docker compose logs --tail 80'; exit 1 }
+    # Migrations and the demo seed run inside the API's startup.
+    if (-not (Wait-ForUrl "$ApiUrl/health" 120 'API (migrations + seed)')) { exit 1 }
+    if (-not (Wait-ForUrl "$ConsoleUrl/login" 90 'Console')) { exit 1 }
+    Wait-ForStreams 60
+    Invoke-ModelWarmup
+    Write-Host ''
+    Write-Host ("READY -> {0}   ({1:N0} s)" -f $ConsoleUrl, $watch.Elapsed.TotalSeconds) -ForegroundColor Green
+    Write-Host '  Sign in: operator@mall.demo / smartops-demo  (also admin@, viewer@; office: @smartops.local; campus: @campus.demo)'
+    if ($script:Warnings -gt 0) { Write-Host "  $($script:Warnings) warning(s) above." -ForegroundColor Yellow }
+}
+
+function Invoke-Reset {
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    Write-Step 'Resetting demo data'
+    if (-not (Get-DockerEngineVersion)) { Write-Bad 'Docker is not running.' '.\demo.ps1 preflight'; exit 1 }
+    & docker compose stop stream-processor notifier | Out-Null
+    & docker compose exec -T api python -m app.reset_demo
+    if ($LASTEXITCODE -ne 0) { Write-Bad 'Database reset failed.' 'docker compose logs api --tail 80'; exit 1 }
+    & docker compose run --rm --no-deps --entrypoint sh stream-processor -c 'rm -rf /data/*' | Out-Null
+    & docker compose exec -T redis redis-cli FLUSHDB | Out-Null
+    & docker compose start stream-processor notifier | Out-Null
+    Write-Ok 'Processor journals and realtime state cleared; pipeline restarted.'
+    Write-Host ("Reset complete in {0:N0} s. Everyone is signed out; sign in again at {1}" -f $watch.Elapsed.TotalSeconds, $ConsoleUrl) -ForegroundColor Green
+}
+
+function Invoke-Status {
+    Write-Step 'Containers'
+    & docker compose ps --format 'table {{.Name}}\t{{.Status}}'
+    Write-Step 'Streams'
+    try {
+        $paths = Invoke-RestMethod 'http://127.0.0.1:9997/v3/paths/list' -TimeoutSec 3
+        foreach ($item in $paths.items) { Write-Info ("{0}: ready={1}, readers={2}" -f $item.name, $item.ready, @($item.readers).Count) }
+    } catch { Write-Warn 'mediamtx API unreachable.' }
+    try {
+        $loaded = Invoke-RestMethod "$OllamaUrl/api/ps" -TimeoutSec 3
+        $names = @($loaded.models | ForEach-Object { $_.name }) -join ', '
+        Write-Info ("Ollama loaded models: {0}" -f $(if ($names) { $names } else { 'none' }))
+    } catch { Write-Info 'Ollama not running.' }
+}
+
+function Invoke-FixDocker {
+    Write-Step 'Repairing Docker Desktop stale sockets'
+    Write-Info 'Stopping Docker Desktop...'
+    Get-Process 'Docker Desktop', 'com.docker.backend', 'com.docker.build', 'docker-ai' -ErrorAction SilentlyContinue | Stop-Process -Force
+    Start-Sleep -Seconds 3
+    $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+    foreach ($dir in @((Join-Path $env:LOCALAPPDATA 'Docker\run'), (Join-Path $env:LOCALAPPDATA 'docker-secrets-engine'))) {
+        if (Test-Path $dir) {
+            Rename-Item -Path $dir -NewName ("{0}.stale-{1}" -f (Split-Path $dir -Leaf), $stamp)
+            Write-Ok "Moved aside $dir (Docker recreates it; volumes are untouched)."
+        }
+    }
+    Start-Process -FilePath (Join-Path $env:ProgramFiles 'Docker\Docker\Docker Desktop.exe')
+    for ($i = 0; $i -lt 60; $i++) {
+        Start-Sleep -Seconds 3
+        $version = Get-DockerEngineVersion
+        if ($version) { Write-Ok "Docker engine $version is running."; return }
+    }
+    Write-Bad 'Docker did not come back within 3 minutes.' 'Open Docker Desktop and read its error. Do NOT choose "Reset to factory defaults" (it deletes all volumes).'
+}
+
+switch ($Action) {
+    'preflight' {
+        $running = Invoke-WithTimeout { docker ps --filter 'name=smartops-api' --format '{{.Names}}' 2>$null } 20
+        Invoke-Preflight -StackExpected:([bool]$running)
+        Write-Host ''
+        if ($script:Problems -gt 0) { Write-Host "$($script:Problems) problem(s) would affect the demo." -ForegroundColor Red; exit 1 }
+        Write-Host 'Preflight passed.' -ForegroundColor Green
+    }
+    'up' { Invoke-Up }
+    'reset' { Invoke-Reset }
+    'status' { Invoke-Status }
+    'down' { & docker compose down }
+    'fix-docker' { Invoke-FixDocker }
+}
