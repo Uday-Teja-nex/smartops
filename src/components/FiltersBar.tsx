@@ -1,4 +1,5 @@
-﻿import { EventRecord } from "@/lib/types";
+import { EventRecord } from "@/lib/types";
+import { humanize } from "@/lib/utils";
 
 export type AlertFilters = {
   category: string;
@@ -28,7 +29,7 @@ const SelectField = ({
     >
       {options.map((option) => (
         <option key={option} value={option}>
-          {option}
+          {humanize(option)}
         </option>
       ))}
     </select>

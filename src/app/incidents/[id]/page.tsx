@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/app/auth";
 import { useSmartOps } from "@/app/providers";
+import { AiReview, otherNotes } from "@/components/AiReview";
 import { Badge } from "@/components/Badge";
 import { StatusPill } from "@/components/StatusPill";
 import {
@@ -296,31 +297,11 @@ export default function IncidentDetailPage() {
           </GlassPanel>
 
           <GlassPanel>
-            <h3 className="text-sm font-semibold text-slate-300">What happened</h3>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-300">
-              {detail.detailedNarrative.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-            <h3 className="mt-6 text-sm font-semibold text-slate-300">
-              Recommended actions
-            </h3>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-300">
-              {detail.recommendedActions.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-            {detail.reviewNotes && detail.reviewNotes.length > 0 && (
-              <>
-                <h3 className="mt-6 text-sm font-semibold text-amber-300/90">
-                  Review notes
-                </h3>
-                <ul className="mt-3 list-disc space-y-2 pl-5 text-xs text-amber-200/70">
-                  {detail.reviewNotes.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </>
+            <AiReview event={detail} />
+            {otherNotes(detail).length > 0 && (
+              <ul className="mt-5 list-disc space-y-1 pl-5 text-xs text-amber-200/70">
+                {otherNotes(detail).map((item) => <li key={item}>{item}</li>)}
+              </ul>
             )}
           </GlassPanel>
 

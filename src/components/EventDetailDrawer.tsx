@@ -21,6 +21,7 @@ import {
   detectionsToAnnotations,
   EvidenceVideoPlayer,
 } from "@/components/EvidenceVideoPlayer";
+import { AiReview } from "@/components/AiReview";
 import { StatusPill } from "@/components/StatusPill";
 import { getCategoryStyle, getSeverityStyle } from "@/lib/visuals";
 
@@ -186,25 +187,7 @@ export const EventDetailDrawer = ({
         </div>
 
         <div className="mt-6">
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            What happened
-          </h4>
-          <ul className="mt-2 list-disc space-y-2 pl-5 text-sm text-slate-200">
-            {event.detailedNarrative.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="mt-6">
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Recommended actions
-          </h4>
-          <ul className="mt-2 list-disc space-y-2 pl-5 text-sm text-slate-200">
-            {event.recommendedActions.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
+          <AiReview event={event} />
         </div>
 
         <div className="mt-6">

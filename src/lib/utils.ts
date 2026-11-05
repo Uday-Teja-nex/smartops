@@ -38,3 +38,10 @@ export const getNowTimestamp = () => Date.now();
 
 
 
+
+/** "false_positive" -> "False positive"; leaves already-readable labels alone. */
+export const humanize = (value: string) => {
+  if (!/[_-]/.test(value) && value !== value.toLowerCase()) return value;
+  const words = value.replaceAll("_", " ").replaceAll("-", " ").trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+};
