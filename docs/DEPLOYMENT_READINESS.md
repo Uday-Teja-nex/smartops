@@ -1,39 +1,78 @@
-# Deployment Readiness
+# Deployment readiness
 
-What must change before real customers/buildings run on SmartOps. Local
-development intentionally uses relaxed defaults; every item below is
-structural (the code has a single place to change it).
+Last updated 2026-11-06. The laptop demo and a cloud deployment use the same
+compose files. `docker-compose.prod.yml` adds Caddy, production settings and
+closes every port except HTTPS and WebRTC media.
 
-## Blocking (must do)
+## What production mode enforces (tested)
 
-| Area | Current state | Required |
-|---|---|---|
-| Secrets | Dev defaults in compose (`SMARTOPS_JWT_SECRET`, `SMARTOPS_INTERNAL_TOKEN`, DB/MinIO passwords) | Secrets manager / env injection; rotate; fail startup on dev defaults outside development |
-| Password hashing | PBKDF2-SHA256 (stdlib, format is self-describing) | Migrate to argon2id/bcrypt with rehash-on-login; add password reset + invitation flows |
-| Auth hardening | Long-lived JWT (12h), no refresh, no revocation | Short-lived access + refresh tokens, logout revocation list, rate-limited login |
-| RBAC / tenancy | Roles enforced per endpoint; single seeded org; org_id present on all rows but not yet filtered per request | Derive org from principal and filter every query by it; per-building scoping for security/ehs roles |
-| Evidence privacy | Presigned URLs for any authenticated viewer | Role/incident-scoped evidence grants + access audit log (single choke point: `GET /v1/evidence/{id}/url`) |
-| TLS / ingress | Plain HTTP everywhere | Reverse proxy (Caddy/Traefik/nginx) with TLS; SSE-friendly (no buffering) |
-| Real camera inputs | MP4 adapter only | Implement + soak-test RTSP (then ONVIF/WebRTC) against real hardware; credentials via `credentials_ref` → secrets store |
-| Retention | Nothing expires | Retention policies for evidence objects, detections, resolved incidents; MinIO lifecycle rules |
-| Backups | Manual commands documented | Scheduled pg_dump + MinIO mirror, restore drills |
+- **Startup refuses** default or short JWT/internal secrets, default object
+  storage secrets, demo seeding, wildcard CORS and a non-Secure refresh cookie
+  (`services/api/tests/test_config.py`).
+- **Sessions:** 15-minute access tokens bound to a server-side session;
+  rotating HttpOnly SameSite=Strict refresh cookie; logout revokes access,
+  refresh and SSE tickets immediately; replay of a rotated refresh token
+  revokes the session (ADR 0012).
+- **Passwords:** argon2id; old PBKDF2 hashes upgrade on login.
+- **Login throttling:** 5 per account and 30 per address per minute, shared
+  in Redis (ADR 0011).
+- **Request bodies:** capped at 2 MiB by default before routing.
+- **Tenancy:** every user query is scoped to the user's workspace in one place
+  (`app/tenancy.py`); cross-workspace reads return 404 (tests in
+  `test_workspace_boundaries.py`, `test_notifications.py`). The internal
+  pipeline principal works across workspaces, but every write takes its
+  workspace from the camera it references.
+- **Evidence:** URLs are issued only to signed-in humans with the right
+  role, are short-lived, and every issuance is audited.
+- **Containers:** every SmartOps service runs as a non-root user.
+- **Migrations:** a release step (`python -m app.migrate`); API replicas
+  refuse to start against an outdated schema.
+- **Health:** `/health` on every service; API `/ready` checks PostgreSQL and
+  Redis.
 
-## Strongly recommended
+## Move to a Linux GPU VM
 
-- **Scaling**: multiple workers (safe: BRPOP + idempotent incident upsert),
-  detector replicas or GPU/ONNX backend, per-source rate limits.
-- **Monitoring**: scrape `/metrics`, alert on dead-letter queue depth,
-  `failing` sources, VLM failure rate (`human_review` ratio), SSE client counts.
-- **Model serving**: dedicated inference host or hosted API provider;
-  the 4GB laptop profile is not a deployment profile.
-- **Security review**: dependency scanning, container hardening (non-root
-  users, read-only rootfs), CORS tightening, request size limits.
-- **Migrations**: run `alembic upgrade` as a release step (not app startup)
-  in multi-replica deployments.
+1. **VM:** Ubuntu 24.04, an NVIDIA GPU with at least 16 GB of VRAM for 7B
+   vision models (8 GB is enough for `qwen2.5vl:3b`), 8 vCPU, 32 GB RAM,
+   100 GB disk. Install the NVIDIA driver, Docker Engine and the NVIDIA
+   Container Toolkit.
+2. **DNS and firewall:** point `ops.example.com` at the VM. Open 80/tcp,
+   443/tcp, 443/udp and 8189/udp (WebRTC media). Add the domain to
+   `webrtcAdditionalHosts` in `mediamtx.yml`.
+3. **Secrets:** copy `.env.production.example` to `.env.production` and fill
+   it. Generate each secret with
+   `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
+4. **Models:** either run Ollama in Docker on the GPU (`--profile
+   docker-ollama`, `SMARTOPS_OLLAMA_HOST=http://ollama:11434`, add `gpus: all`
+   to the `ollama` service), or point `SMARTOPS_MODEL_PROVIDER=openai-compatible`
+   at a vLLM server. On a 16 GB GPU `qwen2.5vl:7b` is the next quality step.
+5. **Detector on GPU:** build with
+   `--build-arg TORCH_INDEX_URL=https://download.pytorch.org/whl/cu121`, set
+   `SMARTOPS_DETECTOR_BACKEND=ultralytics-cuda` and give the detector the GPU.
+   Alternatively keep the detector on CPU and use `remote` to reach a GPU box.
+6. **Release:**
 
-## Nice to have
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production build
+   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production run --rm api python -m app.migrate
+   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production up -d
+   ```
 
-- SSO/OIDC instead of local passwords.
-- Notification delivery (email/webhook) wired to the stored org preferences.
-- Kubernetes manifests/Helm (compose file maps 1:1 to Deployments/Services).
-- Vector store only if/when semantic search over incidents becomes a feature.
+7. **First workspace:** set `SMARTOPS_SEED_DEMO_DATA=true` for one start to
+   create the demo workspaces and admin accounts, change the admin passwords,
+   then set it back to `false`.
+
+## Known gaps before a paying production deployment
+
+- Notification secrets (Telegram bot tokens, webhook secrets) are stored in
+  the database unencrypted, though never returned by the API. Add envelope
+  encryption with a deployment key.
+- mediamtx publish/read is unauthenticated on its internal network. Before
+  exposing RTSP/RTMP ingest publicly, add per-camera credentials.
+- No user invitation or password-change UI yet; accounts come from the seed
+  or the database.
+- Expired `auth_sessions` rows are not pruned.
+- Single-node: PostgreSQL, Redis and MinIO run as single containers on the
+  VM. Use managed services for real high availability.
+- Backups: `demo.ps1 backup`/`restore` are tested on the laptop. On a server,
+  schedule `pg_dump` plus object-store replication.
