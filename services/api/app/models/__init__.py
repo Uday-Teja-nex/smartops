@@ -4,6 +4,7 @@ from app.models.evidence import EvidenceAccessModel, EvidenceItemModel
 from app.models.incidents import IncidentModel
 from app.models.org import OrganizationModel, UserModel
 from app.models.sessions import AuthSessionModel
+from app.models.notifications import NotificationChannelModel, NotificationDeliveryModel
 from app.models.sources import SourceModel
 from app.models.topology import BuildingModel, FloorModel, ZoneModel
 
@@ -21,4 +22,6 @@ __all__ = [
     "EvidenceItemModel",
     "EvidenceAccessModel",
     "AuthSessionModel",
+    "NotificationChannelModel",
+    "NotificationDeliveryModel",
 ]

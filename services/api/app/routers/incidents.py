@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.auth import Principal, require_human_operator, require_supervisor, require_viewer
 from app.tenancy import get_tenant_session as get_db_session
 from app.events import publish_event
+from app.notifications import enqueue_for_incident
 from app.ids import new_id
 from app.models import (
     DetectionModel,
@@ -251,6 +252,8 @@ def create_incident(
     record_incident_event(
         session, incident, actor=actor, action="created", to_status=payload.status
     )
+    # Outbox rows commit atomically with the incident (see app.notifications).
+    enqueue_for_incident(session, incident)
     try:
         session.commit()
     except IntegrityError:

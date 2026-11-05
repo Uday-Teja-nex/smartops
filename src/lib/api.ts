@@ -293,3 +293,67 @@ export const updateOrgSettings = (settings: Record<string, unknown>) =>
 
 export const fetchRuntimeConfig = () =>
   request<RuntimeConfig>("/v1/config", { cache: "no-store" });
+
+// ---------------------------------------------------------------------------
+// Notifications
+// ---------------------------------------------------------------------------
+
+export type NotificationSeverity = "low" | "medium" | "high" | "critical";
+
+export type NotificationChannel = {
+  id: string;
+  kind: "telegram" | "webhook";
+  name: string;
+  enabled: boolean;
+  minSeverity: NotificationSeverity;
+  categories: string[];
+  activeHours: { start: string; end: string; timezone: string } | null;
+  destination: string;
+  configured: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type NotificationChannelInput = {
+  kind: "telegram" | "webhook";
+  name: string;
+  minSeverity: NotificationSeverity;
+  categories: string[];
+  activeHours: { start: string; end: string; timezone: string } | null;
+  config: Record<string, string>;
+};
+
+export type NotificationDelivery = {
+  id: string;
+  incidentId: string | null;
+  channelId: string;
+  status: "pending" | "sent" | "dead";
+  attempts: number;
+  lastError: string | null;
+  createdAt: string;
+  sentAt: string | null;
+};
+
+export const fetchNotificationChannels = () =>
+  request<NotificationChannel[]>("/v1/notifications/channels", { cache: "no-store" });
+
+export const createNotificationChannel = (input: NotificationChannelInput) =>
+  request<NotificationChannel>("/v1/notifications/channels", { method: "POST", body: JSON.stringify(input) });
+
+export const updateNotificationChannel = (id: string, input: Partial<NotificationChannelInput> & { enabled?: boolean }) =>
+  request<NotificationChannel>(`/v1/notifications/channels/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+
+export const deleteNotificationChannel = (id: string) =>
+  request<void>(`/v1/notifications/channels/${encodeURIComponent(id)}`, { method: "DELETE" });
+
+export const testNotificationChannel = (id: string) =>
+  request<{ delivered: boolean; error: string | null }>(
+    `/v1/notifications/channels/${encodeURIComponent(id)}/test`,
+    { method: "POST", signal: AbortSignal.timeout(20000) },
+  );
+
+export const fetchNotificationDeliveries = () =>
+  request<NotificationDelivery[]>("/v1/notifications/deliveries", { cache: "no-store" });

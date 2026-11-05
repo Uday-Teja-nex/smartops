@@ -46,8 +46,6 @@ def seed_database(session: Session) -> None:
         name="SmartOps Demo Org",
         slug="smartops-demo",
         settings={
-            "notificationPreferences": {"email": False, "webhook": False},
-            "categoryThresholds": {},
         },
         created_at=now,
     )

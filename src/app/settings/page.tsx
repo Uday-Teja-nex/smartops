@@ -1,17 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import {
-  Bell,
-  Building2,
-  Cpu,
-  Save,
-  SlidersHorizontal,
-  Users,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Building2, Cpu, Users } from "lucide-react";
 import { useAuth } from "@/app/auth";
 import { SectionHeader } from "@/components/SectionHeader";
-import { Button } from "@/components/ui/Button";
+import { NotificationChannels } from "@/components/NotificationChannels";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { SkeletonPanel } from "@/components/ui/Skeleton";
 import {
@@ -20,37 +13,19 @@ import {
   fetchUsers,
   OrgInfo,
   RuntimeConfig,
-  updateOrgSettings,
 } from "@/lib/api";
 import { UserRecord } from "@/lib/types";
-
-const CATEGORY_KEYS = [
-  "Safety",
-  "Housekeeping",
-  "Occupancy",
-  "Security",
-  "Queue & Crowd",
-  "System Health",
-];
-
-type Thresholds = Record<string, number>;
 
 export default function SettingsPage() {
   const { hasRole } = useAuth();
   const isAdmin = hasRole("admin");
-  const canEdit = hasRole("supervisor");
+  const canSeeNotifications = hasRole("supervisor");
 
   const [org, setOrg] = useState<OrgInfo | null>(null);
   const [config, setConfig] = useState<RuntimeConfig | null>(null);
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
-  const [busy, setBusy] = useState(false);
-
-  const [thresholds, setThresholds] = useState<Thresholds>({});
-  const [notifyEmail, setNotifyEmail] = useState(false);
-  const [notifyWebhook, setNotifyWebhook] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -61,13 +36,6 @@ export default function SettingsPage() {
         ]);
         setOrg(orgInfo);
         setConfig(runtimeConfig);
-        const settings = orgInfo.settings as {
-          categoryThresholds?: Thresholds;
-          notificationPreferences?: { email?: boolean; webhook?: boolean };
-        };
-        setThresholds(settings.categoryThresholds ?? {});
-        setNotifyEmail(Boolean(settings.notificationPreferences?.email));
-        setNotifyWebhook(Boolean(settings.notificationPreferences?.webhook));
         if (isAdmin) {
           setUsers(await fetchUsers());
         }
@@ -79,25 +47,6 @@ export default function SettingsPage() {
     };
     void load();
   }, [isAdmin]);
-
-  const save = useCallback(async () => {
-    setBusy(true);
-    setSaved(false);
-    setError(null);
-    try {
-      const next = await updateOrgSettings({
-        categoryThresholds: thresholds,
-        notificationPreferences: { email: notifyEmail, webhook: notifyWebhook },
-      });
-      setOrg(next);
-      setSaved(true);
-      window.setTimeout(() => setSaved(false), 2500);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Save failed");
-    } finally {
-      setBusy(false);
-    }
-  }, [thresholds, notifyEmail, notifyWebhook]);
 
   if (loading) {
     return (
@@ -112,20 +61,7 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <SectionHeader
         title="Settings & Administration"
-        subtitle="Organization profile, model runtime, review thresholds, and notification preferences"
-        action={
-          canEdit ? (
-            <Button
-              variant="primary"
-              size="sm"
-              disabled={busy}
-              icon={<Save className="h-3.5 w-3.5" />}
-              onClick={() => void save()}
-            >
-              {busy ? "Saving…" : saved ? "Saved ✓" : "Save changes"}
-            </Button>
-          ) : undefined
-        }
+        subtitle="Workspace profile, model runtime, notification channels and users"
       />
 
       {error && (
@@ -190,74 +126,7 @@ export default function SettingsPage() {
           </p>
         </GlassPanel>
 
-        <GlassPanel>
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-300">
-            <SlidersHorizontal className="h-4 w-4 text-[color:var(--accent)]" />
-            Category review thresholds
-          </h3>
-          <p className="mt-1 text-[11px] text-slate-600">
-            Minimum model confidence per category before an incident skips human
-            review. Empty uses the global default (0.6).
-          </p>
-          <div className="mt-4 space-y-3">
-            {CATEGORY_KEYS.map((category) => (
-              <label key={category} className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-slate-400">{category}</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  disabled={!canEdit}
-                  value={thresholds[category] ?? ""}
-                  placeholder="0.60"
-                  onChange={(event) =>
-                    setThresholds((prev) => {
-                      const next = { ...prev };
-                      const value = event.target.value;
-                      if (value === "") delete next[category];
-                      else next[category] = Number(value);
-                      return next;
-                    })
-                  }
-                  className="w-24 rounded-lg border border-[color:var(--glass-border)] bg-white/5 px-2.5 py-1.5 text-right font-mono text-xs text-slate-200 focus:outline-none disabled:opacity-50"
-                />
-              </label>
-            ))}
-          </div>
-        </GlassPanel>
-
-        <GlassPanel>
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-300">
-            <Bell className="h-4 w-4 text-[color:var(--accent)]" /> Notifications
-          </h3>
-          <p className="mt-1 text-[11px] text-slate-600">
-            Preferences are stored per organization; delivery integrations are a
-            deployment-readiness item.
-          </p>
-          <div className="mt-4 space-y-3">
-            <label className="flex items-center justify-between text-sm">
-              <span className="text-slate-400">Email digests</span>
-              <input
-                type="checkbox"
-                disabled={!canEdit}
-                checked={notifyEmail}
-                onChange={(event) => setNotifyEmail(event.target.checked)}
-                className="h-4 w-4 accent-[color:var(--accent-strong)]"
-              />
-            </label>
-            <label className="flex items-center justify-between text-sm">
-              <span className="text-slate-400">Webhook on critical incidents</span>
-              <input
-                type="checkbox"
-                disabled={!canEdit}
-                checked={notifyWebhook}
-                onChange={(event) => setNotifyWebhook(event.target.checked)}
-                className="h-4 w-4 accent-[color:var(--accent-strong)]"
-              />
-            </label>
-          </div>
-        </GlassPanel>
+        {canSeeNotifications && <NotificationChannels canManage={isAdmin} />}
 
         {isAdmin && (
           <GlassPanel className="xl:col-span-2">

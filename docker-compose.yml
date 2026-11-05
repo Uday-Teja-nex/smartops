@@ -82,7 +82,7 @@ services:
     build:
       context: ./services/api
     container_name: smartops-api
-    environment:
+    environment: &api-env
       SMARTOPS_ENVIRONMENT: ${SMARTOPS_ENVIRONMENT:-development}
       SMARTOPS_DATABASE_URL: ${SMARTOPS_DATABASE_URL:-postgresql+psycopg://smartops:smartops@postgres:5432/smartops}
       SMARTOPS_REDIS_URL: ${SMARTOPS_REDIS_URL:-redis://redis:6379/0}
@@ -106,6 +106,7 @@ services:
       SMARTOPS_REFRESH_TTL_HOURS: ${SMARTOPS_REFRESH_TTL_HOURS:-12}
       SMARTOPS_REFRESH_COOKIE_SECURE: ${SMARTOPS_REFRESH_COOKIE_SECURE:-false}
       SMARTOPS_INTERNAL_TOKEN: ${SMARTOPS_INTERNAL_TOKEN:-smartops-internal-dev-token}
+      SMARTOPS_CONSOLE_PUBLIC_URL: ${SMARTOPS_CONSOLE_PUBLIC_URL:-http://localhost:3000}
     volumes:
       - ./sample-data:/app/sample-data:ro
     depends_on:
@@ -123,6 +124,19 @@ services:
       timeout: 5s
       retries: 10
       start_period: 20s
+    restart: unless-stopped
+
+  notifier:
+    # Same image as the API; sends the notification outbox (Telegram, webhook).
+    build:
+      context: ./services/api
+    container_name: smartops-notifier
+    command: ["python", "-m", "app.notifier"]
+    environment: *api-env
+    depends_on:
+      api:
+        condition: service_healthy
+    stop_grace_period: 15s
     restart: unless-stopped
 
   orchestrator:

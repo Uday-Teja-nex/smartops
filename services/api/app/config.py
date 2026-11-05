@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     request_max_bytes: int = Field(default=2 * 1024 * 1024, ge=1024, le=16 * 1024 * 1024)
     mediamtx_webrtc_public_url: str = 'http://localhost:8889'
     mediamtx_rtsp_host: str = 'mediamtx'
+    # Base URL used in notification links back to the console.
+    console_public_url: str = 'http://localhost:3000'
 
     # Evidence object storage (MinIO locally; any S3-compatible store later).
     minio_endpoint: str = "http://minio:9000"

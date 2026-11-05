@@ -16,6 +16,7 @@ from app.routers import (
     evidence,
     incidents,
     live,
+    notifications,
     org,
     pipeline,
     reports,
@@ -51,6 +52,7 @@ app.include_router(detections.router)
 app.include_router(evidence.router)
 app.include_router(org.router)
 app.include_router(reports.router)
+app.include_router(notifications.router)
 
 
 def run_migrations() -> None:
