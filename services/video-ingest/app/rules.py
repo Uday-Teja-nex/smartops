@@ -32,6 +32,9 @@ class ZoneRule:
     movement_tolerance: float = .02
     timezone: str = 'UTC'
     allowed_hours: list[dict] = field(default_factory=list)
+    # Crowding/queue only: after an incident, wait this long before raising
+    # another for the same zone rule, even if the count dips and recovers.
+    cooldown: float = 0
 
     def __post_init__(self):
         if self.kind not in {'crowding', 'queue_build_up', 'loitering', 'restricted_entry', 'blocked_exit', 'unattended_object', 'after_hours_entry'}:
@@ -43,6 +46,8 @@ class ZoneRule:
             raise ValueError('Polygon coordinates must be normalized')
         if cv2.contourArea(points) <= 0:
             raise ValueError('Polygon has no area')
+        if not np.isfinite(self.cooldown) or self.cooldown < 0:
+            raise ValueError('Cooldown must be nonnegative')
         if self.threshold < 0 or not np.isfinite(self.duration) or self.duration < 0:
             raise ValueError('Rule thresholds must be nonnegative')
         if not 0 < self.radius <= 1 or not 0 < self.movement_tolerance <= 1:
@@ -78,6 +83,7 @@ class RuleEngine:
         self.fired: set[tuple] = set()
         self.anchors = {}
         self.last_inside = {}
+        self.last_aggregate_event: dict[int, float] = {}
 
     def update(self, now: float, observations: list[Observation], wall_time=None) -> list[dict]:
         if self.previous_time is not None and (now - self.previous_time > self.max_gap or now < self.previous_time):
@@ -128,6 +134,11 @@ class RuleEngine:
                 since = self.since.setdefault(key, now)
                 if now - since >= rule.duration and key not in self.fired:
                     self.fired.add(key)
+                    if aggregate:
+                        previous = self.last_aggregate_event.get(index)
+                        if previous is not None and now - previous < rule.cooldown:
+                            continue  # still counted as fired: re-arms only after the zone clears
+                        self.last_aggregate_event[index] = now
                     events.append({'zoneId': rule.zone_id, 'type': rule.kind,
                                    'trackIds': [o.track_id for o in group], 'count': len(group),
                                    'durationSeconds': now - since,

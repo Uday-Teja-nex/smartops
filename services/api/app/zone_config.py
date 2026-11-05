@@ -29,6 +29,7 @@ class Rule(BaseModel):
     durationSeconds: float = Field(default=0, ge=0, le=86400)
     radius: float = Field(default=.15, gt=0, le=1)
     movementTolerance: float = Field(default=.02, gt=0, le=1)
+    cooldownSeconds: float | None = Field(default=None, ge=0, le=86400)
     timezone: str = Field(default='UTC', max_length=80)
     allowedHours: list[Schedule] = Field(default_factory=list, max_length=14)
 

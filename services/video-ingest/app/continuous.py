@@ -29,21 +29,41 @@ from app.overlays import annotate
 from app.enrichment import IncidentEnrichment
 
 
+# rule type -> (incident category, severity, plain-English summary template)
+RULE_PRESENTATION = {
+    'crowding': ('Queue & Crowd', 'medium', '{count} people in {zone} for {seconds}s (crowding limit exceeded)'),
+    'queue_build_up': ('Queue & Crowd', 'low', '{count} people queuing in {zone} for {seconds}s'),
+    'restricted_entry': ('Security', 'high', 'Person entered restricted zone {zone}'),
+    'after_hours_entry': ('Security', 'high', 'Person in {zone} outside permitted hours'),
+    'loitering': ('Security', 'low', 'Person stayed in {zone} for {seconds}s'),
+    'unattended_object': ('Security', 'high', 'Bag left unattended in {zone} for {seconds}s'),
+    'blocked_exit': ('Safety', 'high', 'Exit zone {zone} obstructed for {seconds}s'),
+}
+
+
+def describe_event(event):
+    template = RULE_PRESENTATION[event['type']][2]
+    return template.format(count=event['count'], zone=event['zoneId'], seconds=round(event['durationSeconds']))
+
+
 def incident_payload(source, event, captured_at):
     return {
         'id': f'inc-rule-{uuid.uuid4().hex}', 'sourceId': source['id'],
         'buildingId': source['buildingId'], 'floor': source['floor'], 'zone': source['zone'],
-        'category': 'Security' if event['type'] in {'restricted_entry', 'after_hours_entry', 'loitering', 'unattended_object'} else 'Safety',
-        'subcategory': event['type'], 'type': event['type'], 'severity': 'medium',
+        'category': RULE_PRESENTATION[event['type']][0],
+        'subcategory': event['type'], 'type': event['type'], 'severity': RULE_PRESENTATION[event['type']][1],
         'confidence': event['confidence'], 'status': 'active',
         'startTime': datetime.fromtimestamp(captured_at, UTC).isoformat(),
-        'shortSummary': f"{event['type'].replace('_', ' ').capitalize()}: {event['count']} tracked object(s) in {event['zoneId']} for {event['durationSeconds']:.1f}s",
+        'shortSummary': describe_event(event),
         'detailedNarrative': [], 'recommendedActions': [],
         'reviewNotes': ['AI review unavailable: enrichment is not configured.'],
         'evidence': {'thumbnailUrl': '', 'clipUrl': '', 'restricted': True},
         'modelProvider': 'rule-engine', 'modelVersion': 'zone-rules-v1',
         'detectionSummary': event,
     }
+
+
+DEFAULT_AGGREGATE_COOLDOWN = 120.0
 
 
 def load_rules(source):
@@ -53,7 +73,9 @@ def load_rules(source):
             rules.append(ZoneRule(zone['id'], zone['polygon'], rule['type'],
                                   rule.get('threshold', 0), rule.get('durationSeconds', 0),
                                   rule.get('radius', .15), rule.get('movementTolerance', .02),
-                                  rule.get('timezone', 'UTC'), rule.get('allowedHours', [])))
+                                  rule.get('timezone', 'UTC'), rule.get('allowedHours', []),
+                                  rule.get('cooldownSeconds', DEFAULT_AGGREGATE_COOLDOWN
+                                           if rule['type'] in {'crowding', 'queue_build_up'} else 0)))
     return rules
 
 
