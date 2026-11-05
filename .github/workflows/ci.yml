@@ -84,6 +84,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install pytest httpx==0.28.0
+      - run: pip install pytest httpx==0.28.0 "numpy<2.0" opencv-python-headless==4.10.0.84
       - run: python -m pytest services/detector/tests -q
       - run: python -m pytest services/stream-publisher/tests -q

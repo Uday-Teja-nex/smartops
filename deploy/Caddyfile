@@ -1,0 +1,47 @@
+# SmartOps behind one HTTPS origin.
+#   SMARTOPS_DOMAIN  e.g. ops.example.com (or localhost for the local rehearsal)
+#   SMARTOPS_TLS     an email for Let's Encrypt, or "internal" for a local CA
+# One origin keeps the HttpOnly refresh cookie SameSite=Strict, needs no CORS,
+# and lets presigned evidence URLs and WebRTC signalling share the certificate.
+
+{$SMARTOPS_DOMAIN} {
+	tls {$SMARTOPS_TLS}
+	encode zstd gzip
+
+	# Prometheus metrics are for the internal network only.
+	@internal path /metrics /metrics/*
+	respond @internal 404
+
+	# API, including the SSE incident stream (no buffering).
+	@api path /v1/* /health /ready
+	handle @api {
+		reverse_proxy api:8000 {
+			flush_interval -1
+			header_up X-Request-Id {http.request.uuid}
+		}
+	}
+
+	# WebRTC (WHEP) signalling for live camera tiles. Media itself flows over
+	# UDP 8189 directly to mediamtx; open it in the firewall.
+	handle_path /webrtc/* {
+		reverse_proxy mediamtx:8889
+	}
+
+	# Presigned evidence URLs (path-style S3). The Host header is passed
+	# through unchanged, so the signature computed for this domain verifies.
+	@evidence path /smartops-evidence/*
+	handle @evidence {
+		reverse_proxy minio:9000
+	}
+
+	handle {
+		reverse_proxy frontend:3000
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}

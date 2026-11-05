@@ -1,0 +1,69 @@
+# Production overlay: everything behind Caddy on one HTTPS origin.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production build
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production run --rm api python -m app.migrate
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production up -d
+#
+# See docs/DEPLOYMENT_READINESS.md ("Cloud GPU VM"). Only Caddy (80/443) and the
+# WebRTC media port (8189/udp) are published; every other service is internal.
+services:
+  caddy:
+    image: caddy:2.8.4-alpine
+    container_name: smartops-caddy
+    environment:
+      SMARTOPS_DOMAIN: ${SMARTOPS_DOMAIN:?set SMARTOPS_DOMAIN}
+      SMARTOPS_TLS: ${SMARTOPS_TLS:?set SMARTOPS_TLS to an email or internal}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    restart: unless-stopped
+
+  api:
+    environment: &prod-api-env
+      SMARTOPS_ENVIRONMENT: production
+      SMARTOPS_RUN_MIGRATIONS_ON_STARTUP: "false"
+      SMARTOPS_SEED_DEMO_DATA: ${SMARTOPS_SEED_DEMO_DATA:-false}
+      SMARTOPS_REFRESH_COOKIE_SECURE: "true"
+      SMARTOPS_CORS_ORIGINS: https://${SMARTOPS_DOMAIN}
+      SMARTOPS_CONSOLE_PUBLIC_URL: https://${SMARTOPS_DOMAIN}
+      SMARTOPS_MINIO_PUBLIC_ENDPOINT: https://${SMARTOPS_DOMAIN}
+      SMARTOPS_MEDIAMTX_WEBRTC_PUBLIC_URL: https://${SMARTOPS_DOMAIN}/webrtc
+    ports: !reset []
+
+  notifier:
+    environment: *prod-api-env
+
+  frontend:
+    build:
+      args:
+        NEXT_PUBLIC_API_BASE_URL: https://${SMARTOPS_DOMAIN}
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: https://${SMARTOPS_DOMAIN}
+    ports: !reset []
+
+  orchestrator:
+    ports: !reset []
+
+  detector:
+    ports: !reset []
+
+  minio:
+    ports: !reset []
+
+  mediamtx:
+    ports: !reset
+      - "8189:8189/udp"
+
+volumes:
+  caddy_data:
+  caddy_config:

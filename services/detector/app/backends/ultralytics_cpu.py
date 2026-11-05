@@ -22,13 +22,16 @@ class UltralyticsCpuBackend(DetectorBackend):
         torch.set_num_threads(threads)
         # A torch.device preserves our budget in Ultralytics select_device;
         # the string "cpu" resets it to the library's eight-thread default.
-        self.device = torch.device('cpu')
+        self.device = self.select_device()
         self.image_size = int(os.getenv('SMARTOPS_DETECTOR_IMAGE_SIZE', '640'))
         if not 320 <= self.image_size <= 1280 or self.image_size % 32:
             raise ValueError('SMARTOPS_DETECTOR_IMAGE_SIZE must be a multiple of 32 between 320 and 1280')
         self.lock = Lock()
         self.model = YOLO(MODEL_PATH)
         self.model_name = os.path.basename(MODEL_PATH)
+
+    def select_device(self):
+        return torch.device('cpu')
 
     def detect(self, images: list[Any], min_confidence: float) -> list[list[RawDetection]]:
         if not images:
@@ -62,3 +65,20 @@ class UltralyticsCpuBackend(DetectorBackend):
                     )
             outputs.append(frame_detections)
         return outputs
+
+
+class UltralyticsCudaBackend(UltralyticsCpuBackend):
+    """Same YOLO model on an NVIDIA GPU. Needs a CUDA build of torch in the
+    image (build arg TORCH_INDEX_URL) and the GPU passed to the container."""
+
+    name = "ultralytics-cuda"
+
+    def select_device(self):
+        device = os.getenv('SMARTOPS_DETECTOR_DEVICE', 'cuda:0')
+        if not device.startswith('cuda'):
+            raise ValueError('SMARTOPS_DETECTOR_DEVICE must be a CUDA device such as cuda:0')
+        if not torch.cuda.is_available():
+            raise RuntimeError('ultralytics-cuda selected but no CUDA device is visible to this container; '
+                               'build with a CUDA torch (TORCH_INDEX_URL) and run with GPU access, '
+                               'or use SMARTOPS_DETECTOR_BACKEND=ultralytics-cpu')
+        return torch.device(device)

@@ -75,12 +75,33 @@ def startup() -> None:
         raise
 
 
+def schema_revision_status() -> tuple[str | None, str]:
+    """(database revision, code head revision)."""
+    from alembic.config import Config
+    from alembic.runtime.migration import MigrationContext
+    from alembic.script import ScriptDirectory
+
+    service_root = Path(__file__).resolve().parents[1]
+    config = Config(str(service_root / "alembic.ini"))
+    config.set_main_option("script_location", str(service_root / "alembic"))
+    head = ScriptDirectory.from_config(config).get_current_head()
+    with engine.connect() as connection:
+        current = MigrationContext.configure(connection).get_current_revision()
+    return current, head
+
+
 def initialize_storage() -> None:
     if settings.database_url.startswith("sqlite"):
         # Test/dev-lite mode: skip Alembic and build the schema directly.
         Base.metadata.create_all(bind=engine)
-    else:
+    elif settings.run_migrations_on_startup:
         run_migrations()
+    else:
+        current, head = schema_revision_status()
+        if current != head:
+            raise RuntimeError(
+                f"Database schema is at {current or 'empty'} but this release needs {head}. "
+                "Run the release step first: docker compose run --rm api python -m app.migrate")
 
     if settings.seed_demo_data:
         with Session(engine) as session:
@@ -94,6 +115,30 @@ def initialize_storage() -> None:
         except Exception as exc:  # noqa: BLE001 - storage may lag behind the API.
             # Evidence uploads/presigns will 503 until MinIO is reachable.
             print(f"[api] evidence bucket not ready yet: {exc}", flush=True)
+
+
+@app.get("/ready")
+def ready():
+    """Readiness: the API can serve requests only if PostgreSQL and Redis answer."""
+    from fastapi.responses import JSONResponse
+    from sqlalchemy import text
+
+    checks: dict[str, str] = {}
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        checks["database"] = "ok"
+    except Exception as exc:  # noqa: BLE001
+        checks["database"] = f"unavailable ({type(exc).__name__})"
+    try:
+        from redis import Redis
+
+        Redis.from_url(settings.redis_url, socket_timeout=2, socket_connect_timeout=2).ping()
+        checks["redis"] = "ok"
+    except Exception as exc:  # noqa: BLE001
+        checks["redis"] = f"unavailable ({type(exc).__name__})"
+    status = 200 if all(value == "ok" for value in checks.values()) else 503
+    return JSONResponse({"status": "ready" if status == 200 else "not_ready", "checks": checks}, status_code=status)
 
 
 @app.get("/health")

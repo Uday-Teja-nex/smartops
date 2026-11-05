@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     candidate_queue: str = "smartops:candidate_jobs"
     dead_letter_queue: str = "smartops:candidate_jobs:dead"
     seed_demo_data: bool = True
+    # Production runs `python -m app.migrate` as a release step instead.
+    run_migrations_on_startup: bool = True
     request_max_bytes: int = Field(default=2 * 1024 * 1024, ge=1024, le=16 * 1024 * 1024)
     mediamtx_webrtc_public_url: str = 'http://localhost:8889'
     mediamtx_rtsp_host: str = 'mediamtx'

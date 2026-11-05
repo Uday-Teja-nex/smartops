@@ -7,9 +7,11 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# CPU-only torch first so ultralytics does not pull the CUDA build.
+# CPU-only torch by default so ultralytics does not pull the CUDA build.
+# GPU hosts: --build-arg TORCH_INDEX_URL=https://download.pytorch.org/whl/cu121
+ARG TORCH_INDEX_URL=https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir torch==2.5.1 torchvision==0.20.1 \
-    --index-url https://download.pytorch.org/whl/cpu
+    --index-url ${TORCH_INDEX_URL}
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

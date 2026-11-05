@@ -1,8 +1,10 @@
 """Detector backend registry.
 
-The active backend is selected with SMARTOPS_DETECTOR_BACKEND. Only the
-CPU ultralytics and opt-in Hugging Face backends are implemented; the registry names the planned
-alternatives so switching later is configuration, not a rewrite.
+The active backend is selected with SMARTOPS_DETECTOR_BACKEND:
+  ultralytics-cpu   local YOLO on CPU (default)
+  ultralytics-cuda  local YOLO on an NVIDIA GPU (CUDA torch build)
+  remote            another SmartOps detector API, e.g. a GPU box
+  huggingface       hosted Hugging Face object detection (opt-in)
 """
 
 from __future__ import annotations
@@ -11,7 +13,7 @@ import os
 
 from app.backends.base import DetectorBackend
 
-PLANNED_BACKENDS = ("onnxruntime", "openvino", "cuda", "remote")
+PLANNED_BACKENDS = ("onnxruntime", "openvino")
 
 
 def get_backend() -> DetectorBackend:
@@ -26,6 +28,16 @@ def get_backend() -> DetectorBackend:
         from app.backends.ultralytics_cpu import UltralyticsCpuBackend
 
         return UltralyticsCpuBackend()
+    if name == "ultralytics-cuda":
+        from app.backends.ultralytics_cpu import UltralyticsCudaBackend
+
+        return UltralyticsCudaBackend()
+    if name == "remote":
+        from app.backends.remote import RemoteBackend
+
+        return RemoteBackend(os.getenv("SMARTOPS_DETECTOR_REMOTE_URL", ""),
+                             os.getenv("SMARTOPS_DETECTOR_REMOTE_TOKEN", ""),
+                             float(os.getenv("SMARTOPS_DETECTOR_REMOTE_TIMEOUT_SECONDS", "5")))
     if name in PLANNED_BACKENDS:
         raise RuntimeError(
             f"Detector backend '{name}' is planned but not implemented yet. "
