@@ -1,0 +1,133 @@
+{
+  "summary": {
+    "measuredAt": "2026-11-06T03:27:19",
+    "workspaceUser": "admin@mall.demo",
+    "minutes": 15.0,
+    "incidents": 9,
+    "reviewed": 9,
+    "validated": 6,
+    "validatedShare": 0.667,
+    "neverReviewed": [],
+    "secondsIncidentToReview": {
+      "p50": 34.4,
+      "p95": 54.4,
+      "max": 54.4
+    },
+    "modelLatencyMs": {
+      "median": 27607.0
+    },
+    "unavailableReasons": [
+      "AI review unavailable: model did not answer in time."
+    ]
+  },
+  "rows": [
+    {
+      "id": "inc-rule-3044d17b0863428e96bc2c8fad9c514b",
+      "type": "crowding",
+      "firstSeen": 1793914992.7372568,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (27.5 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793915025.0097573,
+      "secondsFromIncident": 32.3,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 27505
+    },
+    {
+      "id": "inc-rule-59e39932d71d443c8a105a321b95c67b",
+      "type": "queue_build_up",
+      "firstSeen": 1793915110.2707891,
+      "createdAt": null,
+      "outcome": "unavailable",
+      "note": "AI review unavailable: model did not answer in time.",
+      "reviewSeen": 1793915146.5669262,
+      "secondsFromIncident": 36.3,
+      "model": null,
+      "modelLatencyMs": null
+    },
+    {
+      "id": "inc-rule-90ca6798bd3e452f9312c9c85ef27432",
+      "type": "crowding",
+      "firstSeen": 1793915212.9285705,
+      "createdAt": null,
+      "outcome": "unavailable",
+      "note": "AI review unavailable: model did not answer in time.",
+      "reviewSeen": 1793915249.2472181,
+      "secondsFromIncident": 36.3,
+      "model": null,
+      "modelLatencyMs": null
+    },
+    {
+      "id": "inc-rule-cedbf4c5cadb473dad01cbbccc6fb261",
+      "type": "queue_build_up",
+      "firstSeen": 1793915245.2054715,
+      "createdAt": null,
+      "outcome": "unavailable",
+      "note": "AI review unavailable: model did not answer in time.",
+      "reviewSeen": 1793915283.5804055,
+      "secondsFromIncident": 38.4,
+      "model": null,
+      "modelLatencyMs": null
+    },
+    {
+      "id": "inc-rule-c978ec1418864ff0a60882c404ba24ff",
+      "type": "queue_build_up",
+      "firstSeen": 1793915428.395184,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (27.7 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793915462.6903298,
+      "secondsFromIncident": 34.3,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 27709
+    },
+    {
+      "id": "inc-rule-a32d2c8328e3417588cc4aa60f9b5ff5",
+      "type": "crowding",
+      "firstSeen": 1793915434.4445882,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (27.0 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793915488.8837035,
+      "secondsFromIncident": 54.4,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 27026
+    },
+    {
+      "id": "inc-rule-251a59c602af434388f631e2b836aed9",
+      "type": "queue_build_up",
+      "firstSeen": 1793915577.3465931,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (26.9 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793915611.6005056,
+      "secondsFromIncident": 34.3,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 26920
+    },
+    {
+      "id": "inc-rule-b597c0d51c3347cb941bccdeb912ab88",
+      "type": "crowding",
+      "firstSeen": 1793915657.8308325,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (29.3 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793915692.2200978,
+      "secondsFromIncident": 34.4,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 29264
+    },
+    {
+      "id": "inc-rule-7e4d302fb5f44346ae26c6616f93e1c1",
+      "type": "queue_build_up",
+      "firstSeen": 1793915700.2686286,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (27.8 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793915732.5780354,
+      "secondsFromIncident": 32.3,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 27793
+    }
+  ]
+}

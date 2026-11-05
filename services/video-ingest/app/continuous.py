@@ -64,6 +64,20 @@ def incident_payload(source, event, captured_at):
 
 
 DEFAULT_AGGREGATE_COOLDOWN = 120.0
+# Vision-encoder cost grows with pixels: on the laptop CPU a 384 px frame
+# reviews in about 11 s versus about 24 s at 640 px
+# (docs/verification/vlm-image-size-benchmark.json).
+REVIEW_WIDTH = int(os.getenv('SMARTOPS_REVIEW_IMAGE_WIDTH', '384'))
+
+
+def review_jpeg(image):
+    if image.shape[1] > REVIEW_WIDTH:
+        image = cv2.resize(image, (REVIEW_WIDTH, round(image.shape[0] * REVIEW_WIDTH / image.shape[1])),
+                           interpolation=cv2.INTER_AREA)
+    ok, encoded = cv2.imencode('.jpg', image, [cv2.IMWRITE_JPEG_QUALITY, 85])
+    if not ok:
+        raise RuntimeError('Review image encoding failed')
+    return base64.b64encode(encoded).decode('ascii')
 
 
 def load_rules(source):
@@ -204,7 +218,7 @@ def run(source, client, stop, *, detector_url, fps=3):
                             payload = incident_payload(source, event, frame.captured_at)
                             if len(evidence_waiting) + len(evidence_running) < 20:
                                 # The AI reviews the clean frame; burned-in boxes and scores confuse it.
-                                pending.track_evidence(payload, base64.b64encode(jpeg).decode('ascii') if enrichment else None)
+                                pending.track_evidence(payload, review_jpeg(image) if enrichment else None)
                                 evidence_waiting.append((payload, frame.captured_at, evidence_jpeg, response.json()['detections']))
                             else:
                                 payload['reviewNotes'].append('Evidence unavailable: evidence queue capacity reached')

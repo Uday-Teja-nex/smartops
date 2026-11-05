@@ -1,3 +1,5 @@
+name: smartops
+
 services:
   mediamtx:
     image: bluenviron/mediamtx:1.21.2
@@ -6,7 +8,8 @@ services:
       - ./mediamtx.yml:/mediamtx.yml:ro
     ports:
       - "127.0.0.1:8554:8554"
-      - "127.0.0.1:1935:1935"
+      # RTMP ingest from phones on the LAN (publish-only credential; see mediamtx.yml).
+      - "1935:1935"
       - "127.0.0.1:8888:8888"
       - "127.0.0.1:8889:8889"
       - "127.0.0.1:8189:8189/udp"
@@ -109,6 +112,7 @@ services:
       SMARTOPS_REFRESH_COOKIE_SECURE: ${SMARTOPS_REFRESH_COOKIE_SECURE:-false}
       SMARTOPS_INTERNAL_TOKEN: ${SMARTOPS_INTERNAL_TOKEN:-smartops-internal-dev-token}
       SMARTOPS_CONSOLE_PUBLIC_URL: ${SMARTOPS_CONSOLE_PUBLIC_URL:-http://localhost:3000}
+      SMARTOPS_INGEST_PUBLIC_HOST: ${SMARTOPS_INGEST_HOST:-localhost}
     volumes:
       - ./sample-data:/app/sample-data:ro
     depends_on:

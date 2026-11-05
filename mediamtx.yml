@@ -3,23 +3,28 @@ logLevel: warn
 rtspTransports: [tcp]
 api: yes
 apiAddress: :9997
-# Anyone may publish/read streams on this laptop-only setup (ports are bound
-# to 127.0.0.1 on the host). The control API and metrics are additionally
-# reachable from the Docker bridge so demo.ps1 can verify publishing.
+# Laptop demo access policy.
+# - This laptop, the Docker networks and Docker Desktop's host gateway may
+#   publish, read and use the control API (the console reads WebRTC from here).
+# - Anything else on the LAN (a phone on Wi-Fi) may only PUBLISH, only to
+#   phone-* paths, and only with the phone credential. Nobody on the LAN can
+#   watch a camera. RTMP (1935) is the only port opened to the LAN.
 authInternalUsers:
   - user: any
     pass:
-    ips: []
+    ips: ['127.0.0.1', '::1', '172.16.0.0/12', '192.168.65.0/24']
     permissions:
       - action: publish
       - action: read
       - action: playback
-  - user: any
-    pass:
-    ips: ['127.0.0.1', '::1', '172.16.0.0/12', '192.168.0.0/16']
-    permissions:
       - action: api
       - action: metrics
+  - user: phone
+    pass: smartops-phone
+    ips: []
+    permissions:
+      - action: publish
+        path: ~^phone-
 rtmp: yes
 hls: yes
 hlsVariant: lowLatency

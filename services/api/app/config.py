@@ -23,6 +23,14 @@ class Settings(BaseSettings):
     mediamtx_rtsp_host: str = 'mediamtx'
     # Base URL used in notification links back to the console.
     console_public_url: str = 'http://localhost:3000'
+    # Internal service addresses probed by /v1/system/status.
+    detector_base_url: str = 'http://detector:8200'
+    orchestrator_base_url: str = 'http://orchestrator:8100'
+    mediamtx_api_url: str = 'http://mediamtx:9997'
+    # Phone cameras publish RTMP to this LAN address (demo.ps1 sets the laptop's IP).
+    ingest_public_host: str = 'localhost'
+    phone_publish_user: str = 'phone'
+    phone_publish_password: str = 'smartops-phone'
 
     # Evidence object storage (MinIO locally; any S3-compatible store later).
     minio_endpoint: str = "http://minio:9000"

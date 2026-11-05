@@ -12,15 +12,38 @@ provider = get_model_provider()
 graph = build_graph(provider)
 
 
+# Outcome of the most recent real review, for status pages (in-process only).
+last_review: dict = {}
+
+
 @app.post('/v1/incidents/enrich', response_model=EnrichmentResponse)
 def enrich_incident(payload: EnrichmentRequest):
+    import time
     try:
-        return enrich(provider, payload)
+        result = enrich(provider, payload)
+        last_review.clear()
+        last_review.update(ok=True, at=time.time(), model=result.model, latencyMs=result.latencyMs)
+        return result
     except Exception as exc:
         reason = describe_failure(exc)
+        last_review.clear()
+        last_review.update(ok=False, at=time.time(), reason=reason)
         logging.getLogger('smartops.enrichment').warning(
             'enrichment failed incident=%s reason=%s error=%s', payload.incidentId, reason, type(exc).__name__)
         raise HTTPException(status_code=503, detail=reason) from None
+
+
+@app.get("/v1/status")
+def status() -> dict:
+    """AI review availability: provider check plus the last real outcome."""
+    import time
+    check = provider.availability() if hasattr(provider, 'availability') else {'ok': True, 'detail': 'unknown'}
+    recent = dict(last_review)
+    if recent:
+        recent['secondsAgo'] = round(time.time() - recent.pop('at'))
+    ok = bool(check.get('ok')) and not (recent and not recent.get('ok') and recent['secondsAgo'] < 300)
+    return {'ok': ok, 'provider': os.getenv('SMARTOPS_MODEL_PROVIDER', 'ollama'),
+            'model': check.get('model'), 'detail': check.get('detail'), 'lastReview': recent or None}
 
 
 @app.get("/health")

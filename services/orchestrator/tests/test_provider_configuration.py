@@ -15,7 +15,7 @@ def test_default_requests_bound_model_resources(monkeypatch):
         assert payload['options']['num_batch'] == 32
         assert payload['options']['num_ctx'] == 2048
         assert payload['options']['num_predict'] == 256
-        assert payload['keep_alive'] == '10m'
+        assert payload['keep_alive'] == '60m'
 
 
 @pytest.mark.parametrize('value', ['nan', 'inf', '-1', '0', 'oops'])
@@ -74,3 +74,22 @@ def test_only_local_ollama_may_be_a_fallback(monkeypatch):
     from app.providers.fallback import FallbackProvider
     provider = get_model_provider()
     assert isinstance(provider, FallbackProvider) and provider.fallback.vision_model == 'qwen2.5vl:3b'
+
+
+def test_ollama_availability_reports_missing_model_and_warm_state(monkeypatch):
+    import httpx
+    from app.providers.ollama import OllamaModelProvider
+
+    real_client = httpx.Client
+
+    def client_for(tags, loaded):
+        def handler(request):
+            return httpx.Response(200, json={'models': [{'name': n} for n in (tags if request.url.path == '/api/tags' else loaded)]})
+        return lambda **kwargs: real_client(transport=httpx.MockTransport(handler), base_url='http://o')
+
+    provider = OllamaModelProvider('http://o', 'llama3.2:3b', 'qwen2.5vl:3b')
+    monkeypatch.setattr(httpx, 'Client', client_for(['llama3.2:3b'], []))
+    assert provider.availability() == {'ok': False, 'model': 'qwen2.5vl:3b',
+                                       'detail': 'model qwen2.5vl:3b is not installed in Ollama'}
+    monkeypatch.setattr(httpx, 'Client', client_for(['qwen2.5vl:3b'], ['qwen2.5vl:3b']))
+    assert provider.availability()['detail'] == 'loaded and warm'

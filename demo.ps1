@@ -7,11 +7,15 @@
   .\demo.ps1 preflight   # explains anything that would ruin a demo
   .\demo.ps1 reset       # back to freshly seeded demo workspaces
   .\demo.ps1 up -Build   # rebuild images after code changes
+  .\demo.ps1 backup      # database + evidence to sample-data\output\backups\<time>
+  .\demo.ps1 restore     # latest backup (or: .\demo.ps1 restore <folder>)
 #>
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('up', 'preflight', 'reset', 'status', 'down', 'fix-docker')]
+    [ValidateSet('up', 'preflight', 'reset', 'status', 'down', 'fix-docker', 'backup', 'restore')]
     [string]$Action = 'up',
+    [Parameter(Position = 1)]
+    [string]$From = '',
     [switch]$Build
 )
 
@@ -77,6 +81,19 @@ function Test-StaleDockerSockets {
     if (-not (Test-Path $log)) { return $false }
     $tail = Get-Content $log -Tail 400 -ErrorAction SilentlyContinue
     return [bool]($tail | Select-String -SimpleMatch 'The file cannot be accessed by the system' | Select-Object -Last 1)
+}
+
+function Get-LanAddress {
+    # The address a phone on the same Wi-Fi uses to reach this laptop.
+    $candidates = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object {
+        $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' -and
+        $_.InterfaceAlias -notmatch 'vEthernet|WSL|Docker|Loopback|VirtualBox|VMware' -and
+        $_.PrefixOrigin -in @('Dhcp', 'Manual')
+    }
+    $preferred = $candidates | Where-Object { $_.InterfaceAlias -match 'Wi-?Fi|Wireless|WLAN' } | Select-Object -First 1
+    if (-not $preferred) { $preferred = $candidates | Select-Object -First 1 }
+    if ($preferred) { return $preferred.IPAddress }
+    return $null
 }
 
 function Get-StreamManifest {
@@ -208,13 +225,20 @@ function Start-NativeOllama {
     Write-Warn 'Ollama did not answer within 30 s; incidents will show "AI review unavailable".'
 }
 
+function Get-LocalVisionModel {
+    # The model native Ollama must serve: the primary when the provider is
+    # ollama, otherwise the configured local fallback (if any).
+    if ((Get-EnvValue 'SMARTOPS_MODEL_PROVIDER' 'ollama') -eq 'ollama') { return Get-EnvValue 'SMARTOPS_VISION_MODEL' 'qwen2.5vl:3b' }
+    if ((Get-EnvValue 'SMARTOPS_MODEL_FALLBACK') -eq 'ollama') { return Get-EnvValue 'SMARTOPS_FALLBACK_VISION_MODEL' 'qwen2.5vl:3b' }
+    return $null
+}
+
 function Invoke-ModelWarmup {
-    $provider = Get-EnvValue 'SMARTOPS_MODEL_PROVIDER' 'ollama'
-    if ($provider -ne 'ollama') {
-        Write-Info "Hosted provider '$provider': no local model to warm."
+    $vision = Get-LocalVisionModel
+    if (-not $vision) {
+        Write-Info "Hosted provider '$(Get-EnvValue 'SMARTOPS_MODEL_PROVIDER')' with no local fallback: nothing to warm."
         return
     }
-    $vision = Get-EnvValue 'SMARTOPS_VISION_MODEL' 'qwen2.5vl:3b'
     try {
         $loaded = Invoke-RestMethod "$OllamaUrl/api/ps" -TimeoutSec 5
         if (@($loaded.models | Where-Object { $_.name -eq $vision }).Count -gt 0) { Write-Ok "$vision already loaded."; return }
@@ -268,7 +292,10 @@ function Invoke-Up {
         exit 1
     }
     Write-Step 'Starting'
-    if ((Get-EnvValue 'SMARTOPS_MODEL_PROVIDER' 'ollama') -eq 'ollama') { Start-NativeOllama }
+    if (Get-LocalVisionModel) { Start-NativeOllama }
+    $lan = Get-LanAddress
+    if ($lan) { $env:SMARTOPS_INGEST_HOST = $lan; Write-Info "Phones on this network publish to $lan (RTMP 1935)." }
+    else { Write-Warn 'No Wi-Fi/Ethernet address found; phone cameras cannot connect until the laptop is on a network.' }
     $composeArgs = @('compose', 'up', '-d', '--remove-orphans')
     if ($Build) { $composeArgs += '--build' }
     & docker @composeArgs
@@ -334,6 +361,57 @@ function Invoke-FixDocker {
     Write-Bad 'Docker did not come back within 3 minutes.' 'Open Docker Desktop and read its error. Do NOT choose "Reset to factory defaults" (it deletes all volumes).'
 }
 
+function Invoke-Backup {
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    Write-Step 'Backing up database and evidence'
+    $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+    $dir = Join-Path $PSScriptRoot "sample-data\output\backups\$stamp"
+    New-Item -ItemType Directory -Force -Path $dir | Out-Null
+    $db = Get-EnvValue 'POSTGRES_DB' 'smartops'
+    $user = Get-EnvValue 'POSTGRES_USER' 'smartops'
+    & docker compose exec -T postgres pg_dump -U $user -d $db -Fc -f /tmp/smartops.dump
+    if ($LASTEXITCODE -ne 0) { Write-Bad 'pg_dump failed.' 'docker compose logs postgres --tail 50'; exit 1 }
+    & docker compose cp postgres:/tmp/smartops.dump (Join-Path $dir 'database.dump') | Out-Null
+    & docker compose exec -T postgres rm -f /tmp/smartops.dump | Out-Null
+    # Evidence objects: copy the MinIO volume while MinIO is stopped (consistent).
+    & docker compose stop minio | Out-Null
+    & docker compose run --rm --no-deps -v smartops_minio_data:/minio:ro -v "${dir}:/backup" --entrypoint tar postgres -czf /backup/evidence.tgz -C /minio .
+    $tarCode = $LASTEXITCODE
+    & docker compose start minio | Out-Null
+    if ($tarCode -ne 0) { Write-Bad 'Evidence archive failed.' ''; exit 1 }
+    $size = (Get-ChildItem $dir | Measure-Object Length -Sum).Sum / 1MB
+    Write-Ok ("Backup written to {0} ({1:N1} MB) in {2:N0} s" -f $dir, $size, $watch.Elapsed.TotalSeconds)
+}
+
+function Invoke-Restore([string]$From) {
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    if (-not $From) {
+        $latest = Get-ChildItem (Join-Path $PSScriptRoot 'sample-data\output\backups') -Directory -ErrorAction SilentlyContinue |
+            Where-Object { Test-Path (Join-Path $_.FullName 'database.dump') } | Sort-Object Name | Select-Object -Last 1
+        if (-not $latest) { Write-Bad 'No backup found.' '.\demo.ps1 backup'; exit 1 }
+        $From = $latest.FullName
+    }
+    $From = (Resolve-Path $From).Path
+    foreach ($file in 'database.dump', 'evidence.tgz') {
+        if (-not (Test-Path (Join-Path $From $file))) { Write-Bad "Backup is missing $file." ''; exit 1 }
+    }
+    Write-Step "Restoring $From"
+    $db = Get-EnvValue 'POSTGRES_DB' 'smartops'
+    $user = Get-EnvValue 'POSTGRES_USER' 'smartops'
+    & docker compose stop stream-processor notifier api minio | Out-Null
+    & docker compose cp (Join-Path $From 'database.dump') postgres:/tmp/restore.dump | Out-Null
+    & docker compose exec -T postgres pg_restore -U $user -d $db --clean --if-exists --no-owner /tmp/restore.dump
+    $restoreCode = $LASTEXITCODE
+    & docker compose exec -T postgres rm -f /tmp/restore.dump | Out-Null
+    & docker compose run --rm --no-deps -v smartops_minio_data:/minio -v "${From}:/backup:ro" --entrypoint sh postgres -c 'find /minio -mindepth 1 -delete && tar -xzf /backup/evidence.tgz -C /minio'
+    $tarCode = $LASTEXITCODE
+    & docker compose run --rm --no-deps --entrypoint sh stream-processor -c 'rm -rf /data/*' | Out-Null
+    & docker compose exec -T redis redis-cli FLUSHDB | Out-Null
+    & docker compose start minio api notifier stream-processor | Out-Null
+    if ($restoreCode -ne 0 -or $tarCode -ne 0) { Write-Bad 'Restore reported errors (see above).' ''; exit 1 }
+    Write-Ok ("Restored in {0:N0} s. Everyone is signed out." -f $watch.Elapsed.TotalSeconds)
+}
+
 switch ($Action) {
     'preflight' {
         $running = Invoke-WithTimeout { docker ps --filter 'name=smartops-api' --format '{{.Names}}' 2>$null } 20
@@ -347,4 +425,6 @@ switch ($Action) {
     'status' { Invoke-Status }
     'down' { & docker compose down }
     'fix-docker' { Invoke-FixDocker }
+    'backup' { Invoke-Backup }
+    'restore' { Invoke-Restore $From }
 }

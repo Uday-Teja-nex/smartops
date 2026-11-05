@@ -22,6 +22,7 @@ from app.models import IncidentModel, NotificationChannelModel, NotificationDeli
 from app.notifications import MAX_ATTEMPTS, DeliveryError, incident_payload, retry_delay, send
 
 log = logging.getLogger("smartops.notifier")
+HEARTBEAT_KEY = "smartops:heartbeat:notifier"
 _running = True
 
 
@@ -69,8 +70,16 @@ def main() -> None:
     signal.signal(signal.SIGTERM, _stop)
     signal.signal(signal.SIGINT, _stop)
     log.info("notifier started")
+    from redis import Redis
+
+    from app.config import get_settings
+    beat = Redis.from_url(get_settings().redis_url, socket_timeout=2, socket_connect_timeout=2)
     with httpx.Client(timeout=10) as client:
         while _running:
+            try:
+                beat.set(HEARTBEAT_KEY, str(time.time()), ex=15)
+            except Exception:  # noqa: BLE001 - status pages report the missing heartbeat.
+                pass
             try:
                 with SessionLocal() as session:
                     handled = process_due(session, client)

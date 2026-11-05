@@ -1,0 +1,74 @@
+[
+ {
+  "width": 640,
+  "frame": 197,
+  "wall": 24.5,
+  "promptTokens": 379,
+  "outTokens": 58,
+  "valid": true,
+  "scene": "3 people in Front aisle for 5s"
+ },
+ {
+  "width": 640,
+  "frame": 294,
+  "wall": 22.4,
+  "promptTokens": 379,
+  "outTokens": 64,
+  "valid": true,
+  "scene": "3 people in Front aisle for 5s"
+ },
+ {
+  "width": 448,
+  "frame": 391,
+  "wall": 12.5,
+  "promptTokens": 224,
+  "outTokens": 58,
+  "valid": true,
+  "scene": "People in front of a store, shopping."
+ },
+ {
+  "width": 448,
+  "frame": 488,
+  "wall": 38.6,
+  "promptTokens": 224,
+  "outTokens": 60,
+  "valid": true,
+  "scene": "3 people in Front aisle for 5s"
+ },
+ {
+  "width": 384,
+  "frame": 585,
+  "wall": 10.6,
+  "promptTokens": 192,
+  "outTokens": 55,
+  "valid": true,
+  "scene": "3 people in Front aisle for 5s"
+ },
+ {
+  "width": 384,
+  "frame": 682,
+  "wall": 10.7,
+  "promptTokens": 192,
+  "outTokens": 51,
+  "valid": true,
+  "scene": "People shopping in a store."
+ },
+ {
+  "width": 320,
+  "frame": 779,
+  "wall": 12.0,
+  "promptTokens": 146,
+  "outTokens": 109,
+  "valid": true,
+  "scene": "A group of people are shopping in a store. They are standing in the fr"
+ },
+ {
+  "width": 320,
+  "frame": 876,
+  "wall": 9.4,
+  "promptTokens": 146,
+  "outTokens": 64,
+  "valid": true,
+  "scene": "3 people in Front aisle for 5s"
+ }
+]

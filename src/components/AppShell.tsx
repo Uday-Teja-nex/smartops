@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { DegradedBanner } from "@/components/SystemStatus";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect } from "react";
 import {
@@ -275,6 +276,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
 
           <main className="flex-1 px-6 py-6">
             {actionError && <div role="alert" className="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-200">{actionError}</div>}
+            {backendStatus === "connected" && <DegradedBanner />}
             {backendStatus === "loading" ? <SkeletonPanel lines={6} /> : backendStatus === "offline" ? (
               <ErrorState title="Live connection unavailable" description="The API or event stream is unreachable. Data and actions are unavailable while SmartOps reconnects automatically." />
             ) : children}

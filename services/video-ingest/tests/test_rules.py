@@ -116,3 +116,13 @@ def test_rule_incidents_are_categorized_and_worded_for_operators():
     kinds = {'crowding', 'queue_build_up', 'loitering', 'restricted_entry', 'blocked_exit',
              'unattended_object', 'after_hours_entry'}
     assert set(RULE_PRESENTATION) == kinds
+
+
+def test_review_image_is_downscaled_clean_jpeg():
+    import base64
+    import cv2
+    import numpy as np
+    from app.continuous import REVIEW_WIDTH, review_jpeg
+    frame = np.zeros((360, 640, 3), dtype=np.uint8)
+    decoded = cv2.imdecode(np.frombuffer(base64.b64decode(review_jpeg(frame)), np.uint8), cv2.IMREAD_COLOR)
+    assert decoded.shape[1] == REVIEW_WIDTH == 384 and decoded.shape[0] == 216

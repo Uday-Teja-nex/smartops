@@ -10,11 +10,13 @@ import {
   CircleX,
   Pencil,
   Plus,
+  Smartphone,
   RefreshCw,
   Trash2,
 } from "lucide-react";
 import { useAuth } from "@/app/auth";
 import { useSmartOps } from "@/app/providers";
+import { PhoneCameraDialog } from "@/components/PhoneCameraDialog";
 import { SectionHeader } from "@/components/SectionHeader";
 import { Badge } from "@/components/Badge";
 import {
@@ -188,6 +190,7 @@ export default function SourcesPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [phoneOpen, setPhoneOpen] = useState(false);
 
   const selectedBuilding = useMemo(
     () => buildings.find((building) => building.id === form.buildingId),
@@ -294,6 +297,10 @@ export default function SourcesPage() {
 
   return (
     <div className="space-y-6">
+      {phoneOpen && (
+        <PhoneCameraDialog buildings={buildings} onClose={() => setPhoneOpen(false)}
+          onCreated={() => void refreshSources()} />
+      )}
       <SectionHeader
         title="Source Management"
         subtitle="Register, monitor, and control every CCTV/video input across buildings"
@@ -312,6 +319,14 @@ export default function SourcesPage() {
               className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Plus className="h-4 w-4" /> Add source
+            </button>
+            <button
+              onClick={() => setPhoneOpen(true)}
+              disabled={!canManage}
+              title={canManage ? undefined : "Requires supervisor role or higher"}
+              className="inline-flex items-center gap-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Smartphone className="h-4 w-4" /> Add phone camera
             </button>
           </div>
         }

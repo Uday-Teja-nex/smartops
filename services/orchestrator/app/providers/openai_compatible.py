@@ -31,6 +31,11 @@ class OpenAICompatibleProvider(ModelProvider):
         self.openrouter = url.hostname == 'openrouter.ai'
         self.data_collection = data_collection
 
+    def availability(self):
+        # Probing a hosted API costs requests/quota; real outcomes are tracked
+        # per review instead (see app.main.last_review).
+        return {'ok': True, 'model': self.vision_model, 'detail': 'hosted provider; checked on each review'}
+
     def _chat(self, model, content, schema):
         payload = {'model': model, 'messages': [{'role': 'user', 'content': content}],
                    'stream': False, 'max_tokens': 1024}

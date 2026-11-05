@@ -30,6 +30,12 @@ class FallbackProvider(ModelProvider):
     def vision_model(self) -> str:
         return getattr(self._local, 'model', None) or getattr(self.primary, 'vision_model', '')
 
+    def availability(self):
+        primary = self.primary.availability() if hasattr(self.primary, 'availability') else {'ok': True}
+        fallback = self.fallback.availability() if hasattr(self.fallback, 'availability') else {'ok': True}
+        return {'ok': primary.get('ok') or fallback.get('ok'), 'model': primary.get('model'),
+                'detail': f"{primary.get('detail', '')}; fallback {fallback.get('model', '')}: {fallback.get('detail', '')}"}
+
     def _call(self, method: str, *args: Any, **kwargs: Any) -> dict[str, Any]:
         try:
             result = getattr(self.primary, method)(*args, **kwargs)

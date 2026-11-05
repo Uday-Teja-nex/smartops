@@ -357,3 +357,30 @@ export const testNotificationChannel = (id: string) =>
 
 export const fetchNotificationDeliveries = () =>
   request<NotificationDelivery[]>("/v1/notifications/deliveries", { cache: "no-store" });
+
+// ---------------------------------------------------------------------------
+// System status
+// ---------------------------------------------------------------------------
+
+export type SystemComponent = {
+  id: string;
+  label: string;
+  ok: boolean;
+  detail: string;
+  impact: string | null;
+};
+
+export type SystemStatus = { ok: boolean; checkedAt: string; components: SystemComponent[] };
+
+export const fetchSystemStatus = () =>
+  request<SystemStatus>("/v1/system/status", { cache: "no-store", signal: AbortSignal.timeout(8000) });
+
+export type PhoneCameraResult = {
+  source: SourceRecord;
+  publish: { rtmpUrl: string; server: string; streamKey: string; path: string; lanHostConfigured: boolean };
+};
+
+export const createPhoneCamera = (input: {
+  name: string; buildingId: string; floorId?: string; zoneId?: string;
+}) =>
+  request<PhoneCameraResult>("/v1/sources/phone", { method: "POST", body: JSON.stringify(input) });

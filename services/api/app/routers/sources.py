@@ -1,8 +1,11 @@
+import secrets
 from datetime import UTC, datetime, timedelta
+from urllib.parse import urlencode
 from pathlib import Path as FilePath
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -350,3 +353,48 @@ def get_source_clip(
         raise HTTPException(status_code=404, detail="Clip not found")
 
     return FileResponse(source_path, media_type="video/mp4", filename=source_path.name)
+
+
+class PhoneCameraRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    buildingId: str
+    floorId: str | None = None
+    zoneId: str | None = None
+    floor: str | None = None
+    zone: str | None = None
+
+
+@router.post("/sources/phone", status_code=201)
+def create_phone_camera(
+    payload: PhoneCameraRequest,
+    session: Session = Depends(get_db_session),
+    principal: Principal = Depends(require_supervisor),
+) -> dict:
+    """Register a phone as a live camera and return where it should publish.
+
+    The phone publishes RTMP to mediamtx on the laptop's LAN address with a
+    publish-only credential that is limited to phone-* paths; nothing on the
+    LAN can read streams. The processor picks the camera up like any other
+    RTSP source within a few seconds.
+    """
+    if principal.kind != "user":
+        raise HTTPException(status_code=403, detail="User session required")
+    path = f"phone-{secrets.token_hex(3)}"
+    created = create_source(SourceCreateRequest(
+        name=payload.name, buildingId=payload.buildingId, floorId=payload.floorId, zoneId=payload.zoneId,
+        floor=payload.floor, zone=payload.zone, sourceType="rtsp",
+        sourceUri=f"rtsp://{settings.mediamtx_rtsp_host}:8554/{path}", inputFormat="h264",
+        tags=["phone"], positionNotes="Phone camera publishing over RTMP from the local network.",
+    ), session, principal)
+    host = settings.ingest_public_host
+    query = urlencode({"user": settings.phone_publish_user, "pass": settings.phone_publish_password})
+    return {
+        "source": created.model_dump(mode="json"),
+        "publish": {
+            "rtmpUrl": f"rtmp://{host}:1935/{path}?{query}",
+            "server": f"rtmp://{host}:1935/{path}",
+            "streamKey": f"?{query}",
+            "path": path,
+            "lanHostConfigured": host not in {"localhost", "127.0.0.1"},
+        },
+    }

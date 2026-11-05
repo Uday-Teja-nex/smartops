@@ -1,0 +1,6 @@
+{
+  "measuredAt": "2026-11-06T03:40+05:30",
+  "detectorStopped": {"status": "DOWN Object detection: unreachable (ConnectError)", "impact": "Live detection is paused: no new incidents until it returns.", "recoveredAfterRestartSeconds": 6},
+  "streamPublisherStopped": {"status": "DOWN Camera streams: 0/1 enabled cameras publishing", "impact": "Not publishing: Convenience store floor.", "consoleBanner": "Running in a degraded state. SmartOps recovers automatically when service returns. Camera streams: Not publishing: Convenience store floor."},
+  "notVerified": ["Ollama, API and database outages in the browser", "stream recovery after the publisher restarts (expected from the earlier RTSP reconnect evidence)"]
+}

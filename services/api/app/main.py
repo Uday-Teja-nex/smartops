@@ -21,6 +21,7 @@ from app.routers import (
     pipeline,
     reports,
     sources,
+    system,
     topology,
 )
 from app.seed import seed_database
@@ -53,6 +54,7 @@ app.include_router(evidence.router)
 app.include_router(org.router)
 app.include_router(reports.router)
 app.include_router(notifications.router)
+app.include_router(system.router)
 
 
 def run_migrations() -> None:

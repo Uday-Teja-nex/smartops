@@ -73,8 +73,8 @@ def model_name(provider) -> str:
 def enrich(provider, request):
     prompt = json.dumps({
         'task': 'A deterministic rule engine measured the event below from tracked detections. Look at the '
-                'snapshot and report: scene = one factual sentence about what is visible (no identities, no '
-                'demographics); verdict = "consistent" if the image plausibly shows the measured situation, '
+                'snapshot and report: scene = one factual sentence describing what YOU see in the image, in your '
+                'own words (never repeat the measured summary; no identities, no demographics); verdict = "consistent" if the image plausibly shows the measured situation, '
                 '"doubtful" if it plausibly does not, "unclear" if you cannot tell; observations = up to 3 '
                 'visible facts; recommendedActions = up to 3 cautious operator checks; limitations = up to 2 '
                 'things a still image cannot establish. Do not confirm intent, identity, temporal behavior, '
