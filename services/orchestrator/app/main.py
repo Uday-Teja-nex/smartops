@@ -1,6 +1,7 @@
+import logging
 import os
 from fastapi import FastAPI, HTTPException
-from app.enrichment import EnrichmentRequest, EnrichmentResponse, enrich
+from app.enrichment import EnrichmentRequest, EnrichmentResponse, describe_failure, enrich
 
 from app.graph import REVIEW_CONFIDENCE_THRESHOLD, build_graph, describe_graph
 from app.providers.factory import get_model_provider
@@ -16,7 +17,10 @@ def enrich_incident(payload: EnrichmentRequest):
     try:
         return enrich(provider, payload)
     except Exception as exc:
-        raise HTTPException(status_code=503, detail='AI enrichment unavailable: ' + type(exc).__name__) from None
+        reason = describe_failure(exc)
+        logging.getLogger('smartops.enrichment').warning(
+            'enrichment failed incident=%s reason=%s error=%s', payload.incidentId, reason, type(exc).__name__)
+        raise HTTPException(status_code=503, detail=reason) from None
 
 
 @app.get("/health")

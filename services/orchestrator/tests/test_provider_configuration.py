@@ -23,3 +23,54 @@ def test_invalid_timeout_fails_configuration(monkeypatch, value):
     monkeypatch.setenv('SMARTOPS_MODEL_TIMEOUT_SECONDS', value)
     with pytest.raises(ValueError, match='SMARTOPS_MODEL_TIMEOUT_SECONDS'):
         get_model_provider()
+
+
+def _status_error(status):
+    import httpx
+    request = httpx.Request('POST', 'https://provider.test/v1/chat/completions')
+    return httpx.HTTPStatusError('x', request=request, response=httpx.Response(status, request=request))
+
+
+class FakeProvider:
+    def __init__(self, model, outcome):
+        self.vision_model, self.outcome, self.calls = model, outcome, 0
+
+    def review_event_evidence_base64(self, prompt, images, schema=None):
+        self.calls += 1
+        if isinstance(self.outcome, Exception):
+            raise self.outcome
+        return self.outcome
+
+
+@pytest.mark.parametrize('failure', [_status_error(429), _status_error(503), __import__('httpx').ReadTimeout('t')])
+def test_fallback_answers_when_primary_is_unavailable_and_names_the_model(failure):
+    from app.enrichment import EnrichmentRequest, enrich
+    from app.providers.fallback import FallbackProvider
+    valid = {'scene': 's', 'verdict': 'unclear', 'observations': [], 'recommendedActions': [], 'limitations': []}
+    primary, local = FakeProvider('nemotron:free', failure), FakeProvider('qwen2.5vl:3b', valid)
+    result = enrich(FallbackProvider(primary, local), EnrichmentRequest(
+        incidentId='i', eventType='crowding', measuredSummary='m', imageBase64='aA=='))
+    assert result.model == 'qwen2.5vl:3b (fallback)' and local.calls == 1
+
+
+def test_fallback_is_not_used_for_bad_output_or_auth_errors():
+    from app.providers.fallback import FallbackProvider
+    for failure in (ValueError('bad json'), _status_error(401)):
+        primary, local = FakeProvider('p', failure), FakeProvider('l', {})
+        with pytest.raises(type(failure)):
+            FallbackProvider(primary, local).review_event_evidence_base64('p', ['aA=='])
+        assert local.calls == 0
+
+
+def test_only_local_ollama_may_be_a_fallback(monkeypatch):
+    monkeypatch.setenv('SMARTOPS_MODEL_FALLBACK', 'openrouter')
+    with pytest.raises(ValueError, match='only'):
+        get_model_provider()
+    monkeypatch.setenv('SMARTOPS_MODEL_FALLBACK', 'ollama')
+    monkeypatch.setenv('SMARTOPS_MODEL_PROVIDER', 'openrouter')
+    monkeypatch.setenv('SMARTOPS_MODEL_API_KEY', 'k')
+    monkeypatch.setenv('SMARTOPS_TEXT_MODEL', 'a:free')
+    monkeypatch.setenv('SMARTOPS_VISION_MODEL', 'b:free')
+    from app.providers.fallback import FallbackProvider
+    provider = get_model_provider()
+    assert isinstance(provider, FallbackProvider) and provider.fallback.vision_model == 'qwen2.5vl:3b'

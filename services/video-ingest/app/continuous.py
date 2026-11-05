@@ -203,7 +203,8 @@ def run(source, client, stop, *, detector_url, fps=3):
                         for event in engine.update(frame.monotonic_at, observations, wall_time=frame.captured_at):
                             payload = incident_payload(source, event, frame.captured_at)
                             if len(evidence_waiting) + len(evidence_running) < 20:
-                                pending.track_evidence(payload, base64.b64encode(evidence_jpeg).decode('ascii') if enrichment else None)
+                                # The AI reviews the clean frame; burned-in boxes and scores confuse it.
+                                pending.track_evidence(payload, base64.b64encode(jpeg).decode('ascii') if enrichment else None)
                                 evidence_waiting.append((payload, frame.captured_at, evidence_jpeg, response.json()['detections']))
                             else:
                                 payload['reviewNotes'].append('Evidence unavailable: evidence queue capacity reached')

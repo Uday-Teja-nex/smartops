@@ -31,8 +31,10 @@ def test_review_waits_for_delivery_and_preserves_rule_and_evidence(tmp_path):
     calls = []
     def handler(request):
         calls.append(request)
-        return httpx.Response(200, json={'observations': ['Person visible'], 'recommendedActions': ['Check access'],
-                                        'limitations': ['Cannot infer authorization']})
+        return httpx.Response(200, json={'scene': 'One person at a doorway.', 'verdict': 'consistent',
+                                        'observations': ['Person visible'], 'recommendedActions': ['Check access'],
+                                        'limitations': ['Cannot infer authorization'],
+                                        'model': 'qwen2.5vl:3b', 'latencyMs': 2100})
     with httpx.Client(base_url='http://test', transport=httpx.MockTransport(handler)) as client:
         assert not process_one(box, 'camera', client)
         assert not calls
@@ -43,7 +45,23 @@ def test_review_waits_for_delivery_and_preserves_rule_and_evidence(tmp_path):
     assert payload['confidence'] == .8 and payload['status'] == 'active'
     assert payload['modelProvider'] == 'rule-engine'
     assert payload['evidence']['clipUrl'] == '/recorded'
-    assert payload['detailedNarrative'] == ['Person visible']
+    assert payload['detailedNarrative'] == ['One person at a doorway.', 'Person visible']
+    assert ('AI review by qwen2.5vl:3b (2.1 s): image looks consistent with the measured event. '
+            'Rule decision unchanged.') in payload['reviewNotes']
+    assert payload['detectionSummary']['aiReview'] == {'model': 'qwen2.5vl:3b', 'verdict': 'consistent',
+                                                        'latencyMs': 2100}
+    box.close()
+
+
+def test_unavailable_review_states_the_orchestrators_reason(tmp_path):
+    box = Outbox(tmp_path / 'reason.db')
+    seed(box)
+    box.acknowledge(box[0])
+    handler = lambda request: httpx.Response(503, json={'detail': 'model provider daily request limit reached'})
+    with httpx.Client(base_url='http://test', transport=httpx.MockTransport(handler)) as client:
+        assert process_one(box, 'camera', client)
+    assert box[0]['reviewNotes'][-1] == 'AI review unavailable: model provider daily request limit reached.'
+    assert not box[0].get('detailedNarrative')
     box.close()
 
 
@@ -58,7 +76,7 @@ def test_failures_consume_durable_budget_and_do_not_erase_incident(tmp_path):
         return httpx.Response(429)
     with httpx.Client(base_url='http://test', transport=httpx.MockTransport(handler)) as client:
         assert process_one(box, 'camera', client, daily_limit=1)
-        assert 'HTTPStatusError' in box[0]['reviewNotes'][-1]
+        assert box[0]['reviewNotes'][-1] == 'AI review unavailable: AI service returned HTTP 429.'
         box.acknowledge(box[0])
         box.close()
         box = Outbox(path)

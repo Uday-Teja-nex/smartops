@@ -53,25 +53,67 @@ def process_one(box, source_id, client, daily_limit=40, budget_path=None):
         response = client.post('/v1/incidents/enrich', json={
             'incidentId': incident_id, 'eventType': payload['type'],
             'measuredSummary': payload['shortSummary'], 'imageBase64': image})
+        if response.status_code == 503:
+            raise EnrichmentUnavailable(_detail(response))
         response.raise_for_status()
         result = response.json()
         for field in ('observations', 'recommendedActions', 'limitations'):
             items = result.get(field)
             if not isinstance(items, list) or len(items) > 4 or any(not isinstance(item, str) or len(item) > 300 for item in items):
                 raise ValueError('Invalid enrichment')
-        payload['detailedNarrative'] = result['observations']
+        scene, verdict, model = result.get('scene'), result.get('verdict'), result.get('model')
+        if not isinstance(scene, str) or not scene or len(scene) > 200 or verdict not in VERDICT_TEXT:
+            raise ValueError('Invalid enrichment')
+        model = str(model or 'unknown model')[:80]
+        seconds = max(int(result.get('latencyMs') or 0), 0) / 1000
+        payload['detailedNarrative'] = [scene, *result['observations']]
         payload['recommendedActions'] = result['recommendedActions']
-        notes += ['AI review completed: supplemental image observations; rule decision unchanged.']
+        notes += [f'AI review by {model} ({seconds:.1f} s): {VERDICT_TEXT[verdict]} Rule decision unchanged.']
         notes += result['limitations']
+        summary = dict(payload.get('detectionSummary') or {})
+        summary['aiReview'] = {'model': model, 'verdict': verdict, 'latencyMs': int(seconds * 1000)}
+        payload['detectionSummary'] = summary
     except Exception as exc:
-        notes.append('AI review unavailable: daily request cap reached.' if not allowed
-                     else 'AI review unavailable: ' + type(exc).__name__ + '.')
+        if not allowed:
+            reason = 'daily request cap reached'
+        elif isinstance(exc, EnrichmentUnavailable):
+            reason = str(exc)
+        elif isinstance(exc, httpx.HTTPStatusError):
+            reason = f'AI service returned HTTP {exc.response.status_code}'
+        elif isinstance(exc, httpx.TimeoutException):
+            reason = 'AI service did not answer in time'
+        elif isinstance(exc, httpx.TransportError):
+            reason = 'AI service unreachable'
+        elif isinstance(exc, ValueError):
+            reason = 'model output failed validation'
+        else:
+            reason = f'unexpected error ({type(exc).__name__})'
+        notes.append(f'AI review unavailable: {reason}.')
     payload['reviewNotes'] = notes
     with box.db:
         box.db.execute('INSERT INTO pending VALUES (?,?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload',
                        (incident_id, json.dumps(payload)))
         box.db.execute('DELETE FROM review_jobs WHERE id=?', (incident_id,))
     return True
+
+
+VERDICT_TEXT = {
+    'consistent': 'image looks consistent with the measured event.',
+    'doubtful': 'image casts doubt on the measured event; verify on camera.',
+    'unclear': 'image does not show enough to judge.',
+}
+
+
+class EnrichmentUnavailable(Exception):
+    pass
+
+
+def _detail(response):
+    try:
+        detail = response.json().get('detail')
+    except ValueError:
+        detail = None
+    return detail[:160] if isinstance(detail, str) and detail else f'AI service returned HTTP {response.status_code}'
 
 
 class IncidentEnrichment:

@@ -18,8 +18,36 @@ def _env_float(name: str, default: float) -> float:
     return value
 
 
+def _native_ollama(vision_model: str, text_model: str) -> OllamaModelProvider:
+    return OllamaModelProvider(
+        host=os.getenv("SMARTOPS_OLLAMA_HOST", "http://host.docker.internal:11434"),
+        text_model=text_model,
+        vision_model=vision_model,
+        timeout_seconds=_env_float("SMARTOPS_MODEL_TIMEOUT_SECONDS", 30.0),
+    )
+
+
 def get_model_provider() -> ModelProvider:
-    """Select one provider explicitly; never silently switch billing or data policy."""
+    """Select the configured provider, optionally backed by native Ollama.
+
+    The fallback may only be local Ollama: falling back never changes billing
+    or sends evidence to a different external service.
+    """
+    primary = _primary_provider()
+    fallback = os.getenv("SMARTOPS_MODEL_FALLBACK", "").strip().lower()
+    if not fallback:
+        return primary
+    if fallback != "ollama":
+        raise ValueError("SMARTOPS_MODEL_FALLBACK supports only 'ollama' (local, no data leaves the machine)")
+    if isinstance(primary, OllamaModelProvider):
+        return primary
+    from app.providers.fallback import FallbackProvider
+    return FallbackProvider(primary, _native_ollama(
+        os.getenv("SMARTOPS_FALLBACK_VISION_MODEL", "qwen2.5vl:3b"),
+        os.getenv("SMARTOPS_FALLBACK_TEXT_MODEL", "llama3.2:3b")))
+
+
+def _primary_provider() -> ModelProvider:
     provider = os.getenv("SMARTOPS_MODEL_PROVIDER", "ollama").lower()
     if provider in {'openrouter', 'openai-compatible', 'meta'}:
         defaults = {'openrouter': 'https://openrouter.ai/api/v1',
@@ -39,9 +67,5 @@ def get_model_provider() -> ModelProvider:
             "Implement it in app/providers/ behind the ModelProvider contract."
         )
 
-    return OllamaModelProvider(
-        host=os.getenv("SMARTOPS_OLLAMA_HOST", "http://host.docker.internal:11434"),
-        text_model=os.getenv("SMARTOPS_TEXT_MODEL", "llama3.2:3b"),
-        vision_model=os.getenv("SMARTOPS_VISION_MODEL", "qwen2.5vl:3b"),
-        timeout_seconds=_env_float("SMARTOPS_MODEL_TIMEOUT_SECONDS", 30.0),
-    )
+    return _native_ollama(os.getenv("SMARTOPS_VISION_MODEL", "qwen2.5vl:3b"),
+                          os.getenv("SMARTOPS_TEXT_MODEL", "llama3.2:3b"))
