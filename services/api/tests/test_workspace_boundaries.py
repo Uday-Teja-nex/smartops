@@ -49,3 +49,30 @@ def test_org_and_topology_follow_authenticated_workspace(client, admin_headers):
             session.delete(session.get(BuildingModel, 'building-boundary'))
             session.delete(session.get(OrganizationModel, 'org-boundary'))
             session.commit()
+
+
+def test_pipeline_service_sees_every_workspace_but_users_do_not(client, service_headers, admin_headers):
+    from app.models import SourceModel
+    now = datetime.now(UTC)
+    with Session(engine) as session:
+        session.add(OrganizationModel(id='org-pipeline-b', name='B', slug='pipeline-b', settings={}, created_at=now))
+        session.add(BuildingModel(id='building-pipeline-b', org_id='org-pipeline-b', name='B', address='B', timezone='UTC'))
+        session.flush()
+        session.add(SourceModel(id='src-pipeline-b', org_id='org-pipeline-b', building_id='building-pipeline-b',
+                                floor_label='L1', zone_label='Z', name='Other cam', source_type='rtsp',
+                                source_uri='rtsp://mediamtx:8554/b', enabled=True, status='offline', health={},
+                                tags=[], detection_config={}, created_at=now, updated_at=now))
+        session.commit()
+    try:
+        service_ids = {s['id'] for s in client.get('/v1/sources', headers=service_headers,
+                                                     params={'sourceType': 'rtsp', 'enabled': 'true'}).json()}
+        assert 'src-pipeline-b' in service_ids
+        user_ids = {s['id'] for s in client.get('/v1/sources', headers=admin_headers).json()}
+        assert 'src-pipeline-b' not in user_ids
+        assert client.get('/v1/sources/src-pipeline-b', headers=admin_headers).status_code == 404
+    finally:
+        with Session(engine) as session:
+            session.delete(session.get(SourceModel, 'src-pipeline-b'))
+            session.delete(session.get(BuildingModel, 'building-pipeline-b'))
+            session.delete(session.get(OrganizationModel, 'org-pipeline-b'))
+            session.commit()

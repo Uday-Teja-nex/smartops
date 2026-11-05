@@ -34,3 +34,18 @@ def test_failed_preparation_never_becomes_a_cached_clip(tmp_path):
     with pytest.raises(subprocess.CalledProcessError):
         publisher.prepare_clip(source, tmp_path / 'cache', fail)
     assert not list((tmp_path / 'cache').glob('*.mp4'))
+
+
+def test_manifest_skips_missing_and_unsafe_entries(tmp_path):
+    media = tmp_path / 'media'
+    media.mkdir()
+    (media / 'store.mp4').write_bytes(b'x')
+    manifest = tmp_path / 'streams.json'
+    manifest.write_text('{"streams": ['
+                        '{"path": "mall-store", "file": "store.mp4"},'
+                        '{"path": "missing", "file": "nope.mp4"},'
+                        '{"path": "a/b", "file": "store.mp4"},'
+                        '{"path": "escape", "file": "../secret.mp4"},'
+                        '{"path": "", "file": "store.mp4"}]}')
+    streams = publisher.load_manifest(manifest, media)
+    assert streams == [('mall-store', media / 'store.mp4')]

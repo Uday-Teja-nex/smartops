@@ -11,6 +11,13 @@ from app.models import (BuildingModel, SourceModel, IncidentModel, EvidenceItemM
 
 def get_tenant_session(principal: Principal = Depends(get_current_principal)):
     with SessionLocal() as session:
+        if principal.kind == 'service':
+            # The internal pipeline (stream processor, notifier callbacks) serves
+            # every workspace; every row it writes takes org_id from the source
+            # or building it references, never from the principal.
+            yield session
+            return
+
         def scope_query(state):
             if state.is_select:
                 state.statement = state.statement.options(*[

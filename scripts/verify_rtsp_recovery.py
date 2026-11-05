@@ -21,7 +21,7 @@ def wait_frame(reader, after=0, timeout=20):
 
 
 def publisher(action):
-    subprocess.run(['docker', 'compose', '--profile', 'demo-streams', action, 'stream-publisher'],
+    subprocess.run(['docker', 'compose', action, 'stream-publisher'],
                    cwd=ROOT, check=True, timeout=30, capture_output=True)
 
 

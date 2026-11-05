@@ -184,6 +184,10 @@ def create_incident(
     incident_id = payload.id or new_id("inc")
     existing = session.get(IncidentModel, incident_id)
 
+    if existing is not None and existing.org_id != source.org_id:
+        # Never reveal or modify another workspace's incident, even for the
+        # cross-workspace pipeline principal.
+        raise HTTPException(status_code=404, detail='Incident not found')
     if existing is not None:
         if existing.source_id != source_id or existing.candidate_id != payload.candidateId:
             raise HTTPException(status_code=409, detail='Incident ID belongs to a different source or candidate')
@@ -265,7 +269,7 @@ def create_incident(
         owner = session.scalar(select(table.c.org_id).where(table.c.id == incident_id))
         if owner is None:
             raise
-        if owner != principal.org_id:
+        if owner != source.org_id:
             raise HTTPException(status_code=404, detail='Incident not found') from None
         raise HTTPException(status_code=409, detail='Concurrent incident creation; retry the request',
                             headers={'Retry-After': '1'}) from None

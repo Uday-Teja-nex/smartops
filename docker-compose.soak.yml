@@ -1,17 +1,7 @@
-# Engineering-only: three independent transports of the same supplied clip.
-# This is a capacity test, not three distinct event validation scenes.
+# Engineering-only capacity soak: publish the supplied clip on three paths.
+# This tests throughput, not three distinct event scenes.
+#   docker compose -f docker-compose.yml -f docker-compose.soak.yml up -d
 services:
-  stream-publisher-2:
-    extends:
-      file: docker-compose.yml
-      service: stream-publisher
-    container_name: smartops-stream-publisher-2
+  stream-publisher:
     environment:
-      SMARTOPS_PUBLISH_URL: rtsp://mediamtx:8554/soak-2
-  stream-publisher-3:
-    extends:
-      file: docker-compose.yml
-      service: stream-publisher
-    container_name: smartops-stream-publisher-3
-    environment:
-      SMARTOPS_PUBLISH_URL: rtsp://mediamtx:8554/soak-3
+      SMARTOPS_STREAM_MANIFEST: /config/streams.soak.json

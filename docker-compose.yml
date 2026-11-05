@@ -14,21 +14,23 @@ services:
     restart: unless-stopped
 
   stream-publisher:
-    profiles: [demo-streams]
     build:
       context: ./services/stream-publisher
     container_name: smartops-stream-publisher
     environment:
-      SMARTOPS_LOOP_FILE: ${SMARTOPS_LOOP_FILE:-/media/first test video.mp4}
-      SMARTOPS_PUBLISH_URL: rtsp://mediamtx:8554/demo-lobby
+      # One looping RTSP stream per entry in sample-data/streams.json.
+      SMARTOPS_STREAM_MANIFEST: /config/${SMARTOPS_STREAM_MANIFEST_FILE:-streams.json}
+      SMARTOPS_MEDIA_ROOT: /media
+      SMARTOPS_RTSP_BASE: rtsp://mediamtx:8554
     volumes:
       - ./sample-data/input:/media:ro
+      - ./sample-data:/config:ro
+      - publisher_cache:/cache
     depends_on:
       - mediamtx
     restart: unless-stopped
 
   stream-processor:
-    profiles: [demo-streams]
     build:
       context: ./services/video-ingest
       dockerfile: Dockerfile.processor
@@ -187,6 +189,8 @@ services:
     restart: unless-stopped
 
   worker:
+    # Retired windowed file pipeline (ADR 0007); kept only for comparison runs.
+    profiles: [legacy]
     build:
       context: ./services/worker
     container_name: smartops-worker
@@ -226,6 +230,7 @@ services:
     restart: unless-stopped
 
   video-ingest:
+    profiles: [legacy]
     build:
       context: ./services/video-ingest
     container_name: smartops-video-ingest
@@ -315,6 +320,7 @@ services:
 
 volumes:
   processor_data:
+  publisher_cache:
   postgres_data:
   redis_data:
   minio_data:

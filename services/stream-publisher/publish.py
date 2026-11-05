@@ -13,8 +13,9 @@ process = None
 
 def shutdown(*_):
     stop.set()
-    if process is not None and process.poll() is None:
-        process.terminate()
+    for child in [process, *children]:
+        if child is not None and child.poll() is None:
+            child.terminate()
 
 
 def run_preparation(command):
@@ -56,26 +57,79 @@ def prepare_clip(clip, cache, run=run_preparation):
         temporary.unlink(missing_ok=True)
 
 
-def main():
-    global process
-    signal.signal(signal.SIGTERM, shutdown)
-    signal.signal(signal.SIGINT, shutdown)
-    clip = Path(os.environ["SMARTOPS_LOOP_FILE"])
-    if not clip.is_file():
-        raise SystemExit("Loop input is missing; mount a permitted video file")
-    clip = prepare_clip(clip, Path(os.getenv('SMARTOPS_LOOP_CACHE', '/cache')))
-    if stop.is_set():
-        return
-    target = os.environ.get("SMARTOPS_PUBLISH_URL", "rtsp://mediamtx:8554/demo-lobby")
+def load_manifest(path, media_root):
+    """Return [(rtsp path, clip)] from a streams.json manifest.
+
+    Each entry is {"path": "mall-store", "file": "first test video.mp4"}.
+    Entries whose file is missing are skipped with a log line rather than
+    stopping the other streams.
+    """
+    import json
+    entries = json.loads(Path(path).read_text(encoding='utf-8')).get('streams', [])
+    streams = []
+    for entry in entries:
+        name, file = str(entry.get('path', '')).strip(), str(entry.get('file', '')).strip()
+        if not name or not file or '/' in name or '..' in file:
+            print(f'Skipping invalid manifest entry {entry!r}', flush=True)
+            continue
+        clip = Path(media_root) / file
+        if not clip.is_file():
+            print(f'Skipping {name}: {clip} is missing', flush=True)
+            continue
+        streams.append((name, clip))
+    return streams
+
+
+def publish_forever(clip, target):
     command = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-nostdin",
                "-re", "-stream_loop", "-1", "-i", str(clip), "-map", "0:v:0",
                "-an", "-c:v", "copy", "-f", "rtsp", "-rtsp_transport", "tcp", target]
     while not stop.is_set():
-        process = subprocess.Popen(command)
-        process.wait()
+        child = subprocess.Popen(command)
+        children.append(child)
+        child.wait()
+        children.remove(child)
         if not stop.is_set():
-            print("Publisher disconnected; retrying in 2 seconds", flush=True)
+            print(f"Publisher for {target} disconnected; retrying in 2 seconds", flush=True)
             stop.wait(2)
+
+
+children = []
+
+
+def main():
+    import threading
+    signal.signal(signal.SIGTERM, shutdown)
+    signal.signal(signal.SIGINT, shutdown)
+    cache = Path(os.getenv('SMARTOPS_LOOP_CACHE', '/cache'))
+    base = os.getenv('SMARTOPS_RTSP_BASE', 'rtsp://mediamtx:8554').rstrip('/')
+    manifest = os.getenv('SMARTOPS_STREAM_MANIFEST', '')
+    if manifest and Path(manifest).is_file():
+        streams = load_manifest(manifest, os.getenv('SMARTOPS_MEDIA_ROOT', '/media'))
+    else:
+        clip = Path(os.environ.get("SMARTOPS_LOOP_FILE", ""))
+        if not clip.is_file():
+            raise SystemExit("No stream manifest and no loop input; mount sample-data/streams.json")
+        streams = [(os.getenv('SMARTOPS_PUBLISH_PATH', 'demo-lobby'), clip)]
+    if not streams:
+        print("Manifest lists no available footage; nothing to publish", flush=True)
+        stop.wait()
+        return
+    threads = []
+    for name, clip in streams:
+        prepared = prepare_clip(clip, cache)
+        if stop.is_set():
+            return
+        print(f"Publishing {clip.name} to {base}/{name}", flush=True)
+        thread = threading.Thread(target=publish_forever, args=(prepared, f"{base}/{name}"), daemon=True)
+        thread.start()
+        threads.append(thread)
+    stop.wait()
+    for child in list(children):
+        if child.poll() is None:
+            child.terminate()
+    for thread in threads:
+        thread.join(timeout=5)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,8 @@
+{
+  "_comment": "Engineering capacity soak only: the same clip on three paths.",
+  "streams": [
+    {"path": "soak-1", "file": "first test video.mp4"},
+    {"path": "soak-2", "file": "first test video.mp4"},
+    {"path": "soak-3", "file": "first test video.mp4"}
+  ]
+}

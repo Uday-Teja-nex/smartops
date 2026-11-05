@@ -1,0 +1,6 @@
+{
+  "_comment": "Recorded footage published as looping RTSP streams by stream-publisher. path = mediamtx path (camera URI rtsp://mediamtx:8554/<path>); file = name under sample-data/input. Only list footage you are allowed to use; record provenance in sample-data/README.md.",
+  "streams": [
+    {"path": "mall-store", "file": "first test video.mp4"}
+  ]
+}

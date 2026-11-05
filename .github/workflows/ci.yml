@@ -62,7 +62,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker compose config --quiet
-      - run: docker compose -f docker-compose.yml -f docker-compose.soak.yml --profile demo-streams config --quiet
+      - run: docker compose -f docker-compose.yml -f docker-compose.soak.yml config --quiet
 
   streams:
     name: Stream tracking / rules / delivery tests
