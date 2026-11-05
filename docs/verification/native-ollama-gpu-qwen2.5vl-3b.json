@@ -1,0 +1,123 @@
+{
+  "model": "qwen2.5vl:3b",
+  "measuredAt": "2026-11-06T02:13:03+0530",
+  "frameWidth": 640,
+  "options": {
+    "num_ctx": 2048,
+    "num_batch": 32,
+    "num_predict": 160
+  },
+  "runs": [
+    {
+      "run": 0,
+      "error": "ReadTimeout: timed out",
+      "elapsedSeconds": 120.108
+    },
+    {
+      "run": 1,
+      "status": 200,
+      "validated": true,
+      "result": {
+        "scene": "A busy grocery store with customers shopping and a cashier at the checkout counter.",
+        "verdict": "confirm",
+        "people_visible": 10
+      },
+      "timings": {
+        "total_duration": 2000904600,
+        "load_duration": 143269800,
+        "prompt_eval_count": 370,
+        "prompt_eval_duration": 71156400,
+        "eval_count": 35,
+        "eval_duration": 1615682100
+      },
+      "elapsedSeconds": 2.034
+    },
+    {
+      "run": 2,
+      "status": 200,
+      "validated": true,
+      "result": {
+        "scene": "A busy grocery store with customers shopping and a cashier at the checkout counter.",
+        "verdict": "confirm",
+        "people_visible": 10
+      },
+      "timings": {
+        "total_duration": 1924397800,
+        "load_duration": 91997500,
+        "prompt_eval_count": 370,
+        "prompt_eval_duration": 53702800,
+        "eval_count": 35,
+        "eval_duration": 1602225800
+      },
+      "elapsedSeconds": 1.929
+    },
+    {
+      "run": 3,
+      "status": 200,
+      "validated": true,
+      "result": {
+        "scene": "A busy grocery store with customers shopping and a cashier at the checkout counter.",
+        "verdict": "confirm",
+        "people_visible": 10
+      },
+      "timings": {
+        "total_duration": 2025338300,
+        "load_duration": 97644800,
+        "prompt_eval_count": 370,
+        "prompt_eval_duration": 48073100,
+        "eval_count": 35,
+        "eval_duration": 1713019600
+      },
+      "elapsedSeconds": 2.027
+    },
+    {
+      "run": 4,
+      "status": 200,
+      "validated": true,
+      "result": {
+        "scene": "A busy grocery store with customers shopping and a cashier at the checkout counter.",
+        "verdict": "confirm",
+        "people_visible": 10
+      },
+      "timings": {
+        "total_duration": 1914194700,
+        "load_duration": 102468400,
+        "prompt_eval_count": 370,
+        "prompt_eval_duration": 48572400,
+        "eval_count": 35,
+        "eval_duration": 1588725200
+      },
+      "elapsedSeconds": 1.916
+    },
+    {
+      "run": 5,
+      "status": 200,
+      "validated": true,
+      "result": {
+        "scene": "A busy grocery store with customers shopping and a cashier at the checkout counter.",
+        "verdict": "confirm",
+        "people_visible": 10
+      },
+      "timings": {
+        "total_duration": 1900874700,
+        "load_duration": 102200300,
+        "prompt_eval_count": 370,
+        "prompt_eval_duration": 50962400,
+        "eval_count": 35,
+        "eval_duration": 1564198800
+      },
+      "elapsedSeconds": 1.904
+    }
+  ],
+  "validatedRuns": 5,
+  "coldSeconds": 120.108,
+  "warmMedianSeconds": 1.929,
+  "warmMaxSeconds": 2.034,
+  "loadedModels": [
+    {
+      "name": "qwen2.5vl:3b",
+      "size": 10683302592,
+      "size_vram": 0
+    }
+  ]
+}

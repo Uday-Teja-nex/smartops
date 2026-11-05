@@ -3,6 +3,7 @@ from app.models.detections import DetectionModel
 from app.models.evidence import EvidenceAccessModel, EvidenceItemModel
 from app.models.incidents import IncidentModel
 from app.models.org import OrganizationModel, UserModel
+from app.models.sessions import AuthSessionModel
 from app.models.sources import SourceModel
 from app.models.topology import BuildingModel, FloorModel, ZoneModel
 
@@ -19,4 +20,5 @@ __all__ = [
     "IncidentCommentModel",
     "EvidenceItemModel",
     "EvidenceAccessModel",
+    "AuthSessionModel",
 ]

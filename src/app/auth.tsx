@@ -14,7 +14,10 @@ import {
   fetchMe,
   getStoredToken,
   login as apiLogin,
+  logoutSession,
+  refreshSession,
   setStoredToken,
+  SIGNED_OUT_EVENT,
 } from "@/lib/api";
 import { UserRecord, UserRole } from "@/lib/types";
 
@@ -77,18 +80,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     let active = true;
 
     const restoreSession = async () => {
-      const stored = getStoredToken();
-      if (!stored) {
-        if (active) setInitializing(false);
-        return;
-      }
-
-      const decoded = decodeUserFromToken(stored);
+      let stored = getStoredToken();
+      let decoded = stored ? decodeUserFromToken(stored) : null;
       if (!decoded) {
-        // Malformed or expired token — discard it.
+        // Access tokens are short-lived; the HttpOnly refresh cookie decides
+        // whether this browser is still signed in.
         clearStoredToken();
-        if (active) setInitializing(false);
-        return;
+        try {
+          stored = await refreshSession();
+        } catch {
+          stored = null; // API unreachable: show sign-in, which reports the outage.
+        }
+        decoded = stored ? decodeUserFromToken(stored) : null;
+        if (!stored || !decoded) {
+          if (active) setInitializing(false);
+          return;
+        }
       }
 
       // Restore the session immediately from the token, then confirm with
@@ -103,8 +110,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const me = await fetchMe();
         if (active) setUser(me);
       } catch (error) {
-        // Only an explicit rejection invalidates the session; transient
-        // network/API-restart failures keep the user signed in.
+        // fetchMe already tried a refresh; only an explicit rejection ends
+        // the session. Network/API-restart failures keep the user signed in.
         if (error instanceof ApiError && error.status === 401) {
           clearStoredToken();
           if (active) {
@@ -116,8 +123,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     void restoreSession();
+    const signedOut = () => {
+      if (!active) return;
+      setToken(null);
+      setUser(null);
+    };
+    window.addEventListener(SIGNED_OUT_EVENT, signedOut);
     return () => {
       active = false;
+      window.removeEventListener(SIGNED_OUT_EVENT, signedOut);
     };
   }, []);
 
@@ -129,7 +143,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const logout = useCallback(() => {
-    clearStoredToken();
+    void logoutSession().finally(clearStoredToken);
     setToken(null);
     setUser(null);
   }, []);

@@ -48,6 +48,7 @@ class Principal:
     role: str
     org_id: str
     kind: str  # "user" | "service"
+    session_id: str | None = None
 
     @property
     def level(self) -> int:
@@ -64,10 +65,11 @@ SERVICE_PRINCIPAL = Principal(
 )
 
 
-def create_access_token(user: UserModel) -> str:
+def create_access_token(user: UserModel, session_id: str) -> str:
     now = datetime.now(UTC)
     payload = {
         "sub": user.id,
+        "sid": session_id,
         "email": user.email,
         "name": user.name,
         "role": user.role,
@@ -85,6 +87,9 @@ def _principal_from_token(token: str) -> Principal:
         raise HTTPException(status_code=401, detail="Token expired") from exc
     except jwt.InvalidTokenError as exc:
         raise HTTPException(status_code=401, detail="Invalid token") from exc
+    session_id = payload.get("sid")
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Session required")
     return Principal(
         id=str(payload.get("sub", "")),
         name=str(payload.get("name", "")),
@@ -92,6 +97,7 @@ def _principal_from_token(token: str) -> Principal:
         role=str(payload.get("role", "viewer")),
         org_id=str(payload.get("org", "")),
         kind="user",
+        session_id=str(session_id),
     )
 
 
@@ -117,7 +123,11 @@ def get_current_principal(
             user = session.get(UserModel, claims['sub'])
             if user is None or not user.active or user.org_id != claims['org']:
                 raise HTTPException(status_code=401, detail='Account unavailable')
-            return Principal(user.id, user.name, user.email, user.role, user.org_id, 'user')
+            from app.sessions import session_is_active
+            if not session_is_active(session, str(claims.get('sid') or ''), user.id):
+                raise HTTPException(status_code=401, detail='Session ended')
+            return Principal(user.id, user.name, user.email, user.role, user.org_id, 'user',
+                             session_id=str(claims['sid']))
         except jwt.InvalidTokenError as exc:
             raise HTTPException(status_code=401, detail='Invalid or expired stream ticket') from exc
     raw = bearer
@@ -127,8 +137,11 @@ def get_current_principal(
     user = session.get(UserModel, claims.id)
     if user is None or not user.active:
         raise HTTPException(status_code=401, detail='Account unavailable')
+    from app.sessions import session_is_active
+    if not session_is_active(session, claims.session_id or '', user.id):
+        raise HTTPException(status_code=401, detail='Session ended')
     return Principal(id=user.id, name=user.name, email=user.email, role=user.role,
-                     org_id=user.org_id, kind='user')
+                     org_id=user.org_id, kind='user', session_id=claims.session_id)
 
 
 def require_role(minimum: str, *, allow_service: bool = True):
@@ -158,13 +171,15 @@ require_admin = require_role("admin", allow_service=False)
 
 
 def authenticate_user(session: Session, email: str, password: str) -> UserModel | None:
-    from app.security import verify_password
+    from app.security import hash_password, needs_rehash, verify_password
 
     user = session.scalars(select(UserModel).where(UserModel.email == email)).first()
     if user is None or not user.active:
         return None
     if not verify_password(password, user.password_hash):
         return None
+    if needs_rehash(user.password_hash):
+        user.password_hash = hash_password(password)
     return user
 
 

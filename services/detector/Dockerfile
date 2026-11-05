@@ -20,6 +20,12 @@ RUN python -c "from ultralytics import YOLO; YOLO('yolov8n.pt')"
 
 COPY app ./app
 
+
+# Run as an unprivileged user; writable paths are created and owned up front.
+RUN useradd --system --uid 10001 --home-dir /app --shell /usr/sbin/nologin smartops \
+    && chown -R smartops /app/.ultralytics
+USER 10001
+
 EXPOSE 8200
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8200"]

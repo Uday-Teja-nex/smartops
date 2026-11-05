@@ -245,6 +245,7 @@ export type UserRecord = {
 
 export type LoginResponse = {
   token: string;
+  expiresInSeconds: number;
   user: UserRecord;
 };
 

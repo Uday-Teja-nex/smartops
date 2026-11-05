@@ -61,10 +61,47 @@ export const describeApiDetail = (detail: unknown): string => {
   }).join("; ");
 };
 
-const request = async <T,>(path: string, init?: RequestInit): Promise<T> => {
-  const token = getStoredToken();
-  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+export const SIGNED_OUT_EVENT = "smartops:signed-out";
+
+const AUTH_SESSION_PATHS = new Set(["/v1/auth/login", "/v1/auth/refresh", "/v1/auth/logout"]);
+let refreshInFlight: Promise<string | null> | null = null;
+
+/**
+ * Exchange the HttpOnly refresh cookie for a new short-lived access token.
+ * Concurrent callers share one request because each refresh rotates the
+ * cookie; a second parallel refresh would look like token replay.
+ * Returns null when the session is over (explicit 401). Network failures
+ * throw so callers can show an offline state instead of signing out.
+ */
+export const refreshSession = (): Promise<string | null> => {
+  refreshInFlight ??= (async () => {
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/v1/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (response.status === 401) {
+        clearStoredToken();
+        if (typeof window !== "undefined") window.dispatchEvent(new Event(SIGNED_OUT_EVENT));
+        return null;
+      }
+      if (!response.ok) throw new ApiError(`Session refresh failed: ${response.status}`, response.status);
+      const body = (await response.json()) as LoginResponse;
+      setStoredToken(body.token);
+      return body.token;
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+  return refreshInFlight;
+};
+
+const send = (path: string, init: RequestInit | undefined, token: string | null) =>
+  fetch(`${getApiBaseUrl()}${path}`, {
     ...init,
+    credentials: AUTH_SESSION_PATHS.has(path) ? "include" : init?.credentials,
     signal: init?.signal ?? AbortSignal.timeout(10000),
     headers: {
       "Content-Type": "application/json",
@@ -72,6 +109,13 @@ const request = async <T,>(path: string, init?: RequestInit): Promise<T> => {
       ...(init?.headers ?? {}),
     },
   });
+
+const request = async <T,>(path: string, init?: RequestInit): Promise<T> => {
+  let response = await send(path, init, getStoredToken());
+  if (response.status === 401 && !AUTH_SESSION_PATHS.has(path)) {
+    const refreshed = await refreshSession();
+    if (refreshed) response = await send(path, init, refreshed);
+  }
 
   if (!response.ok) {
     let detail = `API request failed: ${response.status}`;
@@ -98,6 +142,21 @@ export const login = (email: string, password: string) =>
   request<LoginResponse>("/v1/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
+  });
+
+/** Revoke this browser's server session; local sign-out proceeds regardless. */
+export const logoutSession = async () => {
+  try {
+    await request<void>("/v1/auth/logout", { method: "POST", cache: "no-store" });
+  } catch {
+    // The API may be offline; the access token expires within minutes anyway.
+  }
+};
+
+export const fetchStreamTicket = () =>
+  request<{ ticket: string; expiresInSeconds: number }>("/v1/auth/stream-ticket", {
+    method: "POST",
+    cache: "no-store",
   });
 
 export const fetchMe = () => request<UserRecord>("/v1/auth/me", { cache: "no-store" });

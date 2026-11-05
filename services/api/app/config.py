@@ -33,7 +33,11 @@ class Settings(BaseSettings):
     # Auth. Local-dev defaults; production deployments must override both
     # secrets (tracked in docs/DEPLOYMENT_READINESS.md).
     jwt_secret: str = "smartops-dev-secret-change-me"
-    jwt_ttl_minutes: int = 12 * 60
+    # Access tokens are short-lived; the refresh cookie keeps a browser signed
+    # in and is rotated on every use. Logout revokes the server-side session.
+    jwt_ttl_minutes: int = Field(default=15, ge=1, le=60)
+    refresh_ttl_hours: int = Field(default=12, ge=1, le=24 * 30)
+    refresh_cookie_secure: bool = False
     internal_token: str = "smartops-internal-dev-token"
 
     model_config = SettingsConfigDict(
@@ -60,6 +64,8 @@ class Settings(BaseSettings):
             raise ValueError('Production requires a non-default object storage secret of at least 16 characters')
         if self.seed_demo_data:
             raise ValueError('Production requires seed_demo_data=false; demo accounts must not be seeded')
+        if not self.refresh_cookie_secure:
+            raise ValueError('Production requires refresh_cookie_secure=true (HTTPS-only refresh cookie)')
         if not self.cors_origin_list or any('*' in origin for origin in self.cors_origin_list):
             raise ValueError('Production requires explicit CORS origins without wildcards')
         return self
