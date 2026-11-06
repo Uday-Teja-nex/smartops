@@ -41,7 +41,8 @@ class EnrichmentFailure(Exception):
 
 
 def describe_failure(exc: Exception) -> str:
-    if isinstance(exc, EnrichmentFailure):
+    from app.providers.base import ModelLoading
+    if isinstance(exc, (EnrichmentFailure, ModelLoading)):
         return str(exc)
     if isinstance(exc, httpx.HTTPStatusError):
         status = exc.response.status_code
