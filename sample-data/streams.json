@@ -1,6 +1,21 @@
 {
   "_comment": "Recorded footage published as looping RTSP streams by stream-publisher. path = mediamtx path (camera URI rtsp://mediamtx:8554/<path>); file = name under sample-data/input. Only list footage you are allowed to use; record provenance in sample-data/README.md.",
   "streams": [
-    {"path": "mall-store", "file": "first test video.mp4"}
+    {
+      "path": "mall-store",
+      "file": "first test video.mp4"
+    },
+    {
+      "path": "mall-atrium",
+      "file": "stock/15007111-uhd_2560_1440_31fps.mp4"
+    },
+    {
+      "path": "office-lobby",
+      "file": "stock/10868348-uhd_2560_1440_30fps.mp4"
+    },
+    {
+      "path": "campus-lab",
+      "file": "stock/7969488-uhd_2560_1440_30fps.mp4"
+    }
   ]
 }

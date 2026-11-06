@@ -47,3 +47,15 @@ def test_seeded_zone_rules_pass_the_editor_validator():
     zones = [Zone.model_validate(zone) for zone in store.detection_config["zones"]]
     assert {zone.id for zone in zones} == {"Checkout queue", "Front aisle", "Promo display"}
     assert {rule.type for zone in zones for rule in zone.rules} == {"queue_build_up", "crowding", "loitering"}
+
+
+def test_every_seeded_zone_is_valid_and_recorded_cameras_have_rules():
+    publishing = {"mall-store": "a.mp4", "mall-atrium": "b.mp4", "office-lobby": "c.mp4", "campus-lab": "d.mp4"}
+    session = seeded(publishing)
+    enabled = [s for s in session.scalars(select(SourceModel)) if s.enabled]
+    assert {s.id for s in enabled} == {"src-mall-store", "src-mall-atrium", "src-office-lobby", "src-campus-lab"}
+    for source in enabled:
+        zones = [Zone.model_validate(zone) for zone in source.detection_config["zones"]]
+        assert zones and all(zone.rules for zone in zones), source.id
+    lab = session.get(SourceModel, "src-campus-lab")
+    assert lab.detection_config["zones"][0]["rules"][0]["cooldownSeconds"] == 120

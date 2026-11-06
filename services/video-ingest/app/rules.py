@@ -32,8 +32,9 @@ class ZoneRule:
     movement_tolerance: float = .02
     timezone: str = 'UTC'
     allowed_hours: list[dict] = field(default_factory=list)
-    # Crowding/queue only: after an incident, wait this long before raising
-    # another for the same zone rule, even if the count dips and recovers.
+    # After an incident, wait this long before raising another for the same
+    # zone rule (any person/group). Crowding/queue default to 120 s via config;
+    # per-person rules default to 0 so every new person alerts.
     cooldown: float = 0
 
     def __post_init__(self):
@@ -134,10 +135,13 @@ class RuleEngine:
                 since = self.since.setdefault(key, now)
                 if now - since >= rule.duration and key not in self.fired:
                     self.fired.add(key)
-                    if aggregate:
+                    if rule.cooldown > 0:
+                        # One incident per zone rule per cooldown, whichever person or
+                        # group triggers it; suppressed triggers stay "fired" so they
+                        # re-arm only after the zone clears or the track leaves.
                         previous = self.last_aggregate_event.get(index)
                         if previous is not None and now - previous < rule.cooldown:
-                            continue  # still counted as fired: re-arms only after the zone clears
+                            continue
                         self.last_aggregate_event[index] = now
                     events.append({'zoneId': rule.zone_id, 'type': rule.kind,
                                    'trackIds': [o.track_id for o in group], 'count': len(group),

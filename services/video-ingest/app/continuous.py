@@ -41,6 +41,16 @@ RULE_PRESENTATION = {
 }
 
 
+def evidence_failure(exc):
+    """Operator wording for why a clip could not be built."""
+    text = str(exc)
+    if 'Incomplete pre/post' in text:
+        return 'the camera feed did not cover 5 s before and after the event'
+    if 'capture gap' in text:
+        return 'frames were missing in the 10 s around the event (stream or processing stall)'
+    return f'clip could not be built ({type(exc).__name__})'
+
+
 def describe_event(event):
     template = RULE_PRESENTATION[event['type']][2]
     return template.format(count=event['count'], zone=event['zoneId'], seconds=round(event['durationSeconds']))
@@ -136,8 +146,9 @@ def run(source, client, stop, *, detector_url, fps=3):
                         payload['evidence'] = future.result()
                         log('stream_evidence_ready', incidentId=payload['id'])
                     except Exception as exc:
-                        payload['reviewNotes'].append(f'Evidence unavailable: {type(exc).__name__}')
-                        log('stream_evidence_failed', level='error', incidentId=payload['id'], error=type(exc).__name__)
+                        payload['reviewNotes'].append(f'Evidence unavailable: {evidence_failure(exc)}')
+                        log('stream_evidence_failed', level='error', incidentId=payload['id'],
+                            error=type(exc).__name__, detail=str(exc)[:200])
                     pending.finish_evidence(payload)
                     evidence_running.remove((future, payload))
                 for job in list(evidence_waiting):
@@ -250,7 +261,7 @@ def run(source, client, stop, *, detector_url, fps=3):
             try:
                 payload['evidence'] = future.result()
             except Exception as exc:
-                payload['reviewNotes'].append(f'Evidence unavailable: {type(exc).__name__}')
+                payload['reviewNotes'].append(f'Evidence unavailable: {evidence_failure(exc)}')
             pending.finish_evidence(payload)
         for payload, _, _, _ in evidence_waiting:
             payload['reviewNotes'].append('Evidence unavailable: processor stopped before post-event footage completed')

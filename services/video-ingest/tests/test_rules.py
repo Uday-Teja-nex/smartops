@@ -134,3 +134,24 @@ def test_rule_incidents_record_the_drawn_zone():
     payload = incident_payload(source, {'zoneId': 'Checkout queue', 'type': 'queue_build_up', 'trackIds': [1, 2],
                                         'count': 2, 'durationSeconds': 8, 'confidence': .6}, 0)
     assert payload['zone'] == 'Checkout queue'
+
+
+def test_per_person_rule_cooldown_limits_alerts_per_zone():
+    engine = RuleEngine([ZoneRule('lab', POLYGON, 'restricted_entry', duration=0, cooldown=60)])
+    assert len(engine.update(0, [person(1)])) == 1
+    assert engine.update(1, [person(1), person(2)]) == []      # second person within cooldown
+    engine.update(2, [])
+    assert len(engine.update(70, [person(3)])) == 1             # after cooldown
+
+
+def test_per_person_rule_without_cooldown_alerts_for_each_person():
+    engine = RuleEngine([ZoneRule('lab', POLYGON, 'restricted_entry', duration=0)])
+    assert len(engine.update(0, [person(1)])) == 1
+    assert len(engine.update(1, [person(1), person(2)])) == 1
+
+
+def test_evidence_failures_are_explained_in_operator_words():
+    from app.continuous import evidence_failure
+    assert 'did not cover 5 s' in evidence_failure(ValueError('Incomplete pre/post-event footage'))
+    assert 'frames were missing' in evidence_failure(ValueError('Evidence capture gap'))
+    assert evidence_failure(OSError('disk')) == 'clip could not be built (OSError)'

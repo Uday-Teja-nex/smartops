@@ -41,6 +41,27 @@ MALL_STORE_ZONES = [
      "rules": [{"type": "loitering", "durationSeconds": 20}]},
 ]
 
+OFFICE_LOBBY_ZONES = [
+    {"id": "Restricted wing",
+     "polygon": [[0.52, 0.30], [0.76, 0.30], [0.76, 0.46], [0.52, 0.46]],
+     "rules": [{"type": "restricted_entry", "durationSeconds": 0, "cooldownSeconds": 60}]},
+    {"id": "Lobby floor",
+     "polygon": [[0.30, 0.30], [0.78, 0.30], [0.78, 0.95], [0.30, 0.95]],
+     "rules": [{"type": "crowding", "threshold": 3, "durationSeconds": 3}]},
+]
+
+MALL_ATRIUM_ZONES = [
+    {"id": "Atrium floor",
+     "polygon": [[0.35, 0.30], [1.0, 0.30], [1.0, 1.0], [0.35, 1.0]],
+     "rules": [{"type": "crowding", "threshold": 6, "durationSeconds": 5}]},
+]
+
+CAMPUS_LAB_ZONES = [
+    {"id": "Lab entrance steps",
+     "polygon": [[0.0, 0.50], [0.80, 0.50], [0.80, 1.0], [0.0, 1.0]],
+     "rules": [{"type": "restricted_entry", "durationSeconds": 1, "cooldownSeconds": 120}]},
+]
+
 WORKSPACES = [
     {
         "id": DEMO_ORG_ID, "name": "Northpoint Office Tower", "slug": "northpoint-office",
@@ -61,7 +82,8 @@ WORKSPACES = [
         ],
         "cameras": [
             {"id": "src-office-lobby", "name": "Lobby turnstiles", "building": "bldg-north-01",
-             "floor": "flr-n01-l1", "zone": "zone-n01-atrium", "path": "office-lobby"},
+             "floor": "flr-n01-l1", "zone": "zone-n01-atrium", "path": "office-lobby",
+             "zones": OFFICE_LOBBY_ZONES},
             {"id": "src-office-server", "name": "Server room corridor", "building": "bldg-north-01",
              "floor": "flr-n01-l2", "zone": "zone-n01-server", "path": "office-server-room"},
             {"id": "src-office-exit", "name": "Fire exit east", "building": "bldg-south-02",
@@ -85,7 +107,8 @@ WORKSPACES = [
              "floor": "flr-mall-g", "zone": "zone-mall-store", "path": "mall-store",
              "zones": MALL_STORE_ZONES},
             {"id": "src-mall-atrium", "name": "Central atrium", "building": "bldg-mall-01",
-             "floor": "flr-mall-g", "zone": "zone-mall-atrium", "path": "mall-atrium"},
+             "floor": "flr-mall-g", "zone": "zone-mall-atrium", "path": "mall-atrium",
+             "zones": MALL_ATRIUM_ZONES},
             {"id": "src-mall-food", "name": "Food court queue", "building": "bldg-mall-01",
              "floor": "flr-mall-2", "zone": "zone-mall-food", "path": "mall-food-court"},
         ],
@@ -104,7 +127,8 @@ WORKSPACES = [
             {"id": "src-campus-benches", "name": "Library entrance benches", "building": "bldg-campus-lib",
              "floor": "flr-campus-lib-g", "zone": "zone-campus-benches", "path": "campus-benches"},
             {"id": "src-campus-lab", "name": "Restricted lab door", "building": "bldg-campus-lib",
-             "floor": "flr-campus-lib-g", "zone": "zone-campus-lab", "path": "campus-lab"},
+             "floor": "flr-campus-lib-g", "zone": "zone-campus-lab", "path": "campus-lab",
+             "zones": CAMPUS_LAB_ZONES},
         ],
     },
 ]

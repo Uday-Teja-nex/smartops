@@ -322,6 +322,16 @@ function Invoke-Up {
     if ($Build) { $composeArgs += '--build' }
     & docker @composeArgs
     if ($LASTEXITCODE -ne 0) { Write-Bad 'docker compose up failed.' 'Read the error above; then: docker compose logs --tail 80'; exit 1 }
+    # The publisher reads streams.json once at start; pick up an edited manifest.
+    $manifestPath = Join-Path $PSScriptRoot 'sample-data\streams.json'
+    $startedRaw = & docker inspect -f '{{.State.StartedAt}}' smartops-stream-publisher 2>$null
+    if ($startedRaw -and (Test-Path $manifestPath)) {
+        $started = [datetime]::Parse($startedRaw, [Globalization.CultureInfo]::InvariantCulture).ToUniversalTime()
+        if ((Get-Item $manifestPath).LastWriteTimeUtc -gt $started) {
+            Write-Info 'sample-data\streams.json changed since the publisher started; restarting it.'
+            & docker compose restart stream-publisher | Out-Null
+        }
+    }
     # Migrations and the demo seed run inside the API's startup.
     if (-not (Wait-ForUrl "$ApiUrl/health" 120 'API (migrations + seed)')) { exit 1 }
     if (-not (Wait-ForUrl "$ConsoleUrl/login" 90 'Console')) { exit 1 }
