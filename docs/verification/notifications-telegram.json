@@ -1,0 +1,18 @@
+{
+  "measuredAt": "2026-11-06T18:24:03+0530",
+  "channel": "telegram (owner bot, owner private chat; ids withheld)",
+  "testMessage": "delivered",
+  "delivery": {
+    "status": "sent",
+    "attempts": 1,
+    "lastError": null,
+    "createdAt": "2026-11-06T12:53:57.091499Z",
+    "sentAt": "2026-11-06T12:53:59.122994Z"
+  },
+  "incident": {
+    "type": "crowding",
+    "severity": "medium",
+    "shortSummary": "3 people in Front aisle for 5s (crowding limit exceeded)",
+    "startTime": "2026-11-06T12:53:56.969478Z"
+  }
+}
