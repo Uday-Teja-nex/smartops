@@ -38,6 +38,7 @@ services:
       SMARTOPS_CONSOLE_PUBLIC_URL: https://${SMARTOPS_DOMAIN}
       SMARTOPS_MINIO_PUBLIC_ENDPOINT: https://${SMARTOPS_DOMAIN}
       SMARTOPS_MEDIAMTX_WEBRTC_PUBLIC_URL: https://${SMARTOPS_DOMAIN}/webrtc
+      SMARTOPS_PLATFORM_ADMIN_EMAILS: ${SMARTOPS_PLATFORM_ADMIN_EMAILS:-}
     ports: !reset []
 
   notifier:
@@ -61,7 +62,8 @@ services:
     ports: !reset []
 
   mediamtx:
-    ports: !reset
+    # !override replaces the base list (!reset would only empty it).
+    ports: !override
       - "8189:8189/udp"
 
 volumes:

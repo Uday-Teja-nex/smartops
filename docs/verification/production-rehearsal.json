@@ -1,0 +1,45 @@
+{
+  "measuredAt": "2026-11-06T10:42:52.966863+00:00",
+  "httpRedirectsToHttps": true,
+  "consoleOverHttps": 200,
+  "hsts": "max-age=31536000",
+  "metricsBlocked": 404,
+  "ready": {
+    "status": "ready",
+    "checks": {
+      "database": "ok",
+      "redis": "ok"
+    }
+  },
+  "login": 200,
+  "refreshCookieSecureHttpOnlyStrict": true,
+  "refreshOverHttps": 200,
+  "sseFirstEvent": {
+    "event": "snapshot",
+    "seconds": 0.01
+  },
+  "workspaceCreate": 201,
+  "buildings": 1,
+  "cameraCreate": 201,
+  "incidents": 1,
+  "evidenceUrlHost": "localhost/smartops-evidence/s",
+  "evidenceDownloadThroughCaddy": {
+    "status": 200,
+    "bytes": 1097187
+  },
+  "directPortsClosed": {
+    "3000": true,
+    "8000": true,
+    "8100": true,
+    "8200": true,
+    "9000": true,
+    "9001": true,
+    "9997": true
+  },
+  "releaseStepMigrate": "python -m app.migrate: empty -> 0004 (head 0004); startup migrations disabled",
+  "firstAdminBootstrap": "python -m app.create_admin created ops@rehearsal.test (password via environment)",
+  "devSecretRefused": "API settings with the dev JWT secret in production: 'Production requires a unique jwt_secret of at least 32 characters'",
+  "webrtcSignallingThroughCaddy": 200,
+  "publishedPorts": "caddy 80/443 tcp+udp, mediamtx 8189/udp only (after fixing !reset -> !override)",
+  "notVerified": "Let's Encrypt issuance on a public domain (rehearsal used Caddy's internal CA); live WebRTC media in a browser over the internal CA"
+}

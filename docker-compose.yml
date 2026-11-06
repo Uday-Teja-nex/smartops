@@ -113,6 +113,7 @@ services:
       SMARTOPS_INTERNAL_TOKEN: ${SMARTOPS_INTERNAL_TOKEN:-smartops-internal-dev-token}
       SMARTOPS_CONSOLE_PUBLIC_URL: ${SMARTOPS_CONSOLE_PUBLIC_URL:-http://localhost:3000}
       SMARTOPS_INGEST_PUBLIC_HOST: ${SMARTOPS_INGEST_HOST:-localhost}
+      SMARTOPS_PLATFORM_ADMIN_EMAILS: ${SMARTOPS_PLATFORM_ADMIN_EMAILS:-admin@smartops.local}
     volumes:
       - ./sample-data:/app/sample-data:ro
     depends_on:
