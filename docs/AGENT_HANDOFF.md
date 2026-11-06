@@ -23,13 +23,14 @@ README. The client demo is `docs/presentation/PRESENTATION_SCRIPT.md`.
 |---|---|---|
 | Section C demo script, 5× from reset | **Passed 5/5** (9/9 Playwright steps each, real Edge, real stack). An earlier attempt failed once at the degraded-banner step; the step now checks the API first. | `e2e/five-runs/summary.json`, `e2e/five-runs-attempt1/` |
 | Live push ≤ 5 s | 0.3–3.0 s from the triggering frame to the open Live Ops page across the 5 runs | `e2e/five-runs/measurements-*.json` |
-| AI review ≥ 95 % validated, p95 ≤ 30 s | **Hosted** (`nemotron-3.5-super-vl:free`): 11/11, p95 10.1 s. **Local CPU only** (`qwen2.5vl:3b`): 10/10, p95 38.3 s; misses the latency target on this CPU. | `enrichment-live-384px.json`, `enrichment-live-local.json` |
+| AI review ≥ 95 % validated, p95 ≤ 30 s | **Hosted** (`nemotron-3.5-super-vl:free`): 11/11, p95 10.1 s. **Local CPU only** (`qwen2.5vl:3b`, 320 px, 4 threads): 11/11, p95 34.2 s; misses the 30 s target by about 4 s when incidents coincide. | `enrichment-live-384px.json`, `enrichment-live-local-320px.json` |
 | Honest AI failures | every failure names its cause; the incident stands without a review | API/orchestrator tests, E2E step 4 |
 | Tenancy and roles | cross-workspace 404, viewer 403 (API and UI) | API tests, E2E steps 6–7 |
 | Notifications | webhook delivered end to end in 1.0 s with a valid HMAC | `notifications-webhook.json` |
 | Degraded states | detector and stream outages named with their impact; automatic recovery | `degraded-states.json`, E2E step 9 |
 | Backup/restore | exact round trip; a restored clip downloads and decodes | `backup-restore.json` |
 | Cold start, 3× | done in Phase 1 | `cold-starts.json` |
+| Production rehearsal | HTTPS via Caddy, release-step migrations, first-admin bootstrap, secure cookies, SSE and evidence through the proxy, internal ports closed, dev secrets refused | `production-rehearsal.json` |
 | 30-min 3-stream soak | **Passed:** min 2.73 fps, median 3.0, 0 failures, no memory growth. The baseline failed (local AI reviews starved the detector); fixed by capping review threads. | `stream-soak-final-assessment.json`, `stream-soak-baseline-assessment.json` |
 
 Tests (2026-11-06): API 102, video-ingest 47, orchestrator 46, detector 10,
@@ -84,9 +85,7 @@ Playwright E2E needs the running stack (`npx playwright test`).
   bag and blocked exit are unit-tested on synthetic tracks only.
 - **Owner-dependent:** real phone camera, Telegram delivery, footage for
   office and campus.
-- **Production rehearsal:** the overlay validates but hasn't been run with
-  TLS locally.
-- Local CPU AI review misses p95 ≤ 30 s (38 s) under full load.
+- Local CPU AI review misses p95 ≤ 30 s (34 s) when incidents coincide; the hosted model passes.
 - `npm audit`: 8 moderate findings in the ESLint dev toolchain; production
   dependencies are clean.
 - Notification secrets are unencrypted at rest (never returned by the

@@ -11,7 +11,7 @@ laptop, with evidence in `docs/verification/`.
 | 0 Audit | every claim evidenced | Done (`docs/AUDIT.md`) |
 | 1 Honest and stable | 3 cold ups; no runtime mocks; offline state | Done (`cold-starts.json`, `phase1-*`) |
 | 2 Streaming pipeline | Tier 1 events ≤ 5 s on recorded footage; 30-min 3-stream soak | **Soak passed:** 30 min, 3 streams, 138 samples, min 2.73 fps (median 3.0), no stalls, no memory growth (`stream-soak-final-assessment.json`), after capping local AI review CPU (the baseline failed). Live push 0.3–3.0 s (E2E). Queue and crowding are proven on real footage; the other Tier 1 rules only on synthetic tracks (no footage yet). |
-| 3 AI layer | ≥ 95 % validated, p95 ≤ 30 s, honest failures | **Passed with the hosted model** (11/11, p95 10.1 s). Local CPU only: 10/10 validated but p95 38.3 s. Honest failures verified. |
+| 3 AI layer | ≥ 95 % validated, p95 ≤ 30 s, honest failures | **Passed with the hosted model** (11/11, p95 10.1 s). Local CPU only (320 px, short output, 4 threads): 11/11 validated, p50 22.1 s, **p95 34.2 s**; the slow tail is two near-simultaneous incidents queuing for one CPU model. Honest failures verified. |
 | 4 Product | tenancy + role tests; a notification on a real phone | **Partly.** Tenancy and role tests pass (API and E2E). Webhook verified end to end. Telegram on a real phone needs the owner's bot token. |
 | 5 Demo-ready | Section C script 5× from reset, screenshots | **Passed** for everything automatable: 5/5 consecutive runs, 9/9 steps each (`e2e/five-runs/`); screenshots in `docs/presentation/screens/`. The phone-camera and Telegram steps need the owner. |
 
@@ -27,11 +27,15 @@ laptop, with evidence in `docs/verification/`.
    credit (the free tier allows 50 requests a day), to bring local review
    p95 under 30 s.
 
+## Production rehearsal
+
+Passed 2026-11-06 (`production-rehearsal.json`): HTTPS via Caddy's internal
+CA, release-step migrations, first admin via `python -m app.create_admin`,
+secure cookies, SSE and evidence through the proxy, closed internal ports,
+dev secrets refused. Let's Encrypt on a public domain is not exercised.
+
 ## Next engineering steps
 
-1. Production rehearsal: the prod overlay with `SMARTOPS_DOMAIN=localhost`,
-   `SMARTOPS_TLS=internal` (separate project name, so the demo stack is
-   unaffected).
-2. Validate the remaining Tier 1 rules on real footage once it arrives, and
+1. Validate the remaining Tier 1 rules on real footage once it arrives, and
    tune the zones.
-3. Encrypt notification secrets at rest; prune expired sessions.
+2. Encrypt notification secrets at rest; prune expired sessions.
