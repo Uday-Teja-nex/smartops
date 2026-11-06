@@ -67,9 +67,9 @@ def incident_payload(source, event, captured_at):
 
 DEFAULT_AGGREGATE_COOLDOWN = 120.0
 # Vision-encoder cost grows with pixels: on the laptop CPU a 384 px frame
-# reviews in about 11 s versus about 24 s at 640 px
+# reviews in about 11 s versus about 24 s at 640 px; 320 px trims it further
 # (docs/verification/vlm-image-size-benchmark.json).
-REVIEW_WIDTH = int(os.getenv('SMARTOPS_REVIEW_IMAGE_WIDTH', '384'))
+REVIEW_WIDTH = int(os.getenv('SMARTOPS_REVIEW_IMAGE_WIDTH', '320'))
 
 
 def review_jpeg(image):

@@ -32,7 +32,7 @@ def test_enrichment_returns_scene_verdict_and_model_but_no_adjudication_fields()
 
 @pytest.mark.parametrize('result', [
     {'observations': []},
-    {**VALID, 'observations': ['x' * 161]},
+    {**VALID, 'observations': ['x' * 121]},
     {**VALID, 'verdict': 'confirmed intruder'},
     {**VALID, 'scene': ''},
 ])

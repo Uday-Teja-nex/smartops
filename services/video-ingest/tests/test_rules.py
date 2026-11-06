@@ -125,7 +125,7 @@ def test_review_image_is_downscaled_clean_jpeg():
     from app.continuous import REVIEW_WIDTH, review_jpeg
     frame = np.zeros((360, 640, 3), dtype=np.uint8)
     decoded = cv2.imdecode(np.frombuffer(base64.b64decode(review_jpeg(frame)), np.uint8), cv2.IMREAD_COLOR)
-    assert decoded.shape[1] == REVIEW_WIDTH == 384 and decoded.shape[0] == 216
+    assert decoded.shape[1] == REVIEW_WIDTH == 320 and decoded.shape[0] == 180
 
 
 def test_rule_incidents_record_the_drawn_zone():
