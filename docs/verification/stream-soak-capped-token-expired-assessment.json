@@ -1,0 +1,129 @@
+{
+  "passed": false,
+  "minutes": 30.0,
+  "samplesAfterWarmup": 138,
+  "fps": {
+    "src-4a57a0c0b9": {
+      "min": 2.99,
+      "median": 3.0
+    },
+    "src-9f3769a88b": {
+      "min": 2.66,
+      "median": 3.0
+    },
+    "src-01bc773755": {
+      "min": 2.62,
+      "median": 3.0
+    }
+  },
+  "memory": {
+    "smartops-api": {
+      "firstMiB": 93.5,
+      "lastMiB": 93.7,
+      "growthMiB": 0.2
+    },
+    "smartops-detector": {
+      "firstMiB": 356.3,
+      "lastMiB": 334.9,
+      "growthMiB": -21.4
+    },
+    "smartops-frontend": {
+      "firstMiB": 74.4,
+      "lastMiB": 74.3,
+      "growthMiB": -0.1
+    },
+    "smartops-mediamtx": {
+      "firstMiB": 34.5,
+      "lastMiB": 34.1,
+      "growthMiB": -0.4
+    },
+    "smartops-minio": {
+      "firstMiB": 132.0,
+      "lastMiB": 137.3,
+      "growthMiB": 5.3
+    },
+    "smartops-notifier": {
+      "firstMiB": 56.3,
+      "lastMiB": 56.3,
+      "growthMiB": 0.0
+    },
+    "smartops-orchestrator": {
+      "firstMiB": 70.6,
+      "lastMiB": 70.3,
+      "growthMiB": -0.3
+    },
+    "smartops-postgres": {
+      "firstMiB": 43.8,
+      "lastMiB": 43.7,
+      "growthMiB": -0.0
+    },
+    "smartops-redis": {
+      "firstMiB": 7.9,
+      "lastMiB": 7.8,
+      "growthMiB": -0.1
+    },
+    "smartops-stream-processor": {
+      "firstMiB": 485.3,
+      "lastMiB": 476.1,
+      "growthMiB": -9.2
+    },
+    "smartops-stream-publisher": {
+      "firstMiB": 68.7,
+      "lastMiB": 69.1,
+      "growthMiB": 0.4
+    }
+  },
+  "failures": [
+    "906.01s src-4a57a0c0b9: request error HTTPStatusError",
+    "906.01s src-9f3769a88b: request error HTTPStatusError",
+    "906.01s src-01bc773755: request error HTTPStatusError",
+    "918.04s src-4a57a0c0b9: request error HTTPStatusError",
+    "918.04s src-9f3769a88b: request error HTTPStatusError",
+    "918.04s src-01bc773755: request error HTTPStatusError",
+    "930.35s src-4a57a0c0b9: request error HTTPStatusError",
+    "930.35s src-9f3769a88b: request error HTTPStatusError",
+    "930.35s src-01bc773755: request error HTTPStatusError",
+    "942.68s src-4a57a0c0b9: request error HTTPStatusError",
+    "942.68s src-9f3769a88b: request error HTTPStatusError",
+    "942.68s src-01bc773755: request error HTTPStatusError",
+    "954.96s src-4a57a0c0b9: request error HTTPStatusError",
+    "954.96s src-9f3769a88b: request error HTTPStatusError",
+    "954.96s src-01bc773755: request error HTTPStatusError",
+    "967.02s src-4a57a0c0b9: request error HTTPStatusError",
+    "967.02s src-9f3769a88b: request error HTTPStatusError",
+    "967.02s src-01bc773755: request error HTTPStatusError",
+    "979.35s src-4a57a0c0b9: request error HTTPStatusError",
+    "979.35s src-9f3769a88b: request error HTTPStatusError",
+    "979.35s src-01bc773755: request error HTTPStatusError",
+    "991.69s src-4a57a0c0b9: request error HTTPStatusError",
+    "991.69s src-9f3769a88b: request error HTTPStatusError",
+    "991.69s src-01bc773755: request error HTTPStatusError",
+    "1004.07s src-4a57a0c0b9: request error HTTPStatusError",
+    "1004.07s src-9f3769a88b: request error HTTPStatusError",
+    "1004.07s src-01bc773755: request error HTTPStatusError",
+    "1016.08s src-4a57a0c0b9: request error HTTPStatusError",
+    "1016.08s src-9f3769a88b: request error HTTPStatusError",
+    "1016.08s src-01bc773755: request error HTTPStatusError",
+    "1028.12s src-4a57a0c0b9: request error HTTPStatusError",
+    "1028.12s src-9f3769a88b: request error HTTPStatusError",
+    "1028.12s src-01bc773755: request error HTTPStatusError",
+    "1040.45s src-4a57a0c0b9: request error HTTPStatusError",
+    "1040.45s src-9f3769a88b: request error HTTPStatusError",
+    "1040.45s src-01bc773755: request error HTTPStatusError",
+    "1052.86s src-4a57a0c0b9: request error HTTPStatusError",
+    "1052.86s src-9f3769a88b: request error HTTPStatusError",
+    "1052.86s src-01bc773755: request error HTTPStatusError",
+    "1065.11s src-4a57a0c0b9: request error HTTPStatusError",
+    "1065.11s src-9f3769a88b: request error HTTPStatusError",
+    "1065.11s src-01bc773755: request error HTTPStatusError",
+    "1077.17s src-4a57a0c0b9: request error HTTPStatusError",
+    "1077.17s src-9f3769a88b: request error HTTPStatusError",
+    "1077.17s src-01bc773755: request error HTTPStatusError",
+    "1089.51s src-4a57a0c0b9: request error HTTPStatusError",
+    "1089.51s src-9f3769a88b: request error HTTPStatusError",
+    "1089.51s src-01bc773755: request error HTTPStatusError",
+    "1101.83s src-4a57a0c0b9: request error HTTPStatusError",
+    "1101.83s src-9f3769a88b: request error HTTPStatusError"
+  ],
+  "failureCount": 222
+}

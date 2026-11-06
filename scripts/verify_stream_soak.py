@@ -19,10 +19,16 @@ def main():
               'sourceIds': ids, 'samples': [], 'purpose': 'Capacity test: same supplied clip on three independent RTSP transports'}
     started = time.monotonic()
     with httpx.Client(base_url='http://localhost:8000', timeout=10) as client:
-        response = client.post('/v1/auth/login', json={'email': 'admin@smartops.local', 'password': 'smartops-demo'})
-        response.raise_for_status()
-        client.headers['Authorization'] = 'Bearer ' + response.json()['token']
+        def sign_in():
+            # Access tokens last 15 minutes; a 30-minute soak must re-authenticate.
+            response = client.post('/v1/auth/login', json={'email': 'admin@smartops.local', 'password': 'smartops-demo'})
+            response.raise_for_status()
+            client.headers['Authorization'] = 'Bearer ' + response.json()['token']
+
+        sign_in()
         while True:
+            if client.get('/v1/auth/me').status_code == 401:
+                sign_in()
             sample = {'elapsedSeconds': round(time.monotonic() - started, 2), 'sources': []}
             for source_id in ids:
                 try:

@@ -10,38 +10,28 @@ laptop, with evidence in `docs/verification/`.
 |---|---|---|
 | 0 Audit | every claim evidenced | Done (`docs/AUDIT.md`) |
 | 1 Honest and stable | 3 cold ups; no runtime mocks; offline state | Done (`cold-starts.json`, `phase1-*`) |
-| 2 Streaming pipeline | Tier 1 events ≤ 5 s on recorded footage; 30-min 3-stream soak | **Partly.** Queue and crowding fire live on the mall clip and persist about 50 ms after the rule triggers. The other Tier 1 rules are unit-tested on synthetic tracks but have no footage. The soak has never passed (about 3 fps per stream; dips below 2 fps). |
-| 3 AI layer | ≥ 95 % validated, p95 ≤ 30 s, honest failures | **Partly.** Honest failures and the local fallback are verified; the live latency measurement is in `enrichment-live.json`. |
-| 4 Product | tenancy + role tests; a notification on a real phone | **Partly.** Tenancy, roles, sessions and the notifier are tested; a webhook was delivered end to end (1.0 s). Telegram needs the owner's bot token. Workspace-creation UI and phone onboarding are not built. |
-| 5 Demo-ready | Section C script 5× from reset, screenshots | **Not started:** needs Playwright E2E, footage for every Tier 1 event, the phone flow. |
+| 2 Streaming pipeline | Tier 1 events ≤ 5 s on recorded footage; 30-min 3-stream soak | **Partly.** Live push 0.3–3.0 s (E2E). Queue and crowding are proven on real footage; the other Tier 1 rules only on synthetic tracks (no footage). Soak: the baseline failed (dips to 1.15 fps during local AI reviews); the re-run with capped review CPU is in `stream-soak-final-assessment.json`. |
+| 3 AI layer | ≥ 95 % validated, p95 ≤ 30 s, honest failures | **Passed with the hosted model** (11/11, p95 10.1 s). Local CPU only: 10/10 validated but p95 38.3 s. Honest failures verified. |
+| 4 Product | tenancy + role tests; a notification on a real phone | **Partly.** Tenancy and role tests pass (API and E2E). Webhook verified end to end. Telegram on a real phone needs the owner's bot token. |
+| 5 Demo-ready | Section C script 5× from reset, screenshots | **Passed** for everything automatable: 5/5 consecutive runs, 9/9 steps each (`e2e/five-runs/`); screenshots in `docs/presentation/screens/`. The phone-camera and Telegram steps need the owner. |
 
-## Done in the 2026-11-06 session
+## Needs the owner
 
-- Docker Desktop crash loop fixed (stale socket files); `demo.ps1 fix-docker`.
-- `demo.ps1`: preflight, up (28 s), reset (6 s), status, backup, restore.
-- Three seeded workspaces on one streaming code path, with a publisher
-  manifest.
-- Revocable sessions, rotating refresh cookies, argon2id, non-root images.
-- Telegram and webhook notifier with a transactional outbox and retries.
-- Rule cooldowns and readable rule incidents.
-- AI review with scene, verdict and model; specific failure reasons;
-  native-Ollama fallback.
-- Production overlay behind Caddy, release-step migrations, `/ready`, CUDA
-  and remote detector backends.
+1. Footage for each Tier 1 event and for the office and campus workspaces
+   (shot list: `docs/FOOTAGE_SHOT_LIST.md`; record provenance in
+   `sample-data/README.md`).
+2. A Telegram bot token and chat ID (Settings → Notifications → Add channel).
+3. A phone on the same Wi-Fi to try "Add phone camera". Allow inbound TCP
+   1935 when Windows Firewall asks.
+4. Optional: approval to pull a smaller local vision model, or OpenRouter
+   credit (the free tier allows 50 requests a day), to bring local review
+   p95 under 30 s.
 
-## Next, in order
+## Next engineering steps
 
-1. Footage for each Tier 1 event (owner; shot list in
-   `docs/FOOTAGE_SHOT_LIST.md`).
-2. Phone camera onboarding: a source wizard showing the RTMP/RTSP publish URL
-   and a QR code, ≤ 60 s.
-3. Workspace creation UI for prospects (name, accent, buildings, cameras).
-4. Playwright E2E for the Section C script against the compose stack.
-5. Monitoring page: per-camera fps/lag, detector and VLM latency, queue
-   depth, delivery failures (most data is already exposed).
-6. Stream soak at ≥ 2 fps per stream for 30 minutes (try 2 fps target with
-   detector at 512 px, or fewer streams on CPU).
-7. Cut or merge the Safety, Housekeeping and Occupancy pages into views
-   backed by real data.
-8. Production rehearsal: run the prod overlay locally with
-   `SMARTOPS_DOMAIN=localhost`, `SMARTOPS_TLS=internal`.
+1. Production rehearsal: the prod overlay with `SMARTOPS_DOMAIN=localhost`,
+   `SMARTOPS_TLS=internal` (separate project name, so the demo stack is
+   unaffected).
+2. Validate the remaining Tier 1 rules on real footage once it arrives, and
+   tune the zones.
+3. Encrypt notification secrets at rest; prune expired sessions.
