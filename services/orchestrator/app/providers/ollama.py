@@ -19,7 +19,11 @@ KEEP_ALIVE = os.getenv("SMARTOPS_OLLAMA_KEEP_ALIVE", "60m")
 # Ollama reloads a model whenever these runner options differ from the ones it
 # was loaded with, so warm-up, background loads and requests must all match
 # (a mismatch turned every warm-up into a wasted two-minute load).
-LOAD_OPTIONS = {"num_ctx": 2048, "num_batch": 32}
+# num_thread caps the CPU an advisory review may take: in a 3-stream soak,
+# uncapped CPU reviews starved the detector and every fps dip below 2
+# happened during a review (docs/verification/stream-soak-final*.json).
+LOAD_OPTIONS = {"num_ctx": 2048, "num_batch": 32,
+                "num_thread": int(os.getenv("SMARTOPS_OLLAMA_NUM_THREAD", "4"))}
 
 
 class OllamaModelProvider(ModelProvider):

@@ -1,0 +1,129 @@
+{
+  "passed": false,
+  "minutes": 30.0,
+  "samplesAfterWarmup": 138,
+  "fps": {
+    "src-4a57a0c0b9": {
+      "min": 1.17,
+      "median": 3.0
+    },
+    "src-9f3769a88b": {
+      "min": 1.15,
+      "median": 3.0
+    },
+    "src-01bc773755": {
+      "min": 1.18,
+      "median": 3.0
+    }
+  },
+  "memory": {
+    "smartops-api": {
+      "firstMiB": 90.1,
+      "lastMiB": 91.5,
+      "growthMiB": 1.4
+    },
+    "smartops-detector": {
+      "firstMiB": 347.3,
+      "lastMiB": 366.5,
+      "growthMiB": 19.2
+    },
+    "smartops-frontend": {
+      "firstMiB": 75.5,
+      "lastMiB": 74.7,
+      "growthMiB": -0.8
+    },
+    "smartops-mediamtx": {
+      "firstMiB": 36.0,
+      "lastMiB": 34.6,
+      "growthMiB": -1.4
+    },
+    "smartops-minio": {
+      "firstMiB": 130.6,
+      "lastMiB": 130.8,
+      "growthMiB": 0.2
+    },
+    "smartops-notifier": {
+      "firstMiB": 56.2,
+      "lastMiB": 56.3,
+      "growthMiB": 0.0
+    },
+    "smartops-orchestrator": {
+      "firstMiB": 81.7,
+      "lastMiB": 89.2,
+      "growthMiB": 7.4
+    },
+    "smartops-postgres": {
+      "firstMiB": 41.7,
+      "lastMiB": 41.8,
+      "growthMiB": 0.0
+    },
+    "smartops-redis": {
+      "firstMiB": 7.8,
+      "lastMiB": 7.9,
+      "growthMiB": 0.1
+    },
+    "smartops-stream-processor": {
+      "firstMiB": 444.4,
+      "lastMiB": 473.2,
+      "growthMiB": 28.9
+    },
+    "smartops-stream-publisher": {
+      "firstMiB": 62.1,
+      "lastMiB": 64.1,
+      "growthMiB": 2.0
+    }
+  },
+  "failures": [
+    "592.2s src-9f3769a88b: 1.8039930780642401 fps",
+    "605.49s src-4a57a0c0b9: 1.2816290608594934 fps",
+    "605.49s src-9f3769a88b: 1.1451787543661713 fps",
+    "605.49s src-01bc773755: 1.2760345010346066 fps",
+    "617.9s src-9f3769a88b: 1.7190777532168962 fps",
+    "679.64s src-4a57a0c0b9: 1.5406714627937816 fps",
+    "679.64s src-9f3769a88b: 1.430986614304094 fps",
+    "679.64s src-01bc773755: 1.5907076904593231 fps",
+    "692.95s src-9f3769a88b: 1.7725408249048593 fps",
+    "692.95s src-01bc773755: 1.3125025230403693 fps",
+    "718.69s src-9f3769a88b: 1.7449115821008465 fps",
+    "731.22s src-4a57a0c0b9: 1.4040563933355126 fps",
+    "731.22s src-9f3769a88b: 1.3932466115548205 fps",
+    "731.22s src-01bc773755: 1.3722648152231076 fps",
+    "743.93s src-4a57a0c0b9: 1.1715221357024141 fps",
+    "743.93s src-9f3769a88b: 1.4789782796305286 fps",
+    "743.93s src-01bc773755: 1.177004033695948 fps",
+    "756.85s src-4a57a0c0b9: 1.5329061606595338 fps",
+    "756.85s src-9f3769a88b: 1.6511306036723283 fps",
+    "756.85s src-01bc773755: 1.6769614563411266 fps",
+    "905.01s src-4a57a0c0b9: request error HTTPStatusError",
+    "905.01s src-9f3769a88b: request error HTTPStatusError",
+    "905.01s src-01bc773755: request error HTTPStatusError",
+    "917.18s src-4a57a0c0b9: request error HTTPStatusError",
+    "917.18s src-9f3769a88b: request error HTTPStatusError",
+    "917.18s src-01bc773755: request error HTTPStatusError",
+    "929.32s src-4a57a0c0b9: request error HTTPStatusError",
+    "929.32s src-9f3769a88b: request error HTTPStatusError",
+    "929.32s src-01bc773755: request error HTTPStatusError",
+    "941.63s src-4a57a0c0b9: request error HTTPStatusError",
+    "941.63s src-9f3769a88b: request error HTTPStatusError",
+    "941.63s src-01bc773755: request error HTTPStatusError",
+    "953.95s src-4a57a0c0b9: request error HTTPStatusError",
+    "953.95s src-9f3769a88b: request error HTTPStatusError",
+    "953.95s src-01bc773755: request error HTTPStatusError",
+    "966.28s src-4a57a0c0b9: request error HTTPStatusError",
+    "966.28s src-9f3769a88b: request error HTTPStatusError",
+    "966.28s src-01bc773755: request error HTTPStatusError",
+    "978.29s src-4a57a0c0b9: request error HTTPStatusError",
+    "978.29s src-9f3769a88b: request error HTTPStatusError",
+    "978.29s src-01bc773755: request error HTTPStatusError",
+    "990.32s src-4a57a0c0b9: request error HTTPStatusError",
+    "990.32s src-9f3769a88b: request error HTTPStatusError",
+    "990.32s src-01bc773755: request error HTTPStatusError",
+    "1002.63s src-4a57a0c0b9: request error HTTPStatusError",
+    "1002.63s src-9f3769a88b: request error HTTPStatusError",
+    "1002.63s src-01bc773755: request error HTTPStatusError",
+    "1014.93s src-4a57a0c0b9: request error HTTPStatusError",
+    "1014.93s src-9f3769a88b: request error HTTPStatusError",
+    "1014.93s src-01bc773755: request error HTTPStatusError"
+  ],
+  "failureCount": 245
+}

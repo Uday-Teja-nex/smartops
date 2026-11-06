@@ -145,4 +145,4 @@ def test_background_load_uses_the_same_runner_options_as_reviews(monkeypatch):
         if sent:
             break
         time.sleep(0.02)
-    assert sent[0]['options'] == ollama.LOAD_OPTIONS == {'num_ctx': 2048, 'num_batch': 32}
+    assert sent[0]['options'] == ollama.LOAD_OPTIONS == {'num_ctx': 2048, 'num_batch': 32, 'num_thread': 4}

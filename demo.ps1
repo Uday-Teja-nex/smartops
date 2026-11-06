@@ -248,7 +248,7 @@ function Invoke-ModelWarmup {
     $watch = [Diagnostics.Stopwatch]::StartNew()
     try {
         # Options must match the orchestrator's (LOAD_OPTIONS) or Ollama reloads on the first review.
-        $body = @{ model = $vision; keep_alive = '60m'; prompt = ''; options = @{ num_ctx = 2048; num_batch = 32 } } | ConvertTo-Json
+        $body = @{ model = $vision; keep_alive = '60m'; prompt = ''; options = @{ num_ctx = 2048; num_batch = 32; num_thread = 4 } } | ConvertTo-Json
         Invoke-RestMethod "$OllamaUrl/api/generate" -Method Post -Body $body -ContentType 'application/json' -TimeoutSec 240 | Out-Null
         Write-Ok ("{0} warmed in {1:N0} s; it stays loaded for 60 minutes." -f $vision, $watch.Elapsed.TotalSeconds)
     } catch {
