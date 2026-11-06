@@ -53,7 +53,7 @@ OFFICE_LOBBY_ZONES = [
 MALL_ATRIUM_ZONES = [
     {"id": "Atrium floor",
      "polygon": [[0.35, 0.30], [1.0, 0.30], [1.0, 1.0], [0.35, 1.0]],
-     "rules": [{"type": "crowding", "threshold": 6, "durationSeconds": 5}]},
+     "rules": [{"type": "crowding", "threshold": 5, "durationSeconds": 5}]},
 ]
 
 CAMPUS_LAB_ZONES = [

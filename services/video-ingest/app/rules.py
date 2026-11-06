@@ -76,9 +76,12 @@ class ZoneRule:
 
 
 class RuleEngine:
-    def __init__(self, rules: list[ZoneRule], max_observation_gap=1.5):
+    def __init__(self, rules: list[ZoneRule], max_observation_gap=1.5, count_grace=1.5):
         self.rules = rules
         self.max_gap = max_observation_gap
+        # Crowding/queue: a dense crowd's detected count flickers frame to frame;
+        # a dip shorter than this does not restart the duration timer.
+        self.count_grace = count_grace
         self.previous_time: float | None = None
         self.since: dict[tuple, float] = {}
         self.fired: set[tuple] = set()
@@ -86,7 +89,13 @@ class RuleEngine:
         self.last_inside = {}
         self.last_aggregate_event: dict[int, float] = {}
 
-    def update(self, now: float, observations: list[Observation], wall_time=None) -> list[dict]:
+    def update(self, now: float, observations: list[Observation], wall_time=None,
+               counted: list[Observation] | None = None) -> list[dict]:
+        """`observations` are tracked objects (per-person rules); `counted` are the
+        frame's raw detections, used by crowding/queue rules because counting a
+        dense crowd needs no identity and the tracker cannot confirm small,
+        fast-moving people at a few frames per second. Defaults to observations."""
+        counted = observations if counted is None else counted
         if self.previous_time is not None and (now - self.previous_time > self.max_gap or now < self.previous_time):
             self.since.clear()
             self.fired.clear()
@@ -105,7 +114,9 @@ class RuleEngine:
             inside = [o for o in observations if cv2.pointPolygonTest(polygon, (o.x, o.y), False) >= 0]
             people = [o for o in inside if o.label == 'person']
             if rule.kind in {'crowding', 'queue_build_up'}:
-                groups = [people] if len(people) > rule.threshold else []
+                crowd = [o for o in counted if o.label == 'person'
+                         and cv2.pointPolygonTest(polygon, (o.x, o.y), False) >= 0]
+                groups = [crowd] if len(crowd) > rule.threshold else []
             elif rule.kind == 'unattended_object':
                 groups = []
                 all_people = [o for o in observations if o.label == 'person']
@@ -147,13 +158,15 @@ class RuleEngine:
                                    'trackIds': [o.track_id for o in group], 'count': len(group),
                                    'durationSeconds': now - since,
                                    'confidence': min(o.confidence for o in group)})
-        self.since = {key: value for key, value in self.since.items() if key in present}
+        held = {key for key in self.since if key[1] is None and key not in present
+                 and now - self.last_inside.get(key, float('-inf')) <= self.count_grace}
+        self.since = {key: value for key, value in self.since.items() if key in present or key in held}
         observed_ids = {o.track_id for o in observations}
-        retained = {key for key in self.fired if key in present or (
+        retained = {key for key in self.fired if key in present or key in held or (
             key[1] is not None and key[1] not in observed_ids
             and now - self.last_inside.get(key, now) <= self.max_gap)}
         self.fired.intersection_update(retained)
         self.last_inside = {key: value for key, value in self.last_inside.items()
-                            if key in present or key in retained}
+                            if key in present or key in retained or key in held}
         self.anchors = {key: value for key, value in self.anchors.items() if key in present}
         return events

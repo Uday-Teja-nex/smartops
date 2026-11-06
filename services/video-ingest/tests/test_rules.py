@@ -10,7 +10,7 @@ def person(track=1, x=0.2):
 
 
 def test_crowd_requires_continuous_duration_and_rearms_after_clear():
-    engine = RuleEngine([ZoneRule('lobby', POLYGON, 'crowding', threshold=1, duration=2)])
+    engine = RuleEngine([ZoneRule('lobby', POLYGON, 'crowding', threshold=1, duration=2)], count_grace=0)
     assert engine.update(0, [person(1), person(2)]) == []
     assert engine.update(1, [person(1)]) == []
     assert engine.update(2, [person(1), person(2)]) == []
@@ -82,7 +82,7 @@ def test_after_hours_uses_zone_timezone_and_overnight_schedule():
 
 
 def test_aggregate_cooldown_suppresses_flapping_counts():
-    engine = RuleEngine([ZoneRule('lobby', POLYGON, 'crowding', threshold=1, duration=1, cooldown=10)])
+    engine = RuleEngine([ZoneRule('lobby', POLYGON, 'crowding', threshold=1, duration=1, cooldown=10)], count_grace=0)
     crowd = [person(1), person(2)]
     engine.update(0, crowd)
     assert len(engine.update(1, crowd)) == 1
@@ -155,3 +155,37 @@ def test_evidence_failures_are_explained_in_operator_words():
     assert 'did not cover 5 s' in evidence_failure(ValueError('Incomplete pre/post-event footage'))
     assert 'frames were missing' in evidence_failure(ValueError('Evidence capture gap'))
     assert evidence_failure(OSError('disk')) == 'clip could not be built (OSError)'
+
+
+
+def test_crowd_count_flicker_shorter_than_grace_does_not_restart_the_timer():
+    engine = RuleEngine([ZoneRule('atrium', POLYGON, 'crowding', threshold=2, duration=3)], count_grace=1.5)
+    crowd = [person(1), person(2), person(3)]
+    assert engine.update(0, crowd) == []
+    assert engine.update(1, [person(1)]) == []          # detector misses two people for one sample
+    assert engine.update(2, crowd) == []
+    assert len(engine.update(3, crowd)) == 1            # 3 s since the crowd formed
+    engine2 = RuleEngine([ZoneRule('atrium', POLYGON, 'crowding', threshold=2, duration=3)], count_grace=1.5)
+    engine2.update(0, crowd)
+    engine2.update(1, [person(1)])
+    engine2.update(2, [person(1)])
+    engine2.update(3, [person(1)])                      # a real dip longer than the grace resets
+    engine2.update(4, crowd)                            # timer restarts here
+    assert engine2.update(5, crowd) == []
+    assert engine2.update(6, crowd) == []
+    assert len(engine2.update(7, crowd)) == 1
+
+
+def test_crowd_rules_count_raw_detections_even_when_tracks_are_not_confirmed():
+    engine = RuleEngine([ZoneRule('atrium', POLYGON, 'crowding', threshold=2, duration=1),
+                         ZoneRule('lab', POLYGON, 'restricted_entry')])
+    raw = [Observation(-i, 'person', 0.2, 0.5, 0.4) for i in range(1, 5)]
+    assert engine.update(0, [], counted=raw) == []                 # no confirmed tracks yet
+    events = engine.update(1, [], counted=raw)
+    assert [e['type'] for e in events] == ['crowding'] and events[0]['count'] == 4
+
+
+def test_raw_observations_use_the_foot_point():
+    from app.continuous import raw_observations
+    obs = raw_observations([{'label': 'person', 'confidence': .5, 'bbox': {'x': .1, 'y': .2, 'w': .2, 'h': .5}}])
+    assert (obs[0].x, obs[0].y, obs[0].track_id) == (0.2, 0.7, -1)

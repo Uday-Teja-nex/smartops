@@ -18,7 +18,7 @@ import httpx
 
 from app.adapters.rtsp import StreamReader
 from app.log import log
-from app.rules import RuleEngine, ZoneRule
+from app.rules import Observation, RuleEngine, ZoneRule
 from app.tracking import Tracker
 from app.ring import FrameRing
 from app.stream_evidence import upload_evidence
@@ -39,6 +39,14 @@ RULE_PRESENTATION = {
     'unattended_object': ('Security', 'high', 'Bag left unattended in {zone} for {seconds}s'),
     'blocked_exit': ('Safety', 'high', 'Exit zone {zone} obstructed for {seconds}s'),
 }
+
+
+def raw_observations(detections):
+    """Per-frame detections as foot-point observations (no identity)."""
+    return [Observation(-(index + 1), d['label'],
+                        min(max(d['bbox']['x'] + d['bbox']['w'] / 2, 0.0), 1.0),
+                        min(max(d['bbox']['y'] + d['bbox']['h'], 0.0), 1.0), float(d['confidence']))
+            for index, d in enumerate(detections)]
 
 
 def evidence_failure(exc):
@@ -226,8 +234,11 @@ def run(source, client, stop, *, detector_url, fps=3):
                             raise RuntimeError('Evidence annotation encoding failed')
                         evidence_jpeg = evidence_encoded.tobytes()
                         ring.append(frame.captured_at, evidence_jpeg)
-                        observations = tracker.update(response.json()['detections'], frame.monotonic_at)
-                        for event in engine.update(frame.monotonic_at, observations, wall_time=frame.captured_at):
+                        detections = response.json()['detections']
+                        observations = tracker.update(detections, frame.monotonic_at)
+                        counted = raw_observations(detections)
+                        for event in engine.update(frame.monotonic_at, observations, wall_time=frame.captured_at,
+                                                   counted=counted):
                             payload = incident_payload(source, event, frame.captured_at)
                             if len(evidence_waiting) + len(evidence_running) < 20:
                                 # The AI reviews the clean frame; burned-in boxes and scores confuse it.

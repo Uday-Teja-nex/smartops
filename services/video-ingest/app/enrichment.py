@@ -137,7 +137,8 @@ class IncidentEnrichment:
         try:
             with box.db:
                 box.db.execute('UPDATE review_jobs SET claimed=0 WHERE source=?', (self.source_id,))
-            with httpx.Client(base_url=os.getenv('SMARTOPS_ORCHESTRATOR_BASE_URL', 'http://orchestrator:8100'), timeout=35) as client:
+            with httpx.Client(base_url=os.getenv('SMARTOPS_ORCHESTRATOR_BASE_URL', 'http://orchestrator:8100'),
+                              timeout=float(os.getenv('SMARTOPS_REVIEW_TIMEOUT_SECONDS', '180'))) as client:
                 while not self.stop.is_set():
                     try:
                         process_one(box, self.source_id, client,

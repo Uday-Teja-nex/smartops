@@ -10,7 +10,7 @@ import httpx
 
 import threading
 
-from app.providers.base import ModelLoading, ModelProvider
+from app.providers.base import ModelBusy, ModelLoading, ModelProvider
 
 
 # How long Ollama keeps the model loaded after a request. A demo must not pay
@@ -24,6 +24,13 @@ KEEP_ALIVE = os.getenv("SMARTOPS_OLLAMA_KEEP_ALIVE", "60m")
 # happened during a review (docs/verification/stream-soak-final*.json).
 LOAD_OPTIONS = {"num_ctx": 2048, "num_batch": 32,
                 "num_thread": int(os.getenv("SMARTOPS_OLLAMA_NUM_THREAD", "4"))}
+
+
+# One local generation at a time: Ollama runs a single slot, so concurrent
+# requests only wait inside Ollama and blow their deadlines. Waiting here is
+# not charged against the model timeout; it is bounded separately.
+_GENERATION_LOCK = threading.Lock()
+QUEUE_SECONDS = float(os.getenv("SMARTOPS_REVIEW_QUEUE_SECONDS", "120"))
 
 
 class OllamaModelProvider(ModelProvider):
@@ -59,6 +66,14 @@ class OllamaModelProvider(ModelProvider):
                 "detail": "loaded and warm" if warm else "installed; first review loads it (about 2 min)"}
 
     def _post_chat(self, payload: dict[str, Any]) -> dict[str, Any]:
+        if not _GENERATION_LOCK.acquire(timeout=QUEUE_SECONDS):
+            raise ModelBusy(f"local model busy with other reviews for {QUEUE_SECONDS:.0f} s; this one was skipped")
+        try:
+            return self._post_chat_unlocked(payload)
+        finally:
+            _GENERATION_LOCK.release()
+
+    def _post_chat_unlocked(self, payload: dict[str, Any]) -> dict[str, Any]:
         with httpx.Client(timeout=self.timeout_seconds) as client:
             response = client.post(f"{self.host}/api/chat", json=payload)
             response.raise_for_status()

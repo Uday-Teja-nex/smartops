@@ -146,3 +146,36 @@ def test_background_load_uses_the_same_runner_options_as_reviews(monkeypatch):
             break
         time.sleep(0.02)
     assert sent[0]['options'] == ollama.LOAD_OPTIONS == {'num_ctx': 2048, 'num_batch': 32, 'num_thread': 4}
+
+
+def test_local_reviews_queue_one_at_a_time_and_skip_when_waiting_too_long(monkeypatch):
+    import threading
+    import time
+    from app.enrichment import describe_failure
+    from app.providers import ollama
+    from app.providers.base import ModelBusy
+    provider = ollama.OllamaModelProvider('http://o', 't', 'v')
+    active, peak = [0], [0]
+
+    def slow(payload):
+        active[0] += 1
+        peak[0] = max(peak[0], active[0])
+        time.sleep(0.2)
+        active[0] -= 1
+        return {'message': {'content': '{}'}}
+
+    monkeypatch.setattr(provider, '_post_chat_unlocked', slow)
+    threads = [threading.Thread(target=provider._post_chat, args=({},)) for _ in range(3)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert peak[0] == 1
+    monkeypatch.setattr(ollama, 'QUEUE_SECONDS', 0.05)
+    ollama._GENERATION_LOCK.acquire()
+    try:
+        with pytest.raises(ModelBusy) as caught:
+            provider._post_chat({})
+    finally:
+        ollama._GENERATION_LOCK.release()
+    assert describe_failure(caught.value) == 'local model busy with other reviews for 0 s; this one was skipped'
