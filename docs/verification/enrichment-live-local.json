@@ -1,0 +1,143 @@
+{
+  "summary": {
+    "measuredAt": "2026-11-06T14:33:58",
+    "workspaceUser": "admin@mall.demo",
+    "minutes": 15.0,
+    "incidents": 10,
+    "reviewed": 10,
+    "validated": 10,
+    "validatedShare": 1.0,
+    "neverReviewed": [],
+    "secondsIncidentToReview": {
+      "p50": 26.2,
+      "p95": 38.3,
+      "max": 38.3
+    },
+    "modelLatencyMs": {
+      "median": 20482.0
+    },
+    "unavailableReasons": []
+  },
+  "rows": [
+    {
+      "id": "inc-rule-ca7e6d7155504b579fe327341a20eb49",
+      "type": "queue_build_up",
+      "firstSeen": 1793955064.6527944,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (18.4 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793955088.837434,
+      "secondsFromIncident": 24.2,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 18361
+    },
+    {
+      "id": "inc-rule-0661ea3f985249acbe1300260448d939",
+      "type": "crowding",
+      "firstSeen": 1793955119.010488,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (20.7 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793955145.2217398,
+      "secondsFromIncident": 26.2,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 20667
+    },
+    {
+      "id": "inc-rule-486a20e3b1bb4e279b59a79850bda305",
+      "type": "queue_build_up",
+      "firstSeen": 1793955223.6368055,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (20.5 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793955249.8218124,
+      "secondsFromIncident": 26.2,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 20511
+    },
+    {
+      "id": "inc-rule-c5f709f564684ddaaa3f1f9d85b2a738",
+      "type": "crowding",
+      "firstSeen": 1793955340.3469706,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (20.5 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793955368.5518157,
+      "secondsFromIncident": 28.2,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 20453
+    },
+    {
+      "id": "inc-rule-d31cd23c4d834dfcbe33cfc1e04f03eb",
+      "type": "queue_build_up",
+      "firstSeen": 1793955348.3925097,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (19.0 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793955386.7092361,
+      "secondsFromIncident": 38.3,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 18969
+    },
+    {
+      "id": "inc-rule-dc306ff4b79644a382f2d8114377ed81",
+      "type": "queue_build_up",
+      "firstSeen": 1793955483.293981,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (25.9 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793955517.6498687,
+      "secondsFromIncident": 34.4,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 25860
+    },
+    {
+      "id": "inc-rule-5473a81e5c454926b07f87153bb25023",
+      "type": "crowding",
+      "firstSeen": 1793955561.9099982,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (26.4 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793955595.5481203,
+      "secondsFromIncident": 33.6,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 26403
+    },
+    {
+      "id": "inc-rule-7d7e205292244e40909ff5251f757867",
+      "type": "queue_build_up",
+      "firstSeen": 1793955667.8886034,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (21.0 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793955694.0850708,
+      "secondsFromIncident": 26.2,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 20972
+    },
+    {
+      "id": "inc-rule-eaf9683cd6fe47a58f2759e85408a067",
+      "type": "crowding",
+      "firstSeen": 1793955784.539088,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (15.5 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793955806.7071996,
+      "secondsFromIncident": 22.2,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 15508
+    },
+    {
+      "id": "inc-rule-5dc3da94b669424c85f795c79ecebdf7",
+      "type": "queue_build_up",
+      "firstSeen": 1793955792.591587,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (fallback) (19.3 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793955824.8549597,
+      "secondsFromIncident": 32.3,
+      "model": "qwen2.5vl:3b (fallback)",
+      "modelLatencyMs": 19343
+    }
+  ]
+}
