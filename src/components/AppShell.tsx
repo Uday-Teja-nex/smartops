@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { DegradedBanner } from "@/components/SystemStatus";
+import { WorkspaceBadge } from "@/components/WorkspaceBadge";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect } from "react";
 import {
@@ -181,6 +182,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
           <header className="sticky top-0 z-20 border-b border-[color:var(--glass-border)] bg-[color:var(--bg)]/70 px-6 py-3.5 backdrop-blur-2xl">
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex min-w-0 flex-1 items-center gap-3">
+                <WorkspaceBadge enabled={Boolean(user)} />
                 <span
                   className={classNames(
                     "inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide",

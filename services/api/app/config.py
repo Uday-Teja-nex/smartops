@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     ingest_public_host: str = 'localhost'
     phone_publish_user: str = 'phone'
     phone_publish_password: str = 'smartops-phone'
+    # Accounts allowed to create client workspaces (comma-separated emails).
+    platform_admin_emails: str = 'admin@smartops.local'
 
     # Evidence object storage (MinIO locally; any S3-compatible store later).
     minio_endpoint: str = "http://minio:9000"
@@ -74,6 +76,8 @@ class Settings(BaseSettings):
             self.minio_secret_key == 'smartopsminio' or len(self.minio_secret_key.strip()) < 16
         ):
             raise ValueError('Production requires a non-default object storage secret of at least 16 characters')
+        if 'admin@smartops.local' in self.platform_admin_emails:
+            raise ValueError('Production must not grant platform admin to the demo account')
         if self.seed_demo_data:
             raise ValueError('Production requires seed_demo_data=false; demo accounts must not be seeded')
         if not self.refresh_cookie_secure:

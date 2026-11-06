@@ -10,7 +10,7 @@ def production_settings(**overrides):
                   minio_secret_key='s' * 40, seed_demo_data=False,
                   evidence_storage_enabled=True,
                   cors_origins='https://console.example.com',
-                  refresh_cookie_secure=True)
+                  refresh_cookie_secure=True, platform_admin_emails='ops@example.com')
     return Settings(**(values | overrides))
 
 
@@ -22,6 +22,7 @@ def production_settings(**overrides):
     {'seed_demo_data': True},
     {'cors_origins': '*'},
     {'refresh_cookie_secure': False},
+    {'platform_admin_emails': 'admin@smartops.local'},
     {'cors_origins': 'https://console.example.com,*'},
 ])
 def test_production_rejects_unsafe_configuration(overrides):

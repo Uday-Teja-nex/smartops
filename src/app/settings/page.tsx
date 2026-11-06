@@ -5,6 +5,7 @@ import { Building2, Cpu, Users } from "lucide-react";
 import { useAuth } from "@/app/auth";
 import { SectionHeader } from "@/components/SectionHeader";
 import { NotificationChannels } from "@/components/NotificationChannels";
+import { WorkspaceCreator } from "@/components/WorkspaceCreator";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { SkeletonPanel } from "@/components/ui/Skeleton";
 import {
@@ -127,6 +128,8 @@ export default function SettingsPage() {
         </GlassPanel>
 
         {canSeeNotifications && <NotificationChannels canManage={isAdmin} />}
+
+        {isAdmin && <WorkspaceCreator />}
 
         {isAdmin && (
           <GlassPanel className="xl:col-span-2">

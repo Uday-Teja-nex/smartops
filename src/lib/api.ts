@@ -384,3 +384,37 @@ export const createPhoneCamera = (input: {
   name: string; buildingId: string; floorId?: string; zoneId?: string;
 }) =>
   request<PhoneCameraResult>("/v1/sources/phone", { method: "POST", body: JSON.stringify(input) });
+
+// ---------------------------------------------------------------------------
+// Client workspaces (platform admins)
+// ---------------------------------------------------------------------------
+
+export type WorkspaceCapabilities = {
+  canCreateWorkspaces: boolean;
+  copyableCameras: { id: string; name: string; workspace: string; zones: number }[];
+};
+
+export type WorkspaceInput = {
+  name: string;
+  accent: string;
+  buildingName: string;
+  address?: string;
+  timezone?: string;
+  floors: { level: string; name: string; zones: string[] }[];
+  password: string;
+  copyCameraId?: string;
+  addPhoneCamera: boolean;
+};
+
+export type WorkspaceCreated = {
+  id: string;
+  name: string;
+  accounts: { email: string; role: string }[];
+  cameras: string[];
+};
+
+export const fetchWorkspaceCapabilities = () =>
+  request<WorkspaceCapabilities>("/v1/workspaces/capabilities", { cache: "no-store" });
+
+export const createWorkspace = (input: WorkspaceInput) =>
+  request<WorkspaceCreated>("/v1/workspaces", { method: "POST", body: JSON.stringify(input) });
