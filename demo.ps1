@@ -215,9 +215,10 @@ function Start-NativeOllama {
     $env:OLLAMA_KV_CACHE_TYPE = 'q8_0'
     $logDir = Join-Path $PSScriptRoot 'sample-data\output'
     New-Item -ItemType Directory -Force -Path $logDir | Out-Null
-    Start-Process -FilePath $OllamaExe -ArgumentList 'serve' -WindowStyle Hidden `
-        -RedirectStandardOutput (Join-Path $logDir 'ollama-native.stdout.log') `
-        -RedirectStandardError (Join-Path $logDir 'ollama-native.stderr.log')
+    # Launch through cmd with shell-execute so Ollama inherits none of this
+    # script's handles (an inherited output pipe kept the script from exiting).
+    $log = Join-Path $logDir 'ollama-native.log'
+    Start-Process -FilePath 'cmd.exe' -ArgumentList '/c', "`"`"$OllamaExe`" serve > `"$log`" 2>&1`"" -WindowStyle Hidden
     for ($i = 0; $i -lt 30; $i++) {
         Start-Sleep -Seconds 1
         try { Invoke-RestMethod "$OllamaUrl/api/version" -TimeoutSec 2 | Out-Null; Write-Ok 'Ollama started.'; return } catch { }
@@ -283,8 +284,28 @@ function Wait-ForStreams([int]$Seconds) {
 # ---------------------------------------------------------------------------
 # actions
 # ---------------------------------------------------------------------------
+function Start-DockerIfNeeded {
+    if (Get-DockerEngineVersion) { return }
+    # Docker Desktop 4.76 leaves AF_UNIX socket files behind on every stop and
+    # then crash-loops on the next start. Clearing them first is safe.
+    $runDir = Join-Path $env:LOCALAPPDATA 'Docker\run'
+    $stale = @(Get-ChildItem $runDir -Force -Attributes ReparsePoint -ErrorAction SilentlyContinue).Count -gt 0
+    if ($stale -or (Test-StaleDockerSockets)) {
+        Write-Info 'Docker is not running and stale socket files are present; repairing before start.'
+        Invoke-FixDocker
+        return
+    }
+    Write-Info 'Starting Docker Desktop...'
+    Start-Process -FilePath (Join-Path $env:ProgramFiles 'Docker\Docker\Docker Desktop.exe')
+    for ($i = 0; $i -lt 60; $i++) {
+        Start-Sleep -Seconds 3
+        if (Get-DockerEngineVersion) { Write-Ok 'Docker engine is running.'; return }
+    }
+}
+
 function Invoke-Up {
     $watch = [Diagnostics.Stopwatch]::StartNew()
+    Start-DockerIfNeeded
     Invoke-Preflight
     if ($script:Problems -gt 0) {
         Write-Host ''
