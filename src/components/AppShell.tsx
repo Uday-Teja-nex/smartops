@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect } from "react";
 import {
   Activity,
-  Building2,
   Camera,
   FileBarChart,
   LayoutDashboard,
@@ -14,7 +13,6 @@ import {
   Radio,
   Search,
   Settings,
-  ShieldAlert,
   ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/app/auth";
@@ -38,8 +36,6 @@ const NAV_ITEMS: NavItem[] = [
   { name: "Camera view", href: "/cameras", icon: Camera },
   { name: "Sources", href: "/sources", icon: Camera },
   { name: "Monitoring", href: "/monitoring", icon: Radio },
-  { name: "Safety & EHS", href: "/safety", icon: ShieldAlert },
-  { name: "Occupancy & Security", href: "/occupancy", icon: Building2 },
   { name: "Reports", href: "/reports", icon: FileBarChart },
   { name: "Settings", href: "/settings", icon: Settings, minRole: "supervisor" },
 ];

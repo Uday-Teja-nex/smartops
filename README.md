@@ -142,6 +142,14 @@ collide:
 .\.venv\Scripts\python.exe -m pytest services/detector/tests -q
 ```
 
+The end-to-end demo script runs in the installed Microsoft Edge against the
+running stack (start it with `.\demo.ps1 reset` first; it takes about 2–4
+minutes):
+
+```powershell
+npx playwright test
+```
+
 ## Documents
 
 - [docs/AGENT_HANDOFF.md](docs/AGENT_HANDOFF.md): what works, what was

@@ -345,3 +345,16 @@ def test_comments_push_a_live_update_to_other_browsers(client, pipeline_source, 
     assert [kind for kind, _ in published] == ['incident']
     assert published[0][1]['id'] == 'inc-comment-live'
     assert published[0][1]['updatedAt'] > created['updatedAt']
+
+
+def test_timeline_says_what_a_pipeline_update_changed(client, pipeline_source, service_headers, operator_headers):
+    payload = _incident_payload(pipeline_source['id'], id='inc-timeline-words', candidateId='cand-timeline-words',
+                                reviewNotes=['AI review queued; measured rule incident remains active.'])
+    client.post('/v1/incidents', headers=service_headers, json=payload)
+    client.post('/v1/incidents', headers=service_headers, json={**payload, 'reviewNotes': [
+        'AI review by qwen2.5vl:3b (2.1 s): image looks consistent with the measured event. Rule decision unchanged.']})
+    client.post('/v1/incidents', headers=service_headers, json={**payload, 'reviewNotes': [
+        'AI review unavailable: model did not answer in time.']})
+    detail = client.get('/v1/incidents/inc-timeline-words', headers=operator_headers).json()
+    notes = [event.get('note') for event in detail['events'] if event['action'] == 'pipeline_update']
+    assert notes == ['AI review by qwen2.5vl:3b (2.1 s)', 'AI review unavailable: model did not answer in time']

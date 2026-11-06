@@ -188,12 +188,20 @@ test("8. reports show computed summaries with CSV and PDF export", async ({ brow
   await shot(page, "08-reports");
 });
 
-test("9. stopping the detector shows a named degraded state that recovers", async ({ browser }) => {
+test("9. stopping the detector shows a named degraded state that recovers", async ({ browser, request }) => {
   const page = await pageAs(browser, "operator@mall.demo");
   await page.goto("/");
+  const token = await apiToken(request, "operator@mall.demo");
+  const detectorUp = async () => {
+    const response = await request.get(`${API}/v1/system/status`, { headers: { Authorization: `Bearer ${token}` } });
+    const body = await response.json();
+    return body.components.find((item: { id: string; ok: boolean }) => item.id === "detector").ok as boolean;
+  };
   try {
-    execSync("docker compose stop detector", { stdio: "ignore" });
-    await expect(page.getByText("Running in a degraded state")).toBeVisible({ timeout: 30_000 });
+    execSync("docker compose stop detector", { stdio: "pipe" });
+    // First the server must notice; then the console must say so within its 10 s poll.
+    await expect.poll(detectorUp, { timeout: 30_000 }).toBe(false);
+    await expect(page.getByText("Running in a degraded state")).toBeVisible({ timeout: 25_000 });
     await expect(page.getByText(/Object detection:.*Live detection is paused/)).toBeVisible();
     await shot(page, "09-degraded-detector");
   } finally {

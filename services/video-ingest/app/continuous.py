@@ -49,7 +49,9 @@ def describe_event(event):
 def incident_payload(source, event, captured_at):
     return {
         'id': f'inc-rule-{uuid.uuid4().hex}', 'sourceId': source['id'],
-        'buildingId': source['buildingId'], 'floor': source['floor'], 'zone': source['zone'],
+        # The drawn zone ("Checkout queue") is what operators and per-zone analytics need;
+        # the camera's own area stays on the camera record.
+        'buildingId': source['buildingId'], 'floor': source['floor'], 'zone': event['zoneId'],
         'category': RULE_PRESENTATION[event['type']][0],
         'subcategory': event['type'], 'type': event['type'], 'severity': RULE_PRESENTATION[event['type']][1],
         'confidence': event['confidence'], 'status': 'active',

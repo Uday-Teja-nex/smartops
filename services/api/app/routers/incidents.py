@@ -164,6 +164,22 @@ def get_incident_detail(
     return serialize_incident_detail(incident, detections, evidence_items)
 
 
+def describe_resubmission(existing: IncidentModel, payload: IncidentCreateRequest) -> str:
+    """Timeline wording for a pipeline update: say what actually changed."""
+    old_notes, new_notes = set(existing.review_notes or []), list(payload.reviewNotes or [])
+    added = [note for note in new_notes if note not in old_notes]
+    for note in added:
+        if note.startswith("AI review by "):
+            return note.split("): ")[0] + ")" if "): " in note else note[:160]  # "AI review by m (2.1 s)"
+        if note.startswith("AI review unavailable"):
+            return note.rstrip(".")
+    if (existing.evidence_clip_url or "") != (payload.evidence.clipUrl or "") or             (existing.evidence_thumbnail_url or "") != (payload.evidence.thumbnailUrl or ""):
+        return "Evidence attached"
+    if added:
+        return added[0][:160]
+    return "Pipeline details updated"
+
+
 @router.post("/incidents", response_model=EventRecordResponse, status_code=201)
 def create_incident(
     payload: IncidentCreateRequest,
@@ -193,6 +209,7 @@ def create_incident(
             raise HTTPException(status_code=409, detail='Incident ID belongs to a different source or candidate')
         # Idempotent re-submission from the pipeline updates the draft fields
         # but never rolls back operator lifecycle state.
+        change_note = describe_resubmission(existing, payload)
         existing.category = payload.category
         existing.subcategory = payload.subcategory
         existing.event_type = payload.type
@@ -213,7 +230,7 @@ def create_incident(
         existing.detection_summary = payload.detectionSummary
         existing.updated_at = now
         record_incident_event(
-            session, existing, actor=actor, action="pipeline_update", note="Incident draft re-submitted"
+            session, existing, actor=actor, action="pipeline_update", note=change_note
         )
         session.commit()
         session.refresh(existing)

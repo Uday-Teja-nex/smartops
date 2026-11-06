@@ -126,3 +126,11 @@ def test_review_image_is_downscaled_clean_jpeg():
     frame = np.zeros((360, 640, 3), dtype=np.uint8)
     decoded = cv2.imdecode(np.frombuffer(base64.b64decode(review_jpeg(frame)), np.uint8), cv2.IMREAD_COLOR)
     assert decoded.shape[1] == REVIEW_WIDTH == 384 and decoded.shape[0] == 216
+
+
+def test_rule_incidents_record_the_drawn_zone():
+    from app.continuous import incident_payload
+    source = {'id': 's', 'buildingId': 'b', 'floor': 'G', 'zone': 'Convenience Store'}
+    payload = incident_payload(source, {'zoneId': 'Checkout queue', 'type': 'queue_build_up', 'trackIds': [1, 2],
+                                        'count': 2, 'durationSeconds': 8, 'confidence': .6}, 0)
+    assert payload['zone'] == 'Checkout queue'
