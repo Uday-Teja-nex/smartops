@@ -1,0 +1,147 @@
+{
+  "measuredAt": "2026-11-06T19:10+05:30",
+  "conditions": "stream processor and orchestrator stopped, model loaded alone, 8 distinct 320 px frames, production prompt and schema, num_ctx 2048 / num_batch 32 / num_thread 4",
+  "summary": {
+    "moondream:1.8b": {
+      "validated": "6/8",
+      "medianSeconds": 2.3499999999999996,
+      "scenes": [
+        "a grocery store"
+      ]
+    },
+    "granite3.2-vision:2b": {
+      "validated": "0/8",
+      "medianSeconds": null,
+      "scenes": []
+    },
+    "qwen2.5vl:3b": {
+      "validated": "8/8",
+      "medianSeconds": 20.299999999999997,
+      "scenes": [
+        "A busy grocery store with customers shopping in the front aisle.",
+        "A store with a checkout counter and shelves stocked with products. Three people ",
+        "People are shopping in a store, with a focus on the front aisle where three indi"
+      ],
+      "note": "All 8 runs printed ok:true (18.3-23.0 s); 4 run lines were too long for the background log and could not be re-parsed, so per-run detail is partial."
+    }
+  },
+  "decision": "Keep qwen2.5vl:3b. moondream:1.8b validated 6/8 with uninformative output (scene always \"a grocery store\", verdict always consistent); granite3.2-vision:2b validated 0/8. Neither meets the 95 % validated bar.",
+  "runs": {
+    "moondream:1.8b": [
+      {
+        "ok": true,
+        "seconds": 18.1,
+        "verdict": "consistent",
+        "scene": "a grocery store"
+      },
+      {
+        "ok": false,
+        "seconds": 4.8,
+        "error": "ValidationError: 5 validation errors for ModelOutput\nscene\n  Field required [type=missing, input_value={'content': '{\"scene\": \"a..._durat"
+      },
+      {
+        "ok": true,
+        "seconds": 2.4,
+        "verdict": "consistent",
+        "scene": "a grocery store"
+      },
+      {
+        "ok": true,
+        "seconds": 1.9,
+        "verdict": "consistent",
+        "scene": "a grocery store"
+      },
+      {
+        "ok": true,
+        "seconds": 2.1,
+        "verdict": "consistent",
+        "scene": "a grocery store"
+      },
+      {
+        "ok": true,
+        "seconds": 2.3,
+        "verdict": "consistent",
+        "scene": "a grocery store"
+      },
+      {
+        "ok": true,
+        "seconds": 2.4,
+        "verdict": "consistent",
+        "scene": "a grocery store"
+      },
+      {
+        "ok": false,
+        "seconds": 3.8,
+        "error": "EnrichmentFailure: model output failed validation"
+      }
+    ],
+    "granite3.2-vision:2b": [
+      {
+        "ok": false,
+        "seconds": 12.0,
+        "error": "EnrichmentFailure: model output failed validation"
+      },
+      {
+        "ok": false,
+        "seconds": 5.2,
+        "error": "EnrichmentFailure: model output failed validation"
+      },
+      {
+        "ok": false,
+        "seconds": 4.9,
+        "error": "EnrichmentFailure: model output failed validation"
+      },
+      {
+        "ok": false,
+        "seconds": 5.6,
+        "error": "EnrichmentFailure: model output failed validation"
+      },
+      {
+        "ok": false,
+        "seconds": 5.8,
+        "error": "EnrichmentFailure: model output failed validation"
+      },
+      {
+        "ok": false,
+        "seconds": 7.4,
+        "error": "EnrichmentFailure: model output failed validation"
+      },
+      {
+        "ok": false,
+        "seconds": 6.2,
+        "error": "EnrichmentFailure: model output failed validation"
+      },
+      {
+        "ok": false,
+        "seconds": 5.1,
+        "error": "EnrichmentFailure: model output failed validation"
+      }
+    ],
+    "qwen2.5vl:3b": [
+      {
+        "ok": true,
+        "seconds": 20.4,
+        "verdict": "consistent",
+        "scene": "A busy grocery store with customers shopping in the front aisle."
+      },
+      {
+        "ok": true,
+        "seconds": 20.6,
+        "verdict": "consistent",
+        "scene": "People are shopping in a store, with a focus on the front aisle where three individuals are gathered, possibly for a short period of time."
+      },
+      {
+        "ok": true,
+        "seconds": 18.3,
+        "verdict": "consistent",
+        "scene": "A busy grocery store with customers shopping in the front aisle."
+      },
+      {
+        "ok": true,
+        "seconds": 20.2,
+        "verdict": "consistent",
+        "scene": "A store with a checkout counter and shelves stocked with products. Three people are in the front aisle, walking and interacting."
+      }
+    ]
+  }
+}
