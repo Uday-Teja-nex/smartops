@@ -20,6 +20,7 @@ export type ReviewState =
   | { kind: "reviewed"; model: string; latencyMs: number | null; verdict: Verdict; scene: string | null;
       observations: string[]; actions: string[]; limitations: string[] }
   | { kind: "unavailable"; reason: string }
+  | { kind: "skipped"; reason: string }
   | { kind: "pending" }
   | { kind: "queued" }
   | { kind: "none" };
@@ -46,6 +47,8 @@ export const reviewStateOf = (event: EventRecord, now: number): ReviewState => {
   if (unavailable) {
     return { kind: "unavailable", reason: unavailable.replace(/^AI review unavailable:\s*/, "").replace(/\.$/, "") };
   }
+  const skipped = notes.find((note) => note.startsWith("AI review skipped"));
+  if (skipped) return { kind: "skipped", reason: skipped.replace(/^AI review skipped:\s*/, "").replace(/\.$/, "") };
   if (notes.some((note) => note.startsWith("AI review queued"))) return { kind: "queued" };
   const created = Date.parse(event.startTime);
   if (event.modelProvider === "rule-engine" && Number.isFinite(created) && now - created < PENDING_WINDOW_MS) {
@@ -114,6 +117,11 @@ export const AiReview = ({ event }: { event: EventRecord }) => {
         {state.kind === "unavailable" && (
           <p role="status" className="mt-2 rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
             AI review unavailable: {state.reason}. The rule result above stands on its own.
+          </p>
+        )}
+        {state.kind === "skipped" && (
+          <p role="status" className="mt-2 text-sm text-slate-400">
+            AI review skipped: {state.reason}. The rule result above stands on its own.
           </p>
         )}
         {state.kind === "queued" && (

@@ -102,3 +102,26 @@ def test_budget_is_shared_across_source_journals(tmp_path):
             assert process_one(box, 'camera', client, daily_limit=1, budget_path=budget)
             box.close()
     assert len(calls) == 1
+
+
+
+def test_per_camera_review_interval_skips_with_a_stated_reason(tmp_path):
+    box = Outbox(tmp_path / 'interval.db')
+    calls = []
+    def handler(request):
+        calls.append(request)
+        return httpx.Response(200, json={'scene': 's', 'verdict': 'unclear', 'observations': [],
+                                        'recommendedActions': [], 'limitations': [], 'model': 'm', 'latencyMs': 1})
+    with httpx.Client(base_url='http://test', transport=httpx.MockTransport(handler)) as client:
+        seed(box, 'first')
+        box.acknowledge(box[0])
+        assert process_one(box, 'camera', client, min_interval=120)
+        box.acknowledge(box[0])
+        seed(box, 'second')
+        box.acknowledge(box[0])
+        assert process_one(box, 'camera', client, min_interval=120)
+    assert len(calls) == 1
+    note = box[0]['reviewNotes'][-1]
+    assert note.startswith('AI review skipped: this camera was reviewed ') and 'every 120 s' in note
+    assert box.db.execute('SELECT used FROM review_budget').fetchone()[0] == 1
+    box.close()

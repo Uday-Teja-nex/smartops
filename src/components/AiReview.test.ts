@@ -44,3 +44,9 @@ it("keeps a queued review visible as queued, however long the backlog", () => {
   const event = { ...base, reviewNotes: ["AI review queued; measured rule incident remains active."] } as EventRecord;
   expect(reviewStateOf(event, created + 600_000).kind).toBe("queued");
 });
+
+it("shows a skipped review with its reason", () => {
+  const event = { ...base, reviewNotes: ["AI review skipped: this camera was reviewed 40 s ago (one review per camera every 120 s on this hardware)."] } as EventRecord;
+  expect(reviewStateOf(event, created + 600_000)).toEqual({ kind: "skipped",
+    reason: "this camera was reviewed 40 s ago (one review per camera every 120 s on this hardware)" });
+});

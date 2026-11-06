@@ -10,22 +10,20 @@ laptop, with evidence in `docs/verification/`.
 |---|---|---|
 | 0 Audit | every claim evidenced | Done (`docs/AUDIT.md`) |
 | 1 Honest and stable | 3 cold ups; no runtime mocks; offline state | Done (`cold-starts.json`, `phase1-*`) |
-| 2 Streaming pipeline | Tier 1 events ≤ 5 s on recorded footage; 30-min 3-stream soak | **Soak passed:** 30 min, 3 streams, 138 samples, min 2.73 fps (median 3.0), no stalls, no memory growth (`stream-soak-final-assessment.json`), after capping local AI review CPU (the baseline failed). Live push 0.3–3.0 s (E2E). Queue and crowding are proven on real footage; the other Tier 1 rules only on synthetic tracks (no footage yet). |
+| 2 Streaming pipeline | Tier 1 events ≤ 5 s on recorded footage; 30-min 3-stream soak | **Soak passed:** 30 min, 3 streams, 138 samples, min 2.73 fps (median 3.0), no stalls, no memory growth (`stream-soak-final-assessment.json`), after capping local AI review CPU (the baseline failed). Live push 0.3–3.0 s (E2E). Proven on real footage: queue and crowding (store), crowding (mall atrium, office lobby; after switching count rules to raw detections), restricted entry (office, campus). Unattended bag, blocked exit, loitering and after-hours: synthetic tracks only (no licensed footage exists; owner to record). |
 | 3 AI layer | ≥ 95 % validated, p95 ≤ 30 s, honest failures | **Passed with the hosted model** (11/11, p95 10.1 s). Local CPU only (320 px, short output, 4 threads): 11/11 validated, p50 22.1 s, **p95 34.2 s**; the slow tail is two near-simultaneous incidents queuing for one CPU model. Honest failures verified. |
-| 4 Product | tenancy + role tests; a notification on a real phone | **Partly.** Tenancy and role tests pass (API and E2E). Webhook verified end to end. Telegram on a real phone needs the owner's bot token. |
+| 4 Product | tenancy + role tests; a notification on a real phone | **Passed** pending the owner's confirmation of receipt: a real crowding incident was accepted by Telegram for the owner's private chat 2.2 s after the rule fired (`notifications-telegram.json`). Tenancy and role tests pass. Phone-camera onboarding is built but not yet tried with a real phone. |
 | 5 Demo-ready | Section C script 5× from reset, screenshots | **Passed** for everything automatable: 5/5 consecutive runs, 9/9 steps each (`e2e/five-runs/`); screenshots in `docs/presentation/screens/`. The phone-camera and Telegram steps need the owner. |
 
 ## Needs the owner
 
-1. Footage for each Tier 1 event and for the office and campus workspaces
-   (shot list: `docs/FOOTAGE_SHOT_LIST.md`; record provenance in
-   `sample-data/README.md`).
-2. A Telegram bot token and chat ID (Settings → Notifications → Add channel).
-3. A phone on the same Wi-Fi to try "Add phone camera". Allow inbound TCP
-   1935 when Windows Firewall asks.
-4. Optional: approval to pull a smaller local vision model, or OpenRouter
-   credit (the free tier allows 50 requests a day), to bring local review
-   p95 under 30 s.
+1. Record unattended-bag, blocked-exit and loitering clips
+   (`docs/FOOTAGE_SHOT_LIST.md`); no licensed stock footage exists.
+2. Try "Add phone camera" with a phone on the same Wi-Fi (allow TCP 1935).
+3. Confirm the Telegram messages arrived on your phone.
+4. Local-only AI review latency: smaller models were benchmarked and
+   rejected (`review-model-benchmark.json`); meeting p95 ≤ 30 s locally
+   needs a GPU host or hosted credit.
 
 ## Production rehearsal
 

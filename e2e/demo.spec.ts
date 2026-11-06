@@ -127,7 +127,7 @@ test("4. incident shows evidence and an AI review or its stated reason", async (
   await expect.poll(async () => clip.evaluate((v: HTMLVideoElement) => v.readyState), { timeout: 60_000 })
     .toBeGreaterThanOrEqual(2);
   // Within 90 s the review must have landed or say why; never an endless spinner.
-  const review = page.getByText(/AI review by|AI review unavailable|No AI review was recorded|Image consistent|Image casts doubt|Image unclear/);
+  const review = page.getByText(/AI review by|AI review unavailable|AI review skipped|No AI review was recorded|Image consistent|Image casts doubt|Image unclear/);
   await expect(review.first()).toBeVisible({ timeout: 90_000 });
   measurements.aiReview = await page.locator("section").filter({ hasText: "AI review" }).first().innerText();
   await shot(page, "04-incident-evidence-ai");

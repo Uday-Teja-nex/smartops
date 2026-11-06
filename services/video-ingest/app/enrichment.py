@@ -18,7 +18,14 @@ def reserve_budget(connection, day, daily_limit):
     return cursor.rowcount == 1
 
 
-def process_one(box, source_id, client, daily_limit=40, budget_path=None):
+def process_one(box, source_id, client, daily_limit=40, budget_path=None, min_interval=0.0):
+    """Review the oldest queued incident for this camera.
+
+    min_interval: on constrained hardware, review at most one incident per
+    camera per this many seconds; later ones are marked as skipped (with the
+    reason) instead of queueing behind the model indefinitely. 0 reviews all.
+    """
+    import time as _time
     # One source worker owns its jobs. Reserve globally across source processes
     # before network I/O, so failures/restarts cannot evade the daily call cap.
     box.db.execute('BEGIN IMMEDIATE')
@@ -30,6 +37,22 @@ def process_one(box, source_id, client, daily_limit=40, budget_path=None):
             box.db.commit()
             return False
         incident_id, raw, image = row
+        box.db.execute('CREATE TABLE IF NOT EXISTS review_last (source TEXT PRIMARY KEY, at REAL NOT NULL)')
+        last = box.db.execute('SELECT at FROM review_last WHERE source=?', (source_id,)).fetchone()
+        now_ts = _time.time()
+        if min_interval > 0 and last and now_ts - last[0] < min_interval:
+            box.db.execute('DELETE FROM review_jobs WHERE id=?', (incident_id,))
+            payload = json.loads(raw)
+            notes = [note for note in payload.get('reviewNotes', []) if not note.startswith('AI review')]
+            notes.append(f'AI review skipped: this camera was reviewed {int(now_ts - last[0])} s ago '
+                         f'(one review per camera every {int(min_interval)} s on this hardware).')
+            payload['reviewNotes'] = notes
+            box.db.execute('INSERT INTO pending VALUES (?,?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload',
+                           (incident_id, json.dumps(payload)))
+            box.db.commit()
+            return True
+        box.db.execute('INSERT INTO review_last VALUES (?,?) ON CONFLICT(source) DO UPDATE SET at=excluded.at',
+                       (source_id, now_ts))
         day = datetime.now(timezone.utc).date().isoformat()
         if budget_path:
             budget = sqlite3.connect(budget_path)
@@ -142,7 +165,8 @@ class IncidentEnrichment:
                 while not self.stop.is_set():
                     try:
                         process_one(box, self.source_id, client,
-                                    budget_path=os.getenv('SMARTOPS_REVIEW_BUDGET_PATH', '/data/review-budget.db'))
+                                    budget_path=os.getenv('SMARTOPS_REVIEW_BUDGET_PATH', '/data/review-budget.db'),
+                                    min_interval=float(os.getenv('SMARTOPS_REVIEW_MIN_INTERVAL_SECONDS', '0')))
                     except Exception as exc:
                         log('enrichment_worker_error', level='error', error=type(exc).__name__)
                     self.stop.wait(.5)
