@@ -1,6 +1,6 @@
 {
   "model": "qwen2.5vl:3b",
-  "measuredAt": "2026-11-06T02:13:03+0530",
+  "measuredAt": "2026-11-06T03:04:49+0530",
   "frameWidth": 640,
   "options": {
     "num_ctx": 2048,
@@ -10,27 +10,14 @@
   "runs": [
     {
       "run": 0,
-      "error": "ReadTimeout: timed out",
-      "elapsedSeconds": 120.108
+      "status": 500,
+      "error": "{\"error\":\"model requires more system memory (9.0 GiB) than is available (9.0 GiB)\"}",
+      "elapsedSeconds": 14.335
     },
     {
       "run": 1,
-      "status": 200,
-      "validated": true,
-      "result": {
-        "scene": "A busy grocery store with customers shopping and a cashier at the checkout counter.",
-        "verdict": "confirm",
-        "people_visible": 10
-      },
-      "timings": {
-        "total_duration": 2000904600,
-        "load_duration": 143269800,
-        "prompt_eval_count": 370,
-        "prompt_eval_duration": 71156400,
-        "eval_count": 35,
-        "eval_duration": 1615682100
-      },
-      "elapsedSeconds": 2.034
+      "error": "ReadTimeout: timed out",
+      "elapsedSeconds": 120.055
     },
     {
       "run": 2,
@@ -42,14 +29,14 @@
         "people_visible": 10
       },
       "timings": {
-        "total_duration": 1924397800,
-        "load_duration": 91997500,
+        "total_duration": 17879993500,
+        "load_duration": 246391200,
         "prompt_eval_count": 370,
-        "prompt_eval_duration": 53702800,
+        "prompt_eval_duration": 90622500,
         "eval_count": 35,
-        "eval_duration": 1602225800
+        "eval_duration": 1693845400
       },
-      "elapsedSeconds": 1.929
+      "elapsedSeconds": 17.924
     },
     {
       "run": 3,
@@ -61,14 +48,14 @@
         "people_visible": 10
       },
       "timings": {
-        "total_duration": 2025338300,
-        "load_duration": 97644800,
+        "total_duration": 2094188200,
+        "load_duration": 132588900,
         "prompt_eval_count": 370,
-        "prompt_eval_duration": 48073100,
+        "prompt_eval_duration": 51620200,
         "eval_count": 35,
-        "eval_duration": 1713019600
+        "eval_duration": 1664309400
       },
-      "elapsedSeconds": 2.027
+      "elapsedSeconds": 2.099
     },
     {
       "run": 4,
@@ -80,14 +67,14 @@
         "people_visible": 10
       },
       "timings": {
-        "total_duration": 1914194700,
-        "load_duration": 102468400,
+        "total_duration": 2060972300,
+        "load_duration": 138287200,
         "prompt_eval_count": 370,
-        "prompt_eval_duration": 48572400,
+        "prompt_eval_duration": 55274500,
         "eval_count": 35,
-        "eval_duration": 1588725200
+        "eval_duration": 1694346300
       },
-      "elapsedSeconds": 1.916
+      "elapsedSeconds": 2.066
     },
     {
       "run": 5,
@@ -99,20 +86,58 @@
         "people_visible": 10
       },
       "timings": {
-        "total_duration": 1900874700,
-        "load_duration": 102200300,
+        "total_duration": 2073611200,
+        "load_duration": 130786500,
         "prompt_eval_count": 370,
-        "prompt_eval_duration": 50962400,
+        "prompt_eval_duration": 59453600,
         "eval_count": 35,
-        "eval_duration": 1564198800
+        "eval_duration": 1698414600
       },
-      "elapsedSeconds": 1.904
+      "elapsedSeconds": 2.077
+    },
+    {
+      "run": 6,
+      "status": 200,
+      "validated": true,
+      "result": {
+        "scene": "A busy grocery store with customers shopping and a cashier at the checkout counter.",
+        "verdict": "confirm",
+        "people_visible": 10
+      },
+      "timings": {
+        "total_duration": 2046303400,
+        "load_duration": 145371500,
+        "prompt_eval_count": 370,
+        "prompt_eval_duration": 60470700,
+        "eval_count": 35,
+        "eval_duration": 1669783600
+      },
+      "elapsedSeconds": 2.049
+    },
+    {
+      "run": 7,
+      "status": 200,
+      "validated": true,
+      "result": {
+        "scene": "A busy grocery store with customers shopping and a cashier at the checkout counter.",
+        "verdict": "confirm",
+        "people_visible": 10
+      },
+      "timings": {
+        "total_duration": 2058011600,
+        "load_duration": 142965600,
+        "prompt_eval_count": 370,
+        "prompt_eval_duration": 71674200,
+        "eval_count": 35,
+        "eval_duration": 1661164800
+      },
+      "elapsedSeconds": 2.061
     }
   ],
-  "validatedRuns": 5,
-  "coldSeconds": 120.108,
-  "warmMedianSeconds": 1.929,
-  "warmMaxSeconds": 2.034,
+  "validatedRuns": 6,
+  "coldSeconds": 14.335,
+  "warmMedianSeconds": 2.0715,
+  "warmMaxSeconds": 17.924,
   "loadedModels": [
     {
       "name": "qwen2.5vl:3b",
