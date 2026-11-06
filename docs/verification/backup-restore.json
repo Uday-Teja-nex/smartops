@@ -1,0 +1,9 @@
+{
+  "measuredAt": "2026-11-06T06:42+05:30",
+  "before": {"incidents": 21, "evidenceItems": 40, "workspaces": 3},
+  "backup": {"seconds": 7, "sizeMB": 21.4, "contents": ["database.dump (pg_dump -Fc)", "evidence.tgz (MinIO volume, MinIO stopped)"]},
+  "afterReset": {"incidents": 0, "evidenceItems": 0, "evidenceObjectsRemoved": 40},
+  "restore": {"seconds": 29},
+  "afterRestore": {"incidents": 21, "evidenceItems": 40, "workspaces": 3},
+  "evidenceCheck": "clip evd-a1ec97d279 issued through /v1/evidence/{id}/url as admin@mall.demo: HTTP 200, 1,048,043 bytes, decodes with OpenCV (30 frames, 3.1 fps)"
+}
