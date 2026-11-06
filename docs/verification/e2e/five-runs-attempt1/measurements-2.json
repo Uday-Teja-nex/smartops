@@ -1,0 +1,9 @@
+{
+  "measuredAt": "2026-11-06T01:44:10.820Z",
+  "liveIncident": {
+    "id": "inc-rule-6010b752a48442b38690e9369c507209",
+    "summary": "3 people in Front aisle for 5s (crowding limit exceeded)",
+    "secondsFromTriggerFrameToVisible": 0.5
+  },
+  "aiReview": "AI review\nadvisory · never changes the rule decision\n\nImage consistent with rule\nnvidia/nemotron-3.5-super-vl:free\n· 2.7 s\n\nA convenience store interior shows several shoppers moving between shelves, with multiple people visible near a central red checkout counter area.\n\nAt least four people are visible in the store aisle and checkout area.\nShoppers are positioned near the red counters and along adjacent shelving.\nThe store has narrow aisles with stocked shelves on both sides.\nSUGGESTED CHECKS\nVerify store occupancy count at the time of the incident.\nReview video footage to assess duration and density of people in the front aisle.\nConfirm whether crowding limits were breached based on store policy.\n\nLimits: A still image cannot establish how long individuals remained in the area. A still image cannot confirm authorization, intent, or causal factors for any crowding."
+}

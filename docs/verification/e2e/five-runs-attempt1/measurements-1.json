@@ -1,0 +1,9 @@
+{
+  "measuredAt": "2026-11-06T01:41:28.978Z",
+  "liveIncident": {
+    "id": "inc-rule-a18325bd06b1439192a381d627537096",
+    "summary": "3 people queuing in Checkout queue for 8s",
+    "secondsFromTriggerFrameToVisible": 0.6
+  },
+  "aiReview": "AI review\nadvisory · never changes the rule decision\n\nImage casts doubt\nnvidia/nemotron-3.5-super-vl:free\n· 2.2 s\n\nA convenience store interior shows shoppers walking through aisles and a woman standing near a checkout display, with no visible queue forming at a register.\n\nA woman in a blue coat stands alone near a foreground display.\nNo line of three people is visible at any checkout counter.\nShelves are stocked and several individuals are browsing in the background.\nSUGGESTED CHECKS\nVerify the timestamp and camera ID match the reported event.\nReview video footage around the reported 8-second window for queue formation.\n\nLimits: A still image cannot show whether a queue built up over time. A still image cannot confirm how long any person waited or whether they were actively queuing."
+}

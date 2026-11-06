@@ -1,0 +1,9 @@
+{
+  "measuredAt": "2026-11-06T02:14:55.731Z",
+  "liveIncident": {
+    "id": "inc-rule-679cf0fe17844487b1b774ca597c3baf",
+    "summary": "3 people in Front aisle for 5s (crowding limit exceeded)",
+    "secondsFromTriggerFrameToVisible": 0.6
+  },
+  "aiReview": "AI review\nadvisory · never changes the rule decision\n\nAI review unavailable: model did not answer in time. The rule result above stands on its own."
+}

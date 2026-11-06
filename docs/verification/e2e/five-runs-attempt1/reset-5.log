@@ -1,0 +1,27 @@
+
+== Resetting demo data
+ Container smartops-stream-processor Stopping 
+ Container smartops-notifier Stopping 
+ Container smartops-stream-processor Stopped 
+ Container smartops-notifier Stopped 
+Demo reset: database reseeded, 6 evidence objects removed in 0.3s
+ Container smartops-stream-processor-run-aa98218910fb Creating 
+ Container smartops-stream-processor-run-aa98218910fb Created 
+ Container smartops-postgres Waiting 
+ Container smartops-redis Waiting 
+ Container smartops-minio Waiting 
+ Container smartops-postgres Healthy 
+ Container smartops-minio Healthy 
+ Container smartops-redis Healthy 
+ Container smartops-api Waiting 
+ Container smartops-detector Waiting 
+ Container smartops-api Waiting 
+ Container smartops-api Healthy 
+ Container smartops-api Healthy 
+ Container smartops-notifier Starting 
+ Container smartops-detector Healthy 
+ Container smartops-stream-processor Starting 
+ Container smartops-notifier Started 
+ Container smartops-stream-processor Started 
+  [ok]   Processor journals and realtime state cleared; pipeline restarted.
+Reset complete in 7 s. Everyone is signed out; sign in again at http://localhost:3000

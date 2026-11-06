@@ -1,0 +1,9 @@
+{
+  "measuredAt": "2026-11-06T02:02:50.496Z",
+  "liveIncident": {
+    "id": "inc-rule-f2f56aca6adc415cb339297931a58eae",
+    "summary": "2 people queuing in Checkout queue for 8s",
+    "secondsFromTriggerFrameToVisible": 3
+  },
+  "aiReview": "AI review\nadvisory · never changes the rule decision\n\nImage consistent with rule\nnvidia/nemotron-3.5-super-vl:free\n· 3.5 s\n\nA busy checkout area in a shop with multiple people standing at or near counters and aisles stocked with goods.\n\nAt least two individuals are standing near the checkout counters.\nSeveral other shoppers are visible throughout the aisle area.\nThe counters have red signage and appear to be checkout stations.\nSUGGESTED CHECKS\nVerify queue duration using video timestamps rather than a still frame.\nConfirm how many people are actively waiting versus being served.\nCheck whether the counters are staffed and operational.\n\nLimits: A still image cannot show how long people have been waiting or if the queue is growing. A still image cannot establish whether service is slow or if people are waiting for other reasons."
+}

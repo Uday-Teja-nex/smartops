@@ -1,0 +1,14 @@
+
+Running 9 tests using 1 worker
+
+  ok 1 e2e\demo.spec.ts:73:5 › 1. operator signs in and sees real KPIs for the mall (1.6s)
+  ok 2 e2e\demo.spec.ts:80:5 › 2. live camera tile plays real video (5.9s)
+  ok 3 e2e\demo.spec.ts:94:5 › 3. a rule incident is pushed to Live Ops without refresh (1.0m)
+  ok 4 e2e\demo.spec.ts:120:5 › 4. incident shows evidence and an AI review or its stated reason (7.7s)
+  ok 5 e2e\demo.spec.ts:136:5 › 5. lifecycle actions update the timeline and a second browser live (5.9s)
+  ok 6 e2e\demo.spec.ts:157:5 › 6. viewers are read-only in the UI and the API (2.6s)
+  ok 7 e2e\demo.spec.ts:169:5 › 7. another workspace sees none of the mall's data (2.3s)
+  ok 8 e2e\demo.spec.ts:180:5 › 8. reports show computed summaries with CSV and PDF export (3.0s)
+  ok 9 e2e\demo.spec.ts:191:5 › 9. stopping the detector shows a named degraded state that recovers (36.7s)
+
+  9 passed (2.2m)

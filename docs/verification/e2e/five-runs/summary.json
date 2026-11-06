@@ -1,0 +1,48 @@
+{
+  "gate": "Section C script, 5 consecutive runs, each from demo.ps1 reset",
+  "result": "5/5 passed, 9/9 steps each",
+  "runSeconds": [
+    88,
+    149,
+    136,
+    206,
+    158
+  ],
+  "runs": [
+    {
+      "run": 1,
+      "secondsFromTriggerFrameToVisible": 1.1,
+      "summary": "3 people in Front aisle for 5s (crowding limit exceeded)",
+      "aiModel": "nvidia/nemotron-3.5-super-vl:free"
+    },
+    {
+      "run": 2,
+      "secondsFromTriggerFrameToVisible": 3,
+      "summary": "2 people queuing in Checkout queue for 8s",
+      "aiModel": "nvidia/nemotron-3.5-super-vl:free"
+    },
+    {
+      "run": 3,
+      "secondsFromTriggerFrameToVisible": 0.3,
+      "summary": "3 people queuing in Checkout queue for 8s",
+      "aiModel": "nvidia/nemotron-3.5-super-vl:free"
+    },
+    {
+      "run": 4,
+      "secondsFromTriggerFrameToVisible": 1.2,
+      "summary": "3 people queuing in Checkout queue for 8s",
+      "aiModel": null
+    },
+    {
+      "run": 5,
+      "secondsFromTriggerFrameToVisible": 0.6,
+      "summary": "3 people in Front aisle for 5s (crowding limit exceeded)",
+      "aiModel": null
+    }
+  ],
+  "notCovered": [
+    "phone camera (step C5) needs a real phone",
+    "Telegram delivery (C7) needs the owner bot token"
+  ],
+  "earlierAttempt": "five-runs-attempt1: run 1 failed step 9 (banner not seen within 30 s; cause not captured), runs 2-5 passed; step 9 then gained an API-side check"
+}

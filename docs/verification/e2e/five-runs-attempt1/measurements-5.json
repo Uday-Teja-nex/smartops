@@ -1,0 +1,9 @@
+{
+  "measuredAt": "2026-11-06T01:55:11.622Z",
+  "liveIncident": {
+    "id": "inc-rule-969692a8b2a845c999dd36b18c6f278c",
+    "summary": "3 people queuing in Checkout queue for 8s",
+    "secondsFromTriggerFrameToVisible": 1.3
+  },
+  "aiReview": "AI review\nadvisory · never changes the rule decision\n\nImage consistent with rule\nnvidia/nemotron-3.5-super-vl:free\n· 5.0 s\n\nA high-angle view of a small shop shows several people browsing aisles and a few standing near a central checkout display with red signage.\n\nMultiple shoppers are visible throughout the store.\nA checkout counter area with red displays is present.\nPeople are standing near the counter area.\nSUGGESTED CHECKS\nReview video footage to verify queue duration.\nCheck timestamp on recorded frames.\nConfirm number of people actively waiting versus browsing.\n\nLimits: A still image cannot show how long people have been waiting. A still image cannot determine if individuals are actively queuing or just browsing."
+}

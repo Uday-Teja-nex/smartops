@@ -1,0 +1,406 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\UDAY\\Desktop\\Projetcs\\scope\\me\\playwright.config.ts",
+    "rootDir": "C:/Users/UDAY/Desktop/Projetcs/scope/me/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "docs/verification/e2e/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/UDAY/Desktop/Projetcs/scope/me/docs/verification/e2e/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/UDAY/Desktop/Projetcs/scope/me/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 360000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "demo.spec.ts",
+      "file": "demo.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "1. operator signs in and sees real KPIs for the mall",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2493,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T02:12:26.953Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "05384557491ebd602dd7-cc0113186a9db9ed6672",
+          "file": "demo.spec.ts",
+          "line": 73,
+          "column": 5
+        },
+        {
+          "title": "2. live camera tile plays real video",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7136,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "Expect \"poll toBeGreaterThanOrEqual\"",
+                      "duration": 3240
+                    }
+                  ],
+                  "startTime": "2026-11-06T02:12:29.924Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "05384557491ebd602dd7-dcc8a067bd2a41e6c773",
+          "file": "demo.spec.ts",
+          "line": 80,
+          "column": 5
+        },
+        {
+          "title": "3. a rule incident is pushed to Live Ops without refresh",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15713,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T02:12:37.133Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "05384557491ebd602dd7-ec057bf06d174dd093e6",
+          "file": "demo.spec.ts",
+          "line": 94,
+          "column": 5
+        },
+        {
+          "title": "4. incident shows evidence and an AI review or its stated reason",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 38193,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "Expect \"poll toBeGreaterThan\"",
+                      "duration": 5150
+                    },
+                    {
+                      "title": "Expect \"poll toBeGreaterThanOrEqual\"",
+                      "duration": 191
+                    }
+                  ],
+                  "startTime": "2026-11-06T02:12:52.925Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "05384557491ebd602dd7-d36d10f971c879467cd7",
+          "file": "demo.spec.ts",
+          "line": 120,
+          "column": 5
+        },
+        {
+          "title": "5. lifecycle actions update the timeline and a second browser live",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8247,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T02:13:31.222Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "05384557491ebd602dd7-9e995800d0c3288579a4",
+          "file": "demo.spec.ts",
+          "line": 136,
+          "column": 5
+        },
+        {
+          "title": "6. viewers are read-only in the UI and the API",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2611,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T02:13:39.740Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "05384557491ebd602dd7-ca4bca298c2dbe2c7222",
+          "file": "demo.spec.ts",
+          "line": 157,
+          "column": 5
+        },
+        {
+          "title": "7. another workspace sees none of the mall's data",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2748,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T02:13:43.398Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "05384557491ebd602dd7-bc9ca07a367c82bbc82e",
+          "file": "demo.spec.ts",
+          "line": 169,
+          "column": 5
+        },
+        {
+          "title": "8. reports show computed summaries with CSV and PDF export",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3268,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T02:13:46.616Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "05384557491ebd602dd7-2d407cf0ff10e20085b5",
+          "file": "demo.spec.ts",
+          "line": 180,
+          "column": 5
+        },
+        {
+          "title": "9. stopping the detector shows a named degraded state that recovers",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 62838,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "Expect \"poll toBe\"",
+                      "duration": 4098
+                    }
+                  ],
+                  "startTime": "2026-11-06T02:13:50.854Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "05384557491ebd602dd7-18ef89a4cd7758210b5f",
+          "file": "demo.spec.ts",
+          "line": 191,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-06T02:12:26.114Z",
+    "duration": 154652.422,
+    "expected": 9,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

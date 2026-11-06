@@ -1,0 +1,9 @@
+{
+  "measuredAt": "2026-11-06T01:48:00.127Z",
+  "liveIncident": {
+    "id": "inc-rule-429c7de91aac408db37ed9757d9ee6ee",
+    "summary": "3 people queuing in Checkout queue for 8s",
+    "secondsFromTriggerFrameToVisible": 0.4
+  },
+  "aiReview": "AI review\nadvisory · never changes the rule decision\n\nImage unclear\nnvidia/nemotron-3.5-super-vl:free\n· 3.0 s\n\nA busy convenience store aisle with several shoppers moving near checkout counters and shelves stocked with products. There is no clear queue formation visible in the frame. The image captures a still\n\nShoppers are present near checkout areas.\nOrange checkout displays are visible.\nShelves are stocked with merchandise.\nSUGGESTED CHECKS\nReview video footage to confirm queue duration.\nCheck camera angle and timestamp alignment.\nVerify person count and queue formation over time.\n\nLimits: A still image cannot establish duration or temporal behavior. Intent, authorization, or cause cannot be determined from a static frame."
+}
