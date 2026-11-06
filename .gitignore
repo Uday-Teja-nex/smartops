@@ -63,3 +63,8 @@ services/api/test-smartops*.db
 
 # Browser diagnostics can include authenticated URLs; save only curated evidence.
 /.playwright-cli/
+
+# Playwright failure traces (large, regenerated per run)
+/docs/verification/e2e/artifacts/
+/test-results/
+/playwright-report/

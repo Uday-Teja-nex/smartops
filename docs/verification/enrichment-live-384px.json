@@ -1,0 +1,155 @@
+{
+  "summary": {
+    "measuredAt": "2026-11-06T06:58:43",
+    "workspaceUser": "admin@mall.demo",
+    "minutes": 15.0,
+    "incidents": 11,
+    "reviewed": 11,
+    "validated": 11,
+    "validatedShare": 1.0,
+    "neverReviewed": [],
+    "secondsIncidentToReview": {
+      "p50": 8.1,
+      "p95": 10.1,
+      "max": 10.1
+    },
+    "modelLatencyMs": {
+      "median": 2255
+    },
+    "unavailableReasons": []
+  },
+  "rows": [
+    {
+      "id": "inc-rule-5f64e4c00d894c1e85a96b18a4a590ee",
+      "type": "crowding",
+      "firstSeen": 1793927626.9427688,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by nvidia/nemotron-3.5-super-vl:free (2.1 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793927634.9855368,
+      "secondsFromIncident": 8.0,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "modelLatencyMs": 2082
+    },
+    {
+      "id": "inc-rule-853ec8640c36417a9a81058cd9a4732d",
+      "type": "queue_build_up",
+      "firstSeen": 1793927729.5603495,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by nvidia/nemotron-3.5-super-vl:free (2.4 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793927739.6190476,
+      "secondsFromIncident": 10.1,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "modelLatencyMs": 2360
+    },
+    {
+      "id": "inc-rule-17e4e265675e4d1394eb580da5441023",
+      "type": "crowding",
+      "firstSeen": 1793927848.2568307,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by nvidia/nemotron-3.5-super-vl:free (2.0 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793927856.339648,
+      "secondsFromIncident": 8.1,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "modelLatencyMs": 2001
+    },
+    {
+      "id": "inc-rule-13e516e83bcd4c348638eaff945e6781",
+      "type": "queue_build_up",
+      "firstSeen": 1793927854.3215382,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by nvidia/nemotron-3.5-super-vl:free (3.5 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793927864.4119797,
+      "secondsFromIncident": 10.1,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "modelLatencyMs": 3527
+    },
+    {
+      "id": "inc-rule-a58494e7cb25438797bbfa1d4dcda7bd",
+      "type": "queue_build_up",
+      "firstSeen": 1793927991.394318,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by nvidia/nemotron-3.5-super-vl:free (2.4 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793927999.467991,
+      "secondsFromIncident": 8.1,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "modelLatencyMs": 2427
+    },
+    {
+      "id": "inc-rule-389636f13d6a4615b8d8dca5762f2210",
+      "type": "crowding",
+      "firstSeen": 1793928070.0438218,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by nvidia/nemotron-3.5-super-vl:free (2.1 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793928078.0963268,
+      "secondsFromIncident": 8.1,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "modelLatencyMs": 2123
+    },
+    {
+      "id": "inc-rule-fe3feaac56ef4df682a515474e90bfec",
+      "type": "queue_build_up",
+      "firstSeen": 1793928174.6281738,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by nvidia/nemotron-3.5-super-vl:free (2.3 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793928182.6685312,
+      "secondsFromIncident": 8.0,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "modelLatencyMs": 2290
+    },
+    {
+      "id": "inc-rule-21fcec44542c4e4db5064f2a88a60a41",
+      "type": "crowding",
+      "firstSeen": 1793928291.7490163,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by nvidia/nemotron-3.5-super-vl:free (2.1 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793928299.871415,
+      "secondsFromIncident": 8.1,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "modelLatencyMs": 2130
+    },
+    {
+      "id": "inc-rule-0f4900b30c1748208bafbb5908c53deb",
+      "type": "queue_build_up",
+      "firstSeen": 1793928297.8452694,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by nvidia/nemotron-3.5-super-vl:free (2.2 s): image does not show enough to judge. Rule decision unchanged.",
+      "reviewSeen": 1793928305.9646764,
+      "secondsFromIncident": 8.1,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "modelLatencyMs": 2181
+    },
+    {
+      "id": "inc-rule-daccd1c40e714fc2b7189068a85d4f60",
+      "type": "queue_build_up",
+      "firstSeen": 1793928434.9166763,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by nvidia/nemotron-3.5-super-vl:free (2.7 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793928442.9772441,
+      "secondsFromIncident": 8.1,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "modelLatencyMs": 2685
+    },
+    {
+      "id": "inc-rule-73c5b62076fb43da83471e4e97665d25",
+      "type": "crowding",
+      "firstSeen": 1793928511.3604312,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by nvidia/nemotron-3.5-super-vl:free (2.3 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1793928519.4044106,
+      "secondsFromIncident": 8.0,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "modelLatencyMs": 2255
+    }
+  ]
+}

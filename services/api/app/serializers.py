@@ -145,6 +145,7 @@ def _incident_fields(model: IncidentModel) -> dict:
         "resolvedTime": model.resolved_time,
         "slaDueAt": model.sla_due_at,
         "escalatedAt": model.escalated_at,
+        "updatedAt": model.updated_at,
         "shortSummary": model.short_summary,
         "detailedNarrative": model.detailed_narrative,
         "recommendedActions": model.recommended_actions,

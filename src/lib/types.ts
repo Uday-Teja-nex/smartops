@@ -109,6 +109,7 @@ export type EventRecord = {
   reviewNotes?: string[];
   evidence: Evidence;
   assignedTo: string | null;
+  updatedAt?: string | null;
   modelProvider?: string;
   modelVersion?: string;
   detectionSummary?: Record<string, unknown>;

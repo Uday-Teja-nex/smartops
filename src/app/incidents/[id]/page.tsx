@@ -54,7 +54,8 @@ export default function IncidentDetailPage() {
   const incidentId = params.id;
   const { sources, events } = useSmartOps();
   const liveIncident = events.find((event) => event.id === incidentId);
-  const evidenceRevision = JSON.stringify([liveIncident?.evidence, liveIncident?.reviewNotes]);
+  const evidenceRevision = JSON.stringify([liveIncident?.evidence, liveIncident?.reviewNotes, liveIncident?.status,
+    liveIncident?.assignedTo, liveIncident?.updatedAt]);
   const { hasRole, user } = useAuth();
   const canAct = hasRole("operator");
 

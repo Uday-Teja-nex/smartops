@@ -234,6 +234,7 @@ class IncidentCommentCreateRequest(BaseModel):
 
 class EventRecordResponse(BaseModel):
     id: str
+    updatedAt: datetime | None = None
     category: str
     subcategory: str | None = None
     type: str

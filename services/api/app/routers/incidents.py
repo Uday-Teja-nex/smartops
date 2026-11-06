@@ -424,6 +424,10 @@ def add_incident_comment(
     )
     session.add(comment)
     record_incident_event(session, incident, actor=actor, action="comment", note=payload.body[:160])
+    incident.updated_at = comment.created_at
     session.commit()
     session.refresh(comment)
+    session.refresh(incident)
+    # Other open browsers re-read the incident (and its timeline) on this event.
+    publish_event("incident", serialize_incident(incident).model_dump(mode="json"))
     return serialize_incident_comment(comment)

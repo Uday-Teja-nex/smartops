@@ -329,3 +329,19 @@ def test_invalid_status_rejected(client, pipeline_source, service_headers, opera
         json={"status": "made_up_status"},
     )
     assert response.status_code == 422
+
+
+def test_comments_push_a_live_update_to_other_browsers(client, pipeline_source, service_headers,
+                                                       operator_headers, monkeypatch):
+    from app.routers import incidents as router
+    created = client.post('/v1/incidents', headers=service_headers,
+                          json=_incident_payload(pipeline_source['id'], id='inc-comment-live',
+                                                 candidateId='cand-comment-live')).json()
+    published = []
+    monkeypatch.setattr(router, 'publish_event', lambda kind, data: published.append((kind, data)))
+    response = client.post('/v1/incidents/inc-comment-live/comments', headers=operator_headers,
+                           json={'body': 'Checked on camera'})
+    assert response.status_code == 201
+    assert [kind for kind, _ in published] == ['incident']
+    assert published[0][1]['id'] == 'inc-comment-live'
+    assert published[0][1]['updatedAt'] > created['updatedAt']

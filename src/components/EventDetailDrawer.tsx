@@ -58,7 +58,8 @@ export const EventDetailDrawer = ({
   }, [open]);
 
   const eventId = event?.id;
-  const evidenceRevision = JSON.stringify([event?.evidence, event?.reviewNotes]);
+  const evidenceRevision = JSON.stringify([event?.evidence, event?.reviewNotes, event?.status,
+    event?.assignedTo, event?.updatedAt]);
 
   // Only show evidence attached to this incident.
   useEffect(() => {
