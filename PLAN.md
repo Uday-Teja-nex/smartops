@@ -10,7 +10,7 @@ laptop, with evidence in `docs/verification/`.
 |---|---|---|
 | 0 Audit | every claim evidenced | Done (`docs/AUDIT.md`) |
 | 1 Honest and stable | 3 cold ups; no runtime mocks; offline state | Done (`cold-starts.json`, `phase1-*`) |
-| 2 Streaming pipeline | Tier 1 events ≤ 5 s on recorded footage; 30-min 3-stream soak | **Partly.** Live push 0.3–3.0 s (E2E). Queue and crowding are proven on real footage; the other Tier 1 rules only on synthetic tracks (no footage). Soak: the baseline failed (dips to 1.15 fps during local AI reviews); the re-run with capped review CPU is in `stream-soak-final-assessment.json`. |
+| 2 Streaming pipeline | Tier 1 events ≤ 5 s on recorded footage; 30-min 3-stream soak | **Soak passed:** 30 min, 3 streams, 138 samples, min 2.73 fps (median 3.0), no stalls, no memory growth (`stream-soak-final-assessment.json`), after capping local AI review CPU (the baseline failed). Live push 0.3–3.0 s (E2E). Queue and crowding are proven on real footage; the other Tier 1 rules only on synthetic tracks (no footage yet). |
 | 3 AI layer | ≥ 95 % validated, p95 ≤ 30 s, honest failures | **Passed with the hosted model** (11/11, p95 10.1 s). Local CPU only: 10/10 validated but p95 38.3 s. Honest failures verified. |
 | 4 Product | tenancy + role tests; a notification on a real phone | **Partly.** Tenancy and role tests pass (API and E2E). Webhook verified end to end. Telegram on a real phone needs the owner's bot token. |
 | 5 Demo-ready | Section C script 5× from reset, screenshots | **Passed** for everything automatable: 5/5 consecutive runs, 9/9 steps each (`e2e/five-runs/`); screenshots in `docs/presentation/screens/`. The phone-camera and Telegram steps need the owner. |

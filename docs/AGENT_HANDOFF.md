@@ -30,7 +30,7 @@ README. The client demo is `docs/presentation/PRESENTATION_SCRIPT.md`.
 | Degraded states | detector and stream outages named with their impact; automatic recovery | `degraded-states.json`, E2E step 9 |
 | Backup/restore | exact round trip; a restored clip downloads and decodes | `backup-restore.json` |
 | Cold start, 3× | done in Phase 1 | `cold-starts.json` |
-| 30-min 3-stream soak | see `stream-soak-final-assessment.json` | |
+| 30-min 3-stream soak | **Passed:** min 2.73 fps, median 3.0, 0 failures, no memory growth. The baseline failed (local AI reviews starved the detector); fixed by capping review threads. | `stream-soak-final-assessment.json`, `stream-soak-baseline-assessment.json` |
 
 Tests (2026-11-06): API 102, video-ingest 47, orchestrator 46, detector 10,
 stream-publisher 3, frontend 23. Lint and typecheck are clean. The

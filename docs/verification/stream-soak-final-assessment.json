@@ -1,0 +1,78 @@
+{
+  "passed": true,
+  "minutes": 30.0,
+  "samplesAfterWarmup": 138,
+  "fps": {
+    "src-4a57a0c0b9": {
+      "min": 2.99,
+      "median": 3.0
+    },
+    "src-9f3769a88b": {
+      "min": 2.99,
+      "median": 3.0
+    },
+    "src-01bc773755": {
+      "min": 2.73,
+      "median": 3.0
+    }
+  },
+  "memory": {
+    "smartops-api": {
+      "firstMiB": 93.7,
+      "lastMiB": 93.3,
+      "growthMiB": -0.4
+    },
+    "smartops-detector": {
+      "firstMiB": 336.1,
+      "lastMiB": 324.9,
+      "growthMiB": -11.2
+    },
+    "smartops-frontend": {
+      "firstMiB": 74.3,
+      "lastMiB": 73.5,
+      "growthMiB": -0.8
+    },
+    "smartops-mediamtx": {
+      "firstMiB": 33.6,
+      "lastMiB": 33.5,
+      "growthMiB": -0.1
+    },
+    "smartops-minio": {
+      "firstMiB": 138.5,
+      "lastMiB": 140.5,
+      "growthMiB": 2.0
+    },
+    "smartops-notifier": {
+      "firstMiB": 56.3,
+      "lastMiB": 56.3,
+      "growthMiB": 0.0
+    },
+    "smartops-orchestrator": {
+      "firstMiB": 70.2,
+      "lastMiB": 68.5,
+      "growthMiB": -1.8
+    },
+    "smartops-postgres": {
+      "firstMiB": 43.7,
+      "lastMiB": 44.2,
+      "growthMiB": 0.4
+    },
+    "smartops-redis": {
+      "firstMiB": 7.9,
+      "lastMiB": 7.9,
+      "growthMiB": -0.0
+    },
+    "smartops-stream-processor": {
+      "firstMiB": 481.1,
+      "lastMiB": 479.0,
+      "growthMiB": -2.1
+    },
+    "smartops-stream-publisher": {
+      "firstMiB": 69.3,
+      "lastMiB": 69.3,
+      "growthMiB": -0.0
+    }
+  },
+  "failures": [],
+  "failureCount": 0
+}
