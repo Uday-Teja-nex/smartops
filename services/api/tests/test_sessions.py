@@ -130,3 +130,40 @@ def test_concurrent_refresh_from_two_tabs_is_not_treated_as_theft(browser):
     assert second.status_code == 200
     token = second.json()['token']
     assert browser.get('/v1/auth/me', headers={'Authorization': 'Bearer ' + token}).status_code == 200
+
+
+def test_authentication_releases_its_db_session_before_the_handler(client, viewer_headers, monkeypatch):
+    """A yield dependency would hold its connection until a streaming (SSE)
+    response ends, so a few open browsers could exhaust the pool."""
+    import inspect
+
+    from app import auth
+    from app.db import SessionLocal
+
+    assert not inspect.isgeneratorfunction(auth.get_current_principal)
+    events = []
+
+    def tracking_session():
+        session = SessionLocal()
+        real_close = session.close
+
+        def close():
+            events.append("closed")
+            real_close()
+        session.close = close
+        events.append("opened")
+        return session
+
+    real_resolve = auth._resolve_principal
+
+    def resolve(*args):
+        principal = real_resolve(*args)
+        events.append("resolved")
+        return principal
+
+    monkeypatch.setattr(auth, "SessionLocal", tracking_session)
+    monkeypatch.setattr(auth, "_resolve_principal", resolve)
+    assert client.get("/v1/auth/me", headers=viewer_headers).status_code == 200
+    # Opened, used, and closed as authentication returned: nothing is left
+    # for the handler or the response body to hold on to.
+    assert events == ["opened", "resolved", "closed"]

@@ -24,7 +24,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
-from app.db import get_db_session
+from app.db import SessionLocal, get_db_session
 from app.models import UserModel
 
 settings = get_settings()
@@ -106,8 +106,17 @@ def get_current_principal(
     authorization: str | None = Header(default=None),
     x_internal_token: str | None = Header(default=None),
     ticket: str | None = Query(default=None),
-    session: Session = Depends(get_db_session),
 ) -> Principal:
+    # Authentication uses its own short session, closed before the handler
+    # runs. A yield dependency would stay open until a streaming response
+    # ends (FastAPI >= 0.118), so every open SSE stream would pin a pooled
+    # connection and a few browsers could exhaust the pool.
+    with SessionLocal() as session:
+        return _resolve_principal(request, authorization, x_internal_token, ticket, session)
+
+
+def _resolve_principal(request: Request, authorization: str | None, x_internal_token: str | None,
+                       ticket: str | None, session: Session) -> Principal:
     if x_internal_token:
         if x_internal_token != settings.internal_token:
             raise HTTPException(status_code=401, detail="Invalid internal token")
