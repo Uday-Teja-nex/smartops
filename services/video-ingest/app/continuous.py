@@ -20,7 +20,7 @@ from app.adapters.rtsp import StreamReader
 from app.log import log
 from app.rules import Observation, RuleEngine, ZoneRule
 from app.tracking import Tracker
-from app.ring import FrameRing
+from app.ring import FrameRing, RingSampler
 from app.stream_evidence import upload_evidence
 from app.outbox import Outbox
 from app.frame_health import FrameHealth
@@ -100,6 +100,14 @@ def review_jpeg(image):
     return base64.b64encode(encoded).decode('ascii')
 
 
+def encode_ring_frame(image):
+    """Ring frames match what the detector sees: at most 640 px wide, JPEG q80."""
+    if image.shape[1] > 640:
+        image = cv2.resize(image, (640, round(image.shape[0] * 640 / image.shape[1])))
+    ok, encoded = cv2.imencode('.jpg', image, [cv2.IMWRITE_JPEG_QUALITY, 80])
+    return encoded.tobytes() if ok else None
+
+
 def load_rules(source):
     rules = []
     for zone in source.get('detectionConfig', {}).get('zones', []):
@@ -124,9 +132,11 @@ def run(source, client, stop, *, detector_url, fps=3):
     enrichment = (IncidentEnrichment(outbox_path, source['id']).start()
                   if os.getenv('SMARTOPS_STREAM_ENRICHMENT', 'false').lower() == 'true' else None)
     ring = FrameRing()
+    # The sampler fills the ring at the stream rate on its own thread, so clips
+    # stay continuous however long a shared detector takes on a given frame.
+    sampler = RingSampler(reader, ring, encode_ring_frame, fps=fps).start()
     evidence_waiting = []
     evidence_running = []
-    stream_started_at = None  # capture time of this worker's first processed frame
     evidence_pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix='evidence')
     previous_sequence = 0
     last_health = time.monotonic() - 5
@@ -144,7 +154,7 @@ def run(source, client, stop, *, detector_url, fps=3):
             if enrichment and not enrichment.thread.is_alive():
                 raise RuntimeError('Incident enrichment stopped unexpectedly')
             tick = time.monotonic()
-            frame = reader.latest()
+            frame = sampler.latest()
             fresh = frame is not None and tick - frame.monotonic_at < 1.5
             quality = frame_health.update(tick, frame.image if fresh else None)
             try:
@@ -237,11 +247,8 @@ def run(source, client, stop, *, detector_url, fps=3):
                     response.raise_for_status()
                     detector_ms = response.json().get('inferenceMs')
                     processing_lag_ms = (time.monotonic() - frame.monotonic_at) * 1000
-                    # Discard slow detector output instead of treating it as live,
-                    # but keep the frame (without boxes) so evidence clips stay
-                    # continuous when the detector falls behind.
-                    if time.monotonic() - frame.monotonic_at >= 1.5:
-                        ring.append(frame.captured_at, jpeg)
+                    # Discard slow detector output instead of treating it as live;
+                    # the sampler already put the plain frame in the ring.
                     if time.monotonic() - frame.monotonic_at < 1.5:
                         processed_frames += 1
                         annotated = annotate(image, response.json()['detections'])
@@ -249,8 +256,7 @@ def run(source, client, stop, *, detector_url, fps=3):
                         if not ok:
                             raise RuntimeError('Evidence annotation encoding failed')
                         evidence_jpeg = evidence_encoded.tobytes()
-                        ring.append(frame.captured_at, evidence_jpeg)
-                        stream_started_at = stream_started_at or frame.captured_at
+                        ring.replace(frame.captured_at, evidence_jpeg)
                         detections = response.json()['detections']
                         observations = tracker.update(detections, frame.monotonic_at)
                         counted = raw_observations(detections)
@@ -260,7 +266,7 @@ def run(source, client, stop, *, detector_url, fps=3):
                             if len(evidence_waiting) + len(evidence_running) < 20:
                                 # The AI reviews the clean frame; burned-in boxes and scores confuse it.
                                 pending.track_evidence(payload, review_jpeg(image) if enrichment else None)
-                                pre_seconds = min(5.0, frame.captured_at - stream_started_at)
+                                pre_seconds = min(5.0, frame.captured_at - (sampler.first_at or frame.captured_at))
                                 if pre_seconds < 4.25:
                                     payload['reviewNotes'].append(
                                         f'Evidence clip starts {max(pre_seconds, 0):.1f} s before the event '
@@ -290,6 +296,7 @@ def run(source, client, stop, *, detector_url, fps=3):
         if enrichment:
             enrichment.close()
         delivery.close()
+        sampler.close()
         reader.close()
         evidence_pool.shutdown(wait=True, cancel_futures=True)
         for future, payload in evidence_running:
