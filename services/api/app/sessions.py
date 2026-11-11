@@ -21,6 +21,9 @@ from app.models import AuthSessionModel, UserModel
 
 REFRESH_COOKIE = "smartops_refresh"
 REFRESH_COOKIE_PATH = "/v1/auth"
+# A rotated refresh token is still accepted this long after its rotation, for
+# concurrent refreshes from tabs sharing one cookie; later replay revokes.
+REUSE_GRACE = timedelta(seconds=30)
 
 
 def _digest(token: str) -> str:
@@ -61,11 +64,17 @@ def rotate_session(session: Session, token: str) -> tuple[AuthSessionModel, User
         replayed = session.scalars(
             select(AuthSessionModel).where(AuthSessionModel.previous_refresh_hash == digest)
         ).first()
-        if replayed is not None and replayed.revoked_at is None:
+        if replayed is None or replayed.revoked_at is not None:
+            raise RefreshRejected("Session expired. Sign in again.")
+        if now - _aware(replayed.last_used_at) <= REUSE_GRACE:
+            # Two tabs of one browser refreshing together: the second sends the
+            # token the first just rotated. Treat it as the same refresh.
+            record = replayed
+        else:
             replayed.revoked_at = now
             replayed.revoked_reason = "refresh_reuse"
             session.commit()
-        raise RefreshRejected("Session expired. Sign in again.")
+            raise RefreshRejected("Session expired. Sign in again.")
     if record.revoked_at is not None or _aware(record.expires_at) <= now:
         raise RefreshRejected("Session expired. Sign in again.")
     user = session.get(UserModel, record.user_id)
@@ -75,9 +84,12 @@ def rotate_session(session: Session, token: str) -> tuple[AuthSessionModel, User
         session.commit()
         raise RefreshRejected("Account unavailable")
     new_token = secrets.token_urlsafe(32)
-    record.previous_refresh_hash = digest
+    if record.refresh_hash == digest:
+        # Normal rotation: remember the token being replaced. (A grace-window
+        # reuse keeps the earlier previous hash, so the window cannot slide.)
+        record.previous_refresh_hash = digest
+        record.last_used_at = now
     record.refresh_hash = _digest(new_token)
-    record.last_used_at = now
     session.flush()
     return record, user, new_token
 

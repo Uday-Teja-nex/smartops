@@ -1,0 +1,70 @@
+
+Running 9 tests using 1 worker
+
+  ok 1 e2e\demo.spec.ts:73:5 › 1. operator signs in and sees real KPIs for the mall (2.0s)
+  ok 2 e2e\demo.spec.ts:80:5 › 2. live camera tile plays real video (5.6s)
+  ok 3 e2e\demo.spec.ts:94:5 › 3. a rule incident is pushed to Live Ops without refresh (33.3s)
+  ok 4 e2e\demo.spec.ts:120:5 › 4. incident shows evidence and an AI review or its stated reason (7.1s)
+  x  5 e2e\demo.spec.ts:136:5 › 5. lifecycle actions update the timeline and a second browser live (6.0m)
+  -  6 e2e\demo.spec.ts:157:5 › 6. viewers are read-only in the UI and the API
+  -  7 e2e\demo.spec.ts:169:5 › 7. another workspace sees none of the mall's data
+  -  8 e2e\demo.spec.ts:180:5 › 8. reports show computed summaries with CSV and PDF export
+  -  9 e2e\demo.spec.ts:191:5 › 9. stopping the detector shows a named degraded state that recovers
+
+
+  1) e2e\demo.spec.ts:136:5 › 5. lifecycle actions update the timeline and a second browser live ───
+
+    [31mTest timeout of 360000ms exceeded.[39m
+
+    Error: locator.click: Test ended.
+    Call log:
+    [2m  - waiting for getByRole('button', { name: 'Acknowledge' })[22m
+
+
+      140 |   await a.goto(`/incidents/${liveIncidentId}`);
+      141 |   await b.goto(`/incidents/${liveIncidentId}`);
+    > 142 |   await a.getByRole("button", { name: "Acknowledge" }).click();
+          |                                                        ^
+      143 |   await expect(b.getByText("→ acknowledged")).toBeVisible();
+      144 |   await a.getByRole("button", { name: "Assign to me" }).click();
+      145 |   await a.getByPlaceholder("Add an operational note…").fill("E2E: checked on camera, aisle clearing.");
+        at C:\Users\UDAY\Desktop\Projetcs\scope\me\e2e\demo.spec.ts:142:56
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-5-lifecycle-actions-u-a54ed-e-and-a-second-browser-live\test-failed-5.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-5-lifecycle-actions-u-a54ed-e-and-a-second-browser-live\test-failed-4.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-5-lifecycle-actions-u-a54ed-e-and-a-second-browser-live\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-5-lifecycle-actions-u-a54ed-e-and-a-second-browser-live\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-5-lifecycle-actions-u-a54ed-e-and-a-second-browser-live\test-failed-3.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #6: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-5-lifecycle-actions-u-a54ed-e-and-a-second-browser-live\test-failed-6.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: docs\verification\e2e\artifacts\demo-5-lifecycle-actions-u-a54ed-e-and-a-second-browser-live\error-context.md
+
+    attachment #8: trace (application/zip) ─────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-5-lifecycle-actions-u-a54ed-e-and-a-second-browser-live\trace.zip
+    Usage:
+
+        npx playwright show-trace docs\verification\e2e\artifacts\demo-5-lifecycle-actions-u-a54ed-e-and-a-second-browser-live\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e\demo.spec.ts:136:5 › 5. lifecycle actions update the timeline and a second browser live ────
+  4 did not run
+  4 passed (7.2m)

@@ -37,7 +37,14 @@ def test_refresh_rotates_and_detects_replay(browser):
     new_headers = {'Authorization': 'Bearer ' + refreshed.json()['token']}
     assert browser.get('/v1/auth/me', headers=new_headers).status_code == 200
 
-    # Replaying the rotated token revokes the session, including live access tokens.
+    # Replaying the rotated token after the grace window revokes the session,
+    # including live access tokens.
+    from datetime import UTC, datetime, timedelta
+    from app.models import AuthSessionModel
+    with Session(engine) as session:
+        for record in session.query(AuthSessionModel).all():
+            record.last_used_at = datetime.now(UTC) - timedelta(seconds=31)
+        session.commit()
     browser.cookies.clear()
     replay = browser.post('/v1/auth/refresh', cookies={'smartops_refresh': first})
     assert replay.status_code == 401
@@ -110,3 +117,16 @@ def test_argon2id_hashes_and_legacy_pbkdf2_upgrade(browser):
     with Session(engine) as session:
         upgraded = session.query(UserModel).filter_by(email='supervisor@smartops.local').one().password_hash
     assert upgraded.startswith('$argon2id$')
+
+
+
+def test_concurrent_refresh_from_two_tabs_is_not_treated_as_theft(browser):
+    sign_in(browser)
+    shared = browser.cookies.get('smartops_refresh')
+    first = browser.post('/v1/auth/refresh')                      # tab A rotates
+    assert first.status_code == 200
+    browser.cookies.clear()
+    second = browser.post('/v1/auth/refresh', cookies={'smartops_refresh': shared})  # tab B, same old cookie
+    assert second.status_code == 200
+    token = second.json()['token']
+    assert browser.get('/v1/auth/me', headers={'Authorization': 'Bearer ' + token}).status_code == 200

@@ -1,0 +1,46 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - alert [ref=e2]: SmartOps
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - img [ref=e10]
+      - generic [ref=e13]:
+        - heading "SmartOps" [level=1] [ref=e14]
+        - paragraph [ref=e15]: Smart-building CCTV operations console
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: Email
+        - textbox "Email" [ref=e19]: operator@smartops.local
+      - generic [ref=e20]:
+        - generic [ref=e21]: Password
+        - textbox "Password" [ref=e22]
+      - button "Sign in" [ref=e23]
+    - generic [ref=e24]:
+      - paragraph [ref=e25]:
+        - img [ref=e26]
+        - text: Local demo accounts
+      - paragraph [ref=e29]:
+        - text: "Seeded for local development only. Password for all accounts:"
+        - code [ref=e30]: smartops-demo
+      - generic [ref=e31]:
+        - button "Admin admin@smartops.local" [ref=e32]:
+          - generic [ref=e33]: Admin
+          - generic [ref=e34]: admin@smartops.local
+        - button "Supervisor supervisor@smartops.local" [ref=e35]:
+          - generic [ref=e36]: Supervisor
+          - generic [ref=e37]: supervisor@smartops.local
+        - button "Operator operator@smartops.local" [ref=e38]:
+          - generic [ref=e39]: Operator
+          - generic [ref=e40]: operator@smartops.local
+        - button "Viewer viewer@smartops.local" [ref=e41]:
+          - generic [ref=e42]: Viewer
+          - generic [ref=e43]: viewer@smartops.local
+        - button "Security security@smartops.local" [ref=e44]:
+          - generic [ref=e45]: Security
+          - generic [ref=e46]: security@smartops.local
+        - button "EHS ehs@smartops.local" [ref=e47]:
+          - generic [ref=e48]: EHS
+          - generic [ref=e49]: ehs@smartops.local
+```
