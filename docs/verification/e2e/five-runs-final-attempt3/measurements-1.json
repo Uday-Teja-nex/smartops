@@ -1,0 +1,9 @@
+{
+  "measuredAt": "2026-11-11T11:03:15.985Z",
+  "liveIncident": {
+    "id": "inc-rule-cf7c5d6c8e684a44b18481559cac5621",
+    "summary": "7 people in Atrium floor for 5s (crowding limit exceeded)",
+    "secondsFromTriggerFrameToVisible": 1.9
+  },
+  "aiReview": "AI review\nadvisory · never changes the rule decision\n\nAI review unavailable: model did not answer in time. The rule result above stands on its own."
+}

@@ -1,0 +1,8 @@
+{
+  "measuredAt": "2026-11-11T11:12:50.384Z",
+  "liveIncident": {
+    "id": "inc-rule-a020b42b36bf4ad89636e11b5bc6792f",
+    "summary": "6 people queuing in Checkout queue for 9s",
+    "secondsFromTriggerFrameToVisible": 2
+  }
+}

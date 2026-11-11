@@ -1,0 +1,63 @@
+
+Running 9 tests using 1 worker
+
+  ok 1 e2e\demo.spec.ts:73:5 › 1. operator signs in and sees real KPIs for the mall (4.6s)
+  ok 2 e2e\demo.spec.ts:80:5 › 2. live camera tile plays real video (11.2s)
+  ok 3 e2e\demo.spec.ts:94:5 › 3. a rule incident is pushed to Live Ops without refresh (36.8s)
+  x  4 e2e\demo.spec.ts:120:5 › 4. incident shows evidence and an AI review or its stated reason (1.1m)
+  -  5 e2e\demo.spec.ts:136:5 › 5. lifecycle actions update the timeline and a second browser live
+  -  6 e2e\demo.spec.ts:157:5 › 6. viewers are read-only in the UI and the API
+  -  7 e2e\demo.spec.ts:169:5 › 7. another workspace sees none of the mall's data
+  -  8 e2e\demo.spec.ts:180:5 › 8. reports show computed summaries with CSV and PDF export
+  -  9 e2e\demo.spec.ts:191:5 › 9. stopping the detector shows a named degraded state that recovers
+
+
+  1) e2e\demo.spec.ts:120:5 › 4. incident shows evidence and an AI review or its stated reason › Expect "poll toBeGreaterThan" 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+    Call Log:
+    - Timeout 60000ms exceeded while waiting on the predicate
+
+      124 |   await expect(page.getByText("Measured by rule")).toBeVisible();
+      125 |   const clip = page.locator("video").first();
+    > 126 |   await expect.poll(async () => clip.count(), { timeout: 60_000 }).toBeGreaterThan(0);
+          |   ^
+      127 |   await expect.poll(async () => clip.evaluate((v: HTMLVideoElement) => v.readyState), { timeout: 60_000 })
+      128 |     .toBeGreaterThanOrEqual(2);
+      129 |   // Within 90 s the review must have landed or say why; never an endless spinner.
+        at C:\Users\UDAY\Desktop\Projetcs\scope\me\e2e\demo.spec.ts:126:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-4-incident-shows-evid-70e0c-review-or-its-stated-reason\test-failed-4.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-4-incident-shows-evid-70e0c-review-or-its-stated-reason\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-4-incident-shows-evid-70e0c-review-or-its-stated-reason\test-failed-3.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-4-incident-shows-evid-70e0c-review-or-its-stated-reason\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: docs\verification\e2e\artifacts\demo-4-incident-shows-evid-70e0c-review-or-its-stated-reason\error-context.md
+
+    attachment #6: trace (application/zip) ─────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-4-incident-shows-evid-70e0c-review-or-its-stated-reason\trace.zip
+    Usage:
+
+        npx playwright show-trace docs\verification\e2e\artifacts\demo-4-incident-shows-evid-70e0c-review-or-its-stated-reason\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e\demo.spec.ts:120:5 › 4. incident shows evidence and an AI review or its stated reason ──────
+  5 did not run
+  3 passed (2.5m)
