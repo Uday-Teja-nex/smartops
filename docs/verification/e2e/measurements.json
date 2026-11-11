@@ -1,10 +1,10 @@
 {
-  "measuredAt": "2026-11-11T13:57:06.650Z",
+  "measuredAt": "2026-11-11T14:51:40.276Z",
   "liveIncident": {
-    "id": "inc-rule-2301bbd2b40f49278666d2d379d2b8ed",
+    "id": "inc-rule-2d9f60fbfffe43fc910b6fce235ecac8",
     "summary": "3 people in Front aisle for 5s (crowding limit exceeded)",
-    "secondsFromTriggerFrameToVisible": 2.2
+    "secondsFromTriggerFrameToVisible": 1.1
   },
-  "aiReviewSettledAfterSeconds": 0,
-  "aiReview": "AI review\nadvisory · never changes the rule decision\n\nAI review skipped: this camera was reviewed 80 s ago (one review per camera every 120 s on this hardware). The rule result above stands on its own."
+  "aiReviewSettledAfterSeconds": 55,
+  "aiReview": "AI review\nadvisory · never changes the rule decision\n\nAI review skipped: this camera was reviewed 112 s ago (one review per camera every 120 s on this hardware). The rule result above stands on its own."
 }
