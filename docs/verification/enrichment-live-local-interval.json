@@ -1,0 +1,192 @@
+{
+  "summary": {
+    "measuredAt": "2026-11-11T15:25:42",
+    "workspaceUser": "admin@mall.demo",
+    "minutes": 15.0,
+    "incidents": 14,
+    "reviewed": 12,
+    "skippedByInterval": 2,
+    "validated": 12,
+    "validatedShare": 1.0,
+    "neverReviewed": [],
+    "secondsIncidentToReview": {
+      "p50": 52.4,
+      "p95": 64.5,
+      "max": 72.6
+    },
+    "modelLatencyMs": {
+      "median": 45607.0
+    },
+    "unavailableReasons": []
+  },
+  "rows": [
+    {
+      "id": "inc-rule-6bee5b24e1df433285900759a8c006bd",
+      "type": "crowding",
+      "firstSeen": 1794390025.551479,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (52.7 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1794390084.0426528,
+      "secondsFromIncident": 58.5,
+      "model": "qwen2.5vl:3b",
+      "modelLatencyMs": 52700
+    },
+    {
+      "id": "inc-rule-d5e1e723f1854d7a89dbb2a3a8de904f",
+      "type": "queue_build_up",
+      "firstSeen": 1794390027.5710673,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (67.7 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1794390100.1748102,
+      "secondsFromIncident": 72.6,
+      "model": "qwen2.5vl:3b",
+      "modelLatencyMs": 67742
+    },
+    {
+      "id": "inc-rule-81611b11f3594358a16af3221bc3758c",
+      "type": "crowding",
+      "firstSeen": 1794390065.9023595,
+      "createdAt": null,
+      "outcome": "skipped",
+      "note": "AI review skipped: this camera was reviewed 68 s ago (one review per camera every 120 s on this hardware).",
+      "reviewSeen": 1794390102.1876936,
+      "secondsFromIncident": 36.3,
+      "model": null,
+      "modelLatencyMs": null
+    },
+    {
+      "id": "inc-rule-2a23892b24c14d3885452d9db598201c",
+      "type": "crowding",
+      "firstSeen": 1794390148.401124,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (30.6 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1794390184.6755624,
+      "secondsFromIncident": 36.3,
+      "model": "qwen2.5vl:3b",
+      "modelLatencyMs": 30618
+    },
+    {
+      "id": "inc-rule-6f7a5d29a3874d8a8f9f3a6a8c0b6c6f",
+      "type": "crowding",
+      "firstSeen": 1794390273.2311392,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (55.3 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1794390333.6785662,
+      "secondsFromIncident": 60.4,
+      "model": "qwen2.5vl:3b",
+      "modelLatencyMs": 55332
+    },
+    {
+      "id": "inc-rule-6e66f8247ca64ea49610281757417826",
+      "type": "crowding",
+      "firstSeen": 1794390289.345941,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (59.3 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1794390353.8420472,
+      "secondsFromIncident": 64.5,
+      "model": "qwen2.5vl:3b",
+      "modelLatencyMs": 59304
+    },
+    {
+      "id": "inc-rule-de3754b795e94167aa2363e03067a86b",
+      "type": "crowding",
+      "firstSeen": 1794390398.0894594,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (49.5 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1794390454.5540123,
+      "secondsFromIncident": 56.5,
+      "model": "qwen2.5vl:3b",
+      "modelLatencyMs": 49472
+    },
+    {
+      "id": "inc-rule-bcdc085336cc4eaeb778e939ff339ae9",
+      "type": "crowding",
+      "firstSeen": 1794390510.906076,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (20.2 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1794390535.1158457,
+      "secondsFromIncident": 24.2,
+      "model": "qwen2.5vl:3b",
+      "modelLatencyMs": 20169
+    },
+    {
+      "id": "inc-rule-48d998863d92424aab62b11088cff887",
+      "type": "crowding",
+      "firstSeen": 1794390523.016733,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (46.9 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1794390575.4587555,
+      "secondsFromIncident": 52.4,
+      "model": "qwen2.5vl:3b",
+      "modelLatencyMs": 46918
+    },
+    {
+      "id": "inc-rule-aacefad1abb4449fbc30e038943a3ca0",
+      "type": "crowding",
+      "firstSeen": 1794390643.9038088,
+      "createdAt": null,
+      "outcome": "skipped",
+      "note": "AI review skipped: this camera was reviewed 119 s ago (one review per camera every 120 s on this hardware).",
+      "reviewSeen": 1794390649.9619217,
+      "secondsFromIncident": 6.1,
+      "model": null,
+      "modelLatencyMs": null
+    },
+    {
+      "id": "inc-rule-18335f9f0802427f8a01d2187e051822",
+      "type": "crowding",
+      "firstSeen": 1794390730.5639963,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (18.4 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1794390754.7664988,
+      "secondsFromIncident": 24.2,
+      "model": "qwen2.5vl:3b",
+      "modelLatencyMs": 18433
+    },
+    {
+      "id": "inc-rule-267c467cb1504ce8ba562207abf5b633",
+      "type": "crowding",
+      "firstSeen": 1794390768.8619602,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (44.3 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1794390819.2944996,
+      "secondsFromIncident": 50.4,
+      "model": "qwen2.5vl:3b",
+      "modelLatencyMs": 44296
+    },
+    {
+      "id": "inc-rule-387b419ab5b74bc19bc276e18f9eb09a",
+      "type": "crowding",
+      "firstSeen": 1794390859.56889,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (19.2 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1794390885.78056,
+      "secondsFromIncident": 26.2,
+      "model": "qwen2.5vl:3b",
+      "modelLatencyMs": 19203
+    },
+    {
+      "id": "inc-rule-0fbc89891368475abc1a36847e6ea003",
+      "type": "crowding",
+      "firstSeen": 1794390893.8438125,
+      "createdAt": null,
+      "outcome": "validated",
+      "note": "AI review by qwen2.5vl:3b (41.5 s): image looks consistent with the measured event. Rule decision unchanged.",
+      "reviewSeen": 1794390940.375029,
+      "secondsFromIncident": 46.5,
+      "model": "qwen2.5vl:3b",
+      "modelLatencyMs": 41455
+    }
+  ]
+}
