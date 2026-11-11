@@ -114,7 +114,7 @@ Playwright E2E needs the running stack (`npx playwright test`).
 | 5 | evidence "capture gap" | the evidence ring was fed by the detection loop, so it starved while the detector was slow | `RingSampler`: a per-camera thread feeds the ring at 3 fps independently |
 | 6 | QueuePool exhausted | FastAPI ≥ 0.118 keeps yield dependencies open for the whole response, so every open SSE stream held a DB connection through auth | auth opens and closes its own session |
 | 7 | step 4 timed out at 90 s | CPU-fallback reviews waited for the hosted timeout first | circuit breaker; the step waits the stated 180 s bound |
-| history | 9/54 clips failed | events at the clip's loop point or end lacked pre- or post-roll | sessions join the loop part-way and run on until each event has its post-roll |
+| history | 9/54 clips failed | office-lobby restricted entries fired on a session's first frame, before any pre-event footage existed | rules start after 5 s of footage; sessions also join the loop part-way and run on until each event has its post-roll |
 
 ## Findings worth knowing
 
