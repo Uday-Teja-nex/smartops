@@ -45,7 +45,8 @@ actions on them are labelled "Scripted demo action" in the timeline.
 | 30-min 3-stream soak | **Passed:** min 2.73 fps, median 3.0, 0 failures, no memory growth. The baseline failed (local AI reviews starved the detector); fixed by capping review threads. | `stream-soak-final-assessment.json`, `stream-soak-baseline-assessment.json` |
 
 Tests (2026-11-11): API 126, video-ingest 64, orchestrator 50, detector 10,
-stream-publisher 3, frontend 24. Lint and typecheck are clean. The
+stream-publisher 3, worker 9, frontend 24, all on the pinned versions;
+every CI job was run locally (`docs/verification/ci-local.md`). Lint and typecheck are clean. The
 Playwright E2E needs the running stack (`npx playwright test`).
 
 ## Built this session (beyond the Phase 0–1 work)
