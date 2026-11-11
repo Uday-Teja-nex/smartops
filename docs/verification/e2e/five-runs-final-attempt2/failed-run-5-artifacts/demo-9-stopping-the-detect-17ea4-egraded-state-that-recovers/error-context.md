@@ -1,0 +1,154 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e4]:
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - img [ref=e9]
+          - generic [ref=e12]:
+            - paragraph [ref=e13]: SmartOps
+            - paragraph [ref=e14]: Building Intelligence
+        - navigation [ref=e15]:
+          - link "Overview" [ref=e16] [cursor=pointer]:
+            - /url: /
+            - img [ref=e17] [cursor=pointer]
+            - text: Overview
+          - link "Live Ops" [ref=e23] [cursor=pointer]:
+            - /url: /live-ops
+            - img [ref=e24] [cursor=pointer]
+            - text: Live Ops
+          - link "Camera view" [ref=e26] [cursor=pointer]:
+            - /url: /cameras
+            - img [ref=e27] [cursor=pointer]
+            - text: Camera view
+          - link "Sources" [ref=e30] [cursor=pointer]:
+            - /url: /sources
+            - img [ref=e31] [cursor=pointer]
+            - text: Sources
+          - link "Monitoring" [ref=e34] [cursor=pointer]:
+            - /url: /monitoring
+            - img [ref=e35] [cursor=pointer]
+            - text: Monitoring
+          - link "Reports" [ref=e41] [cursor=pointer]:
+            - /url: /reports
+            - img [ref=e42] [cursor=pointer]
+            - text: Reports
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - paragraph [ref=e48]: Olivia Operator
+            - paragraph [ref=e49]: operator
+          - button "Sign out" [ref=e50]:
+            - img [ref=e51]
+        - paragraph [ref=e54]: "Privacy-first: aggregate analytics only, no identity recognition, evidence restricted by default."
+    - generic [ref=e55]:
+      - banner [ref=e56]:
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - generic [ref=e61]: Harborline Mall
+            - generic [ref=e62]: Connected
+            - paragraph [ref=e64]: 2/3 sources active · openrouter · langgraph
+          - generic [ref=e65]:
+            - combobox [ref=e66]:
+              - option "Harborline Mall" [selected]
+            - combobox [ref=e67]:
+              - option "Last 4 hours"
+              - option "Last 24 hours"
+              - option "Last 7 days" [selected]
+              - option "Last 30 days"
+            - generic [ref=e68]:
+              - img [ref=e69]
+              - textbox "Search events" [ref=e72]
+      - main [ref=e73]:
+        - generic [ref=e75]:
+          - generic [ref=e77]:
+            - heading "Building operations" [level=2] [ref=e78]
+            - paragraph [ref=e79]: Stored incidents for the selected building and time range. Tracking is anonymous; no face or identity recognition.
+          - generic [ref=e80]:
+            - link "Open incidents 4 Includes incidents awaiting human review" [ref=e81] [cursor=pointer]:
+              - /url: /live-ops
+              - generic [ref=e84] [cursor=pointer]:
+                - paragraph [ref=e85] [cursor=pointer]: Open incidents
+                - paragraph [ref=e87] [cursor=pointer]: "4"
+                - paragraph [ref=e89] [cursor=pointer]: Includes incidents awaiting human review
+            - link "High priority open 0 High or critical severity" [ref=e90] [cursor=pointer]:
+              - /url: /live-ops
+              - generic [ref=e93] [cursor=pointer]:
+                - paragraph [ref=e94] [cursor=pointer]: High priority open
+                - paragraph [ref=e96] [cursor=pointer]: "0"
+                - paragraph [ref=e98] [cursor=pointer]: High or critical severity
+            - link "Resolved 1 Resolved by an operator" [ref=e99] [cursor=pointer]:
+              - /url: /live-ops?status=resolved
+              - generic [ref=e102] [cursor=pointer]:
+                - paragraph [ref=e103] [cursor=pointer]: Resolved
+                - paragraph [ref=e105] [cursor=pointer]: "1"
+                - paragraph [ref=e107] [cursor=pointer]: Resolved by an operator
+            - link "False positives 0 Marked by an operator" [ref=e108] [cursor=pointer]:
+              - /url: /live-ops?status=false_positive
+              - generic [ref=e111] [cursor=pointer]:
+                - paragraph [ref=e112] [cursor=pointer]: False positives
+                - paragraph [ref=e114] [cursor=pointer]: "0"
+                - paragraph [ref=e116] [cursor=pointer]: Marked by an operator
+          - generic [ref=e117]:
+            - generic [ref=e119]:
+              - heading "Summary" [level=2] [ref=e120]
+              - paragraph [ref=e121]: Computed from 5 stored incidents · Last 7 days
+            - paragraph [ref=e122]: 4 incidents remain open, including 0 at high or critical severity. 1 have been resolved and 0 marked as false positives.
+          - generic [ref=e123]:
+            - generic [ref=e124]:
+              - generic [ref=e126]:
+                - heading "Recent incidents" [level=2] [ref=e127]
+                - paragraph [ref=e128]: Most recent recorded observations
+              - link "6 people queuing in Checkout queue for 8s Checkout queue · Nov 11, 04:20 PM Rule engine resolved" [ref=e129] [cursor=pointer]:
+                - /url: /incidents/inc-rule-c44df89d54494f92bbc03f08c3323b7e
+                - generic [ref=e130] [cursor=pointer]:
+                  - paragraph [ref=e131] [cursor=pointer]: 6 people queuing in Checkout queue for 8s
+                  - paragraph [ref=e132] [cursor=pointer]: Checkout queue · Nov 11, 04:20 PM
+                  - paragraph [ref=e133] [cursor=pointer]: Rule engine
+                - generic [ref=e134] [cursor=pointer]: resolved
+              - link "10 people in Atrium floor for 5s (crowding limit exceeded) Atrium floor · Nov 11, 04:20 PM Rule engine active" [ref=e135] [cursor=pointer]:
+                - /url: /incidents/inc-rule-a2cc7b8b0ec34b36a8772475e020c6b4
+                - generic [ref=e136] [cursor=pointer]:
+                  - paragraph [ref=e137] [cursor=pointer]: 10 people in Atrium floor for 5s (crowding limit exceeded)
+                  - paragraph [ref=e138] [cursor=pointer]: Atrium floor · Nov 11, 04:20 PM
+                  - paragraph [ref=e139] [cursor=pointer]: Rule engine
+                - generic [ref=e140] [cursor=pointer]: active
+              - link "5 people in Front aisle for 5s (crowding limit exceeded) Front aisle · Nov 11, 04:19 PM Rule engine active" [ref=e141] [cursor=pointer]:
+                - /url: /incidents/inc-rule-35629e21d29e485bb8b84dffb38b42c9
+                - generic [ref=e142] [cursor=pointer]:
+                  - paragraph [ref=e143] [cursor=pointer]: 5 people in Front aisle for 5s (crowding limit exceeded)
+                  - paragraph [ref=e144] [cursor=pointer]: Front aisle · Nov 11, 04:19 PM
+                  - paragraph [ref=e145] [cursor=pointer]: Rule engine
+                - generic [ref=e146] [cursor=pointer]: active
+              - link "8 people in Atrium floor for 6s (crowding limit exceeded) Atrium floor · Nov 11, 04:17 PM Rule engine active" [ref=e147] [cursor=pointer]:
+                - /url: /incidents/inc-rule-d1f7aa70ceb74e8bac5420eef0b7391d
+                - generic [ref=e148] [cursor=pointer]:
+                  - paragraph [ref=e149] [cursor=pointer]: 8 people in Atrium floor for 6s (crowding limit exceeded)
+                  - paragraph [ref=e150] [cursor=pointer]: Atrium floor · Nov 11, 04:17 PM
+                  - paragraph [ref=e151] [cursor=pointer]: Rule engine
+                - generic [ref=e152] [cursor=pointer]: active
+              - link "7 people queuing in Checkout queue for 8s Checkout queue · Nov 11, 04:17 PM Rule engine active" [ref=e153] [cursor=pointer]:
+                - /url: /incidents/inc-rule-85f13ad4f2884538a70e1f77ceb2ff27
+                - generic [ref=e154] [cursor=pointer]:
+                  - paragraph [ref=e155] [cursor=pointer]: 7 people queuing in Checkout queue for 8s
+                  - paragraph [ref=e156] [cursor=pointer]: Checkout queue · Nov 11, 04:17 PM
+                  - paragraph [ref=e157] [cursor=pointer]: Rule engine
+                - generic [ref=e158] [cursor=pointer]: active
+            - generic [ref=e159]:
+              - generic [ref=e161]:
+                - heading "Incidents by zone" [level=2] [ref=e162]
+                - paragraph [ref=e163]: Counts in the selected period
+              - generic [ref=e164]:
+                - generic [ref=e165]:
+                  - generic [ref=e166]: Checkout queue
+                  - generic [ref=e167]: "2"
+                - generic [ref=e168]:
+                  - generic [ref=e169]: Atrium floor
+                  - generic [ref=e170]: "2"
+                - generic [ref=e171]:
+                  - generic [ref=e172]: Front aisle
+                  - generic [ref=e173]: "1"
+```

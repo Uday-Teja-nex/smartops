@@ -1,0 +1,9 @@
+{
+  "measuredAt": "2026-11-11T10:36:13.813Z",
+  "liveIncident": {
+    "id": "inc-rule-78665b6dce4c4fb6bdb35ddfb0bc8b61",
+    "summary": "6 people in Atrium floor for 5s (crowding limit exceeded)",
+    "secondsFromTriggerFrameToVisible": 1.1
+  },
+  "aiReview": "AI review\nadvisory · never changes the rule decision\n\nImage consistent with rule\nnvidia/nemotron-3.5-super-vl:free\n· 1.4 s\n\nA crowded indoor shopping mall atrium with many people walking on multiple levels.\n\nNumerous people are visible in the atrium area.\nThe space appears busy with foot traffic.\nSUGGESTED CHECKS\nVerify occupancy counts against safety limits.\nReview camera feed for duration of crowding.\n\nLimits: A still image cannot establish how long the crowd persisted."
+}

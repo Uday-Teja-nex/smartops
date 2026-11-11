@@ -202,7 +202,8 @@ test("9. stopping the detector shows a named degraded state that recovers", asyn
     // First the server must notice; then the console must say so within its 10 s poll.
     await expect.poll(detectorUp, { timeout: 30_000 }).toBe(false);
     await expect(page.getByText("Running in a degraded state")).toBeVisible({ timeout: 25_000 });
-    await expect(page.getByText(/Object detection:.*Live detection is paused/)).toBeVisible();
+    // The console polls every 10 s; the status call itself can take ~4 s under load.
+    await expect(page.getByText(/Object detection:.*Live detection is paused/)).toBeVisible({ timeout: 30_000 });
     await shot(page, "09-degraded-detector");
   } finally {
     execSync("docker compose start detector", { stdio: "ignore" });

@@ -1,0 +1,9 @@
+{
+  "measuredAt": "2026-11-11T10:42:04.239Z",
+  "liveIncident": {
+    "id": "inc-rule-3f1e23af8232431a949dea371b094912",
+    "summary": "9 people in Atrium floor for 5s (crowding limit exceeded)",
+    "secondsFromTriggerFrameToVisible": 0.4
+  },
+  "aiReview": "AI review\nadvisory · never changes the rule decision\n\nImage consistent with rule\nnvidia/nemotron-3.5-super-vl:free\n· 1.6 s\n\nA busy indoor atrium or mall walkway with many people standing and walking.\n\nNumerous people are gathered across the atrium floor.\nThe scene shows a crowd in an indoor public space.\nSUGGESTED CHECKS\nReview video footage to count people over time.\nCheck sensor calibration and crowding thresholds.\n\nLimits: A still image cannot establish duration or exact crowd count."
+}

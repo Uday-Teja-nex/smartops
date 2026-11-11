@@ -18,7 +18,9 @@ export const useSystemStatus = (enabled = true) => {
         const next = await fetchSystemStatus();
         if (active) setStatus(next);
       } catch {
-        if (active) setStatus("error");
+        // One failed poll (slow while a service is down) must not hide a
+        // degraded state that is still true: keep the last known status.
+        if (active) setStatus((previous) => (previous && previous !== "error" ? previous : "error"));
       }
       if (active) timer = setTimeout(() => void poll(), POLL_MS);
     };
