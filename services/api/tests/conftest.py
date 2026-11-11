@@ -12,7 +12,7 @@ sys.path.insert(0, str(SERVICE_ROOT))
 # PID so concurrent test runs never fight over one file.
 _DB_PATH = Path(f"./test-smartops-{os.getpid()}.db").resolve()
 os.environ["SMARTOPS_DATABASE_URL"] = f"sqlite:///{_DB_PATH.as_posix()}"
-os.environ.setdefault("SMARTOPS_JWT_SECRET", "test-secret")
+os.environ.setdefault("SMARTOPS_JWT_SECRET", "test-secret-at-least-32-characters-long")
 os.environ.setdefault("SMARTOPS_INTERNAL_TOKEN", "test-internal-token")
 os.environ.setdefault("SMARTOPS_EVIDENCE_STORAGE_ENABLED", "false")
 

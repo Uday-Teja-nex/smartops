@@ -1,9 +1,10 @@
 # torch/torchvision CPU wheels are installed first in the Dockerfile from the
 # PyTorch CPU index so ultralytics does not pull the multi-GB CUDA build.
-fastapi==0.115.5
+fastapi==0.161.1
+starlette==1.10.0
 uvicorn[standard]==0.32.0
 ultralytics==8.3.49
 opencv-python-headless==4.10.0.84
 numpy<2.0
-httpx==0.28.0
+httpx==0.28.1
 prometheus-client==0.21.0

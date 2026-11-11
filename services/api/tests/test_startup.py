@@ -5,8 +5,16 @@ def test_stream_url_reaches_stream_handler():
     from app.main import app
 
     scope = {"type": "http", "path": "/v1/incidents/stream", "method": "GET"}
-    matched = next(route for route in app.routes if route.matches(scope)[0] == Match.FULL)
-    assert matched.endpoint.__name__ == "stream_events"
+    def first_match(routes):
+        # FastAPI >= 0.16x wraps included routers; descend into them.
+        for route in routes:
+            if route.matches(scope)[0] != Match.FULL:
+                continue
+            inner = getattr(route, "original_router", None)
+            return first_match(inner.routes) if inner is not None else route
+        return None
+
+    assert first_match(app.routes).endpoint.__name__ == "stream_events"
 
 
 def test_startup_failure_has_traceback(monkeypatch, caplog):

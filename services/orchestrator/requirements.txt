@@ -1,5 +1,7 @@
-fastapi==0.115.5
+fastapi==0.161.1
+starlette==1.10.0
 uvicorn[standard]==0.32.0
-langgraph==0.2.53
-httpx==0.28.0
+langgraph==1.2.15
+langgraph-sdk==0.4.10
+httpx==0.28.1
 prometheus-client==0.21.0
