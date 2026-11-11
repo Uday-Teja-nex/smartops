@@ -304,6 +304,14 @@ class IncidentCreateRequest(BaseModel):
     modelProvider: str = "unknown"
     modelVersion: str = "unknown"
     detectionSummary: dict[str, Any] = Field(default_factory=dict)
+    replay: bool = False
+
+
+class ReplayActionRequest(BaseModel):
+    action: Literal["acknowledge", "assign", "resolve", "false_positive"]
+    at: datetime
+    assignee: str = Field(default="SmartOps Dispatch", min_length=1, max_length=120)
+    note: str | None = Field(default=None, max_length=240)
 
 
 # ---------------------------------------------------------------------------

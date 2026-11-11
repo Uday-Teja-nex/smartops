@@ -74,6 +74,11 @@ export const AiReview = ({ event }: { event: EventRecord }) => {
           <Ruler className="h-4 w-4 text-[color:var(--accent)]" /> {ruleMeasured ? "Measured by rule" : "Detection"}
         </h3>
         <p className="mt-2 text-sm text-slate-200">{event.shortSummary}</p>
+        {Boolean(event.detectionSummary?.historyReplay) && (
+          <p className="mt-2 inline-flex rounded-full bg-sky-500/10 px-2 py-0.5 text-[11px] font-semibold text-sky-200">
+            Demo history · recorded footage replayed through the pipeline; operator actions are scripted
+          </p>
+        )}
         <p className="mt-1 text-[11px] text-slate-500">
           {ruleMeasured
             ? `Deterministic zone rule (${humanize(event.type)}) over tracked YOLO detections · ${event.modelVersion ?? "rules"}`

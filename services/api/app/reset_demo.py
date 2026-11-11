@@ -1,7 +1,9 @@
 """Return the local demo to a freshly seeded state: `python -m app.reset_demo`.
 
 Deletes every row in every SmartOps table (one TRUNCATE on PostgreSQL),
-reseeds the three demo workspaces and empties the evidence bucket. Refuses
+reseeds the three demo workspaces, empties the evidence bucket except the
+demo history snapshot (`history/`), and re-imports that snapshot (see
+app.demo_history) so the workspaces show the last few days. Refuses
 to run when SMARTOPS_ENVIRONMENT=production. The stream processor's local
 journals are cleared separately by demo.ps1 while the processor is stopped.
 """
@@ -39,8 +41,11 @@ def clear_evidence() -> int:
 
     ensure_bucket()
     client = internal_client()
+    from app.demo_history import PREFIX
+
     objects = [DeleteObject(item.object_name)
-               for item in client.list_objects(settings.minio_bucket, recursive=True)]
+               for item in client.list_objects(settings.minio_bucket, recursive=True)
+               if not item.object_name.startswith(PREFIX)]
     errors = list(client.remove_objects(settings.minio_bucket, objects)) if objects else []
     if errors:
         raise RuntimeError(f"Could not delete {len(errors)} evidence objects")
@@ -57,8 +62,12 @@ def main() -> int:
     removed = clear_evidence()
     with SessionLocal() as session:
         seed_workspaces(session, published_paths())
-    print(f"Demo reset: database reseeded, {removed} evidence objects removed "
-          f"in {time.perf_counter() - started:.1f}s")
+    from app.demo_history import import_history
+
+    with SessionLocal() as session:
+        history = import_history(session)
+    print(f"Demo reset: database reseeded, {removed} evidence objects removed, "
+          f"{history} history incidents restored in {time.perf_counter() - started:.1f}s")
     return 0
 
 

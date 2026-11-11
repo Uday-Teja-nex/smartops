@@ -9,14 +9,20 @@
   .\demo.ps1 up -Build   # rebuild images after code changes
   .\demo.ps1 backup      # database + evidence to sample-data\output\backups\<time>
   .\demo.ps1 restore     # latest backup (or: .\demo.ps1 restore <folder>)
+  .\demo.ps1 build-history            # replay footage into 3 days of history that every reset restores
+  .\demo.ps1 build-history -Days 5 -Sessions 4
 #>
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('up', 'preflight', 'reset', 'status', 'down', 'fix-docker', 'backup', 'restore')]
+    [ValidateSet('up', 'preflight', 'reset', 'status', 'down', 'fix-docker', 'backup', 'restore', 'build-history')]
     [string]$Action = 'up',
     [Parameter(Position = 1)]
     [string]$From = '',
-    [switch]$Build
+    [switch]$Build,
+    [ValidateRange(1, 14)]
+    [int]$Days = 3,
+    [ValidateRange(1, 8)]
+    [int]$Sessions = 3
 )
 
 $ErrorActionPreference = 'Stop'
@@ -357,6 +363,32 @@ function Invoke-Reset {
     Write-Host ("Reset complete in {0:N0} s. Everyone is signed out; sign in again at {1}" -f $watch.Elapsed.TotalSeconds, $ConsoleUrl) -ForegroundColor Green
 }
 
+function Invoke-BuildHistory {
+    # Runs the real pipeline over the recorded clips at virtual past times,
+    # then saves the result as the snapshot every reset restores.
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    Write-Step "Building $Days days of demo history ($Sessions replay sessions per camera per day)"
+    if (-not (Get-DockerEngineVersion)) { Write-Bad 'Docker is not running.' '.\demo.ps1 up'; exit 1 }
+    & docker compose exec -T api python -m app.demo_history clear
+    if ($LASTEXITCODE -ne 0) { Write-Bad 'Could not clear the previous history snapshot.' 'docker compose logs api --tail 80'; exit 1 }
+    Invoke-Reset
+    # The live processor would compete with the replay for the detector.
+    & docker compose stop stream-processor | Out-Null
+    Write-Info 'Replaying footage through the detector and zone rules (CPU: roughly 10-25 minutes)...'
+    $sampleData = Join-Path $PSScriptRoot 'sample-data'
+    & docker compose run --rm --no-deps -v "${sampleData}:/app/sample-data:ro" --entrypoint python stream-processor -m app.history --days $Days --sessions $Sessions
+    $replayed = $LASTEXITCODE
+    if ($replayed -eq 0) {
+        & docker compose exec -T api python -m app.demo_history export
+        $replayed = $LASTEXITCODE
+    }
+    & docker compose start stream-processor | Out-Null
+    if ($replayed -ne 0) { Write-Bad 'History build failed; reset will restore no history.' 'Read the output above; then: .\demo.ps1 build-history'; exit 1 }
+    Write-Ok 'History snapshot saved; restoring it as the demo state.'
+    Invoke-Reset
+    Write-Host ("History built in {0:N0} min. Every reset now restores it, shifted to end at the reset." -f $watch.Elapsed.TotalMinutes) -ForegroundColor Green
+}
+
 function Invoke-Status {
     Write-Step 'Containers'
     & docker compose ps --format 'table {{.Name}}\t{{.Status}}'
@@ -459,4 +491,5 @@ switch ($Action) {
     'fix-docker' { Invoke-FixDocker }
     'backup' { Invoke-Backup }
     'restore' { Invoke-Restore $From }
+    'build-history' { Invoke-BuildHistory }
 }

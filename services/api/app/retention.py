@@ -61,6 +61,10 @@ def remove_from_storage(object_key: str) -> None:
     from app.config import get_settings
     from app.storage import internal_client
 
+    from app.demo_history import PREFIX
+
     settings = get_settings()
-    if settings.evidence_storage_enabled:
+    # Demo history objects back the snapshot every reset restores from; the
+    # expired rows go, the snapshot's copy stays.
+    if settings.evidence_storage_enabled and not object_key.startswith(PREFIX):
         internal_client().remove_object(settings.minio_bucket, object_key)

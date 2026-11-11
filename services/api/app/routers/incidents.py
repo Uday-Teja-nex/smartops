@@ -27,6 +27,7 @@ from app.schemas import (
     IncidentCreateRequest,
     IncidentDetailResponse,
     IncidentStatusUpdateRequest,
+    ReplayActionRequest,
 )
 from app.serializers import (
     serialize_incident,
@@ -69,6 +70,7 @@ def record_incident_event(
     from_status: str | None = None,
     to_status: str | None = None,
     note: str | None = None,
+    at: datetime | None = None,
 ) -> None:
     session.add(
         IncidentEventModel(
@@ -79,7 +81,7 @@ def record_incident_event(
             from_status=from_status,
             to_status=to_status,
             note=note,
-            created_at=datetime.now(UTC),
+            created_at=at or datetime.now(UTC),
         )
     )
 
@@ -199,6 +201,18 @@ def create_incident(
     now = datetime.now(UTC)
     incident_id = payload.id or new_id("inc")
     existing = session.get(IncidentModel, incident_id)
+    if payload.replay:
+        # Demo history (`demo.ps1 build-history`): the real pipeline replays
+        # recorded footage at virtual past times. Only the internal pipeline
+        # may do this; rows are stamped at the replayed time, marked, and never
+        # notify anyone or push to open consoles.
+        if principal.kind != "service":
+            raise HTTPException(status_code=403, detail="Only the pipeline can replay history")
+        if existing is not None and not (existing.detection_summary or {}).get("historyReplay"):
+            raise HTTPException(status_code=409, detail="Only replayed incidents take replayed updates")
+        if not (payload.detectionSummary or {}).get("historyReplay"):
+            raise HTTPException(status_code=422, detail="Replayed incidents must carry detectionSummary.historyReplay")
+        now = payload.startTime
 
     if existing is not None and existing.org_id != source.org_id:
         # Never reveal or modify another workspace's incident, even for the
@@ -230,12 +244,14 @@ def create_incident(
         existing.detection_summary = payload.detectionSummary
         existing.updated_at = now
         record_incident_event(
-            session, existing, actor=actor, action="pipeline_update", note=change_note
+            session, existing, actor="history replay" if payload.replay else actor, action="pipeline_update",
+            note=change_note, at=now if payload.replay else None,
         )
         session.commit()
         session.refresh(existing)
         response = serialize_incident(existing)
-        publish_event("incident", response.model_dump(mode="json"))
+        if not payload.replay:
+            publish_event("incident", response.model_dump(mode="json"))
         return response
 
     incident = IncidentModel(
@@ -271,10 +287,13 @@ def create_incident(
     )
     session.add(incident)
     record_incident_event(
-        session, incident, actor=actor, action="created", to_status=payload.status
+        session, incident, actor="history replay" if payload.replay else actor, action="created",
+        to_status=payload.status, at=now if payload.replay else None,
+        note="Demo history: recorded footage replayed through the detection pipeline" if payload.replay else None,
     )
     # Outbox rows commit atomically with the incident (see app.notifications).
-    enqueue_for_incident(session, incident)
+    if not payload.replay:
+        enqueue_for_incident(session, incident)
     try:
         session.commit()
     except IntegrityError:
@@ -292,8 +311,48 @@ def create_incident(
                             headers={'Retry-After': '1'}) from None
     session.refresh(incident)
     response = serialize_incident(incident)
-    publish_event("incident", response.model_dump(mode="json"))
+    if not payload.replay:
+        publish_event("incident", response.model_dump(mode="json"))
     return response
+
+
+SCRIPTED_ACTIONS = {
+    "acknowledge": "acknowledged",
+    "assign": "assigned",
+    "resolve": "resolved",
+    "false_positive": "false_positive",
+}
+
+
+@router.post("/incidents/{incident_id}/replay-action", response_model=EventRecordResponse)
+def replay_action(
+    payload: ReplayActionRequest,
+    incident_id: str = Path(...),
+    session: Session = Depends(get_db_session),
+    principal: Principal = Depends(require_supervisor),
+) -> EventRecordResponse:
+    """Scripted operator action on a replayed history incident, at its own time.
+
+    Labelled in the audit trail as a scripted demo action; refused for any
+    incident that the history replay did not create."""
+    if principal.kind != "service":
+        raise HTTPException(status_code=403, detail="Only the pipeline can script history actions")
+    incident = get_incident_or_404(incident_id, session)
+    if not (incident.detection_summary or {}).get("historyReplay"):
+        raise HTTPException(status_code=409, detail="Only replayed history incidents take scripted actions")
+    def aware(value: datetime) -> datetime:
+        return value if value.tzinfo else value.replace(tzinfo=UTC)
+
+    if aware(payload.at) < aware(incident.start_time):
+        raise HTTPException(status_code=422, detail="A scripted action cannot precede its incident")
+    if payload.action == "assign":
+        incident.assigned_to = payload.assignee
+    note = "Scripted demo action (demo history, not a real operator)"
+    if payload.note:
+        note = f"{note}: {payload.note}"
+    return serialize_incident(_transition(
+        session, incident, actor="Scripted demo action", action=payload.action,
+        to_status=SCRIPTED_ACTIONS[payload.action], note=note, at=payload.at, publish=False))
 
 
 def _transition(
@@ -304,8 +363,10 @@ def _transition(
     action: str,
     to_status: str,
     note: str | None = None,
+    at: datetime | None = None,
+    publish: bool = True,
 ) -> IncidentModel:
-    now = datetime.now(UTC)
+    now = at or datetime.now(UTC)
     from_status = incident.status
     incident.status = to_status
     incident.updated_at = now
@@ -326,10 +387,12 @@ def _transition(
         from_status=from_status,
         to_status=to_status,
         note=note,
+        at=at,
     )
     session.commit()
     session.refresh(incident)
-    publish_event("incident", serialize_incident(incident).model_dump(mode="json"))
+    if publish:
+        publish_event("incident", serialize_incident(incident).model_dump(mode="json"))
     return incident
 
 
