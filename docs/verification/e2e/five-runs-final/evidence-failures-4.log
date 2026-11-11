@@ -1,0 +1,1 @@
+{"ts": "2026-11-11T13:48:23.538755+00:00", "service": "video-ingest", "level": "error", "event": "stream_evidence_failed", "incidentId": "inc-rule-e45df4d6d6c24265867b0a8fa306b580", "error": "ValueError", "detail": "Incomplete pre/post-event footage"}

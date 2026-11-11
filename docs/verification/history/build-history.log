@@ -1,0 +1,91 @@
+
+== Building 3 days of demo history (3 replay sessions per camera per day)
+Demo history snapshot cleared (91 objects)
+
+== Resetting demo data
+ Container smartops-notifier Stopping 
+ Container smartops-stream-processor Stopping 
+ Container smartops-stream-processor Stopped 
+ Container smartops-notifier Stopped 
+Demo reset: database reseeded, 22 evidence objects removed, 0 history incidents restored in 0.5s
+ Container smartops-stream-processor-run-4ff2235535a2 Creating 
+ Container smartops-stream-processor-run-4ff2235535a2 Created 
+ Container smartops-postgres Waiting 
+ Container smartops-redis Waiting 
+ Container smartops-minio Waiting 
+ Container smartops-minio Healthy 
+ Container smartops-postgres Healthy 
+ Container smartops-redis Healthy 
+ Container smartops-api Waiting 
+ Container smartops-detector Waiting 
+ Container smartops-api Waiting 
+ Container smartops-api Healthy 
+ Container smartops-notifier Starting 
+ Container smartops-api Healthy 
+ Container smartops-detector Healthy 
+ Container smartops-stream-processor Starting 
+ Container smartops-stream-processor Started 
+ Container smartops-notifier Started 
+  [ok]   Processor journals and realtime state cleared; pipeline restarted.
+Reset complete in 8 s. Everyone is signed out; sign in again at http://localhost:3000
+ Container smartops-stream-processor Stopping 
+ Container smartops-stream-processor Stopped 
+  [info] Replaying footage through the detector and zone rules (CPU: roughly 10-25 minutes)...
+ Container smartops-stream-processor-run-10a58fe911ed Creating 
+ Container smartops-stream-processor-run-10a58fe911ed Created 
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+session 1/9 (Sun 10:27): {'incidents': 6, 'evidence': 5, 'evidenceFailed': 1, 'frames': 1911}
+session 2/9 (Sun 15:31): {'incidents': 12, 'evidence': 10, 'evidenceFailed': 2, 'frames': 3822}
+session 3/9 (Sun 16:48): {'incidents': 18, 'evidence': 15, 'evidenceFailed': 3, 'frames': 5733}
+session 4/9 (Mon 10:30): {'incidents': 24, 'evidence': 20, 'evidenceFailed': 4, 'frames': 7644}
+session 5/9 (Mon 14:58): {'incidents': 30, 'evidence': 25, 'evidenceFailed': 5, 'frames': 9555}
+session 6/9 (Mon 18:34): {'incidents': 36, 'evidence': 30, 'evidenceFailed': 6, 'frames': 11466}
+session 7/9 (Tue 09:21): {'incidents': 42, 'evidence': 35, 'evidenceFailed': 7, 'frames': 13377}
+session 8/9 (Tue 14:49): {'incidents': 48, 'evidence': 40, 'evidenceFailed': 8, 'frames': 15288}
+session 9/9 (Tue 15:48): {'incidents': 54, 'evidence': 45, 'evidenceFailed': 9, 'frames': 17199}
+{"builtAt": "2026-11-11T13:09:22.638817+00:00", "days": 3, "sessionsPerDay": 3, "cameras": ["src-mall-atrium", "src-mall-store", "src-office-lobby", "src-campus-lab"], "incidents": 54, "evidence": 45, "evidenceFailed": 9, "frames": 17199}
+Demo history exported: 54 incidents, 216 timeline events, 90 evidence items
+ Container smartops-minio Waiting 
+ Container smartops-postgres Waiting 
+ Container smartops-redis Waiting 
+ Container smartops-postgres Healthy 
+ Container smartops-redis Healthy 
+ Container smartops-minio Healthy 
+ Container smartops-detector Waiting 
+ Container smartops-api Waiting 
+ Container smartops-detector Healthy 
+ Container smartops-api Healthy 
+ Container smartops-stream-processor Starting 
+ Container smartops-stream-processor Started 
+  [ok]   History snapshot saved; restoring it as the demo state.
+
+== Resetting demo data
+ Container smartops-notifier Stopping 
+ Container smartops-stream-processor Stopping 
+ Container smartops-stream-processor Stopped 
+ Container smartops-notifier Stopped 
+Demo reset: database reseeded, 90 evidence objects removed, 54 history incidents restored in 0.4s
+ Container smartops-stream-processor-run-0ab11fe5ee77 Creating 
+ Container smartops-stream-processor-run-0ab11fe5ee77 Created 
+ Container smartops-redis Waiting 
+ Container smartops-minio Waiting 
+ Container smartops-postgres Waiting 
+ Container smartops-postgres Healthy 
+ Container smartops-minio Healthy 
+ Container smartops-redis Healthy 
+ Container smartops-api Waiting 
+ Container smartops-detector Waiting 
+ Container smartops-api Waiting 
+ Container smartops-detector Healthy 
+ Container smartops-api Healthy 
+ Container smartops-stream-processor Starting 
+ Container smartops-api Healthy 
+ Container smartops-notifier Starting 
+ Container smartops-notifier Started 
+ Container smartops-stream-processor Started 
+  [ok]   Processor journals and realtime state cleared; pipeline restarted.
+Reset complete in 7 s. Everyone is signed out; sign in again at http://localhost:3000
+History built in 27 min. Every reset now restores it, shifted to end at the reset.

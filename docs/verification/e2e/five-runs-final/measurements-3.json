@@ -1,0 +1,10 @@
+{
+  "measuredAt": "2026-11-11T13:48:00.319Z",
+  "liveIncident": {
+    "id": "inc-rule-5f3b58bf3f324c43a68940166346aacf",
+    "summary": "3 people in Front aisle for 6s (crowding limit exceeded)",
+    "secondsFromTriggerFrameToVisible": 1.6
+  },
+  "aiReviewSettledAfterSeconds": 0,
+  "aiReview": "AI review\nadvisory · never changes the rule decision\n\nAI review skipped: this camera was reviewed 77 s ago (one review per camera every 120 s on this hardware). The rule result above stands on its own."
+}

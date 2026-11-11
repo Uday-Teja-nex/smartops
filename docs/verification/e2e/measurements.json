@@ -1,9 +1,10 @@
 {
-  "measuredAt": "2026-11-06T02:14:55.731Z",
+  "measuredAt": "2026-11-11T13:57:06.650Z",
   "liveIncident": {
-    "id": "inc-rule-679cf0fe17844487b1b774ca597c3baf",
+    "id": "inc-rule-2301bbd2b40f49278666d2d379d2b8ed",
     "summary": "3 people in Front aisle for 5s (crowding limit exceeded)",
-    "secondsFromTriggerFrameToVisible": 0.6
+    "secondsFromTriggerFrameToVisible": 2.2
   },
-  "aiReview": "AI review\nadvisory · never changes the rule decision\n\nAI review unavailable: model did not answer in time. The rule result above stands on its own."
+  "aiReviewSettledAfterSeconds": 0,
+  "aiReview": "AI review\nadvisory · never changes the rule decision\n\nAI review skipped: this camera was reviewed 80 s ago (one review per camera every 120 s on this hardware). The rule result above stands on its own."
 }
