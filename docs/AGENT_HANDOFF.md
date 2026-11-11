@@ -1,6 +1,6 @@
 # SmartOps handoff
 
-Updated 2026-11-06. Branch `codex/smartops-live-demo`; nothing is pushed.
+Updated 2026-11-11. Branch `codex/smartops-live-demo`; nothing is pushed.
 Goal: `GOAL_PROMPT.md`. Phase status: `PLAN.md`. Evidence:
 `docs/verification/`. Decisions: `docs/DECISIONS/` (ADRs 0001–0014).
 
@@ -26,7 +26,8 @@ README. The client demo is `docs/presentation/PRESENTATION_SCRIPT.md`.
 | AI review ≥ 95 % validated, p95 ≤ 30 s | **Hosted** (`nemotron-3.5-super-vl:free`): 11/11, p95 10.1 s. **Local CPU only** (`qwen2.5vl:3b`, 320 px, 4 threads): 11/11, p95 34.2 s; misses the 30 s target by about 4 s when incidents coincide. | `enrichment-live-384px.json`, `enrichment-live-local-320px.json` |
 | Honest AI failures | every failure names its cause; the incident stands without a review | API/orchestrator tests, E2E step 4 |
 | Tenancy and roles | cross-workspace 404, viewer 403 (API and UI) | API tests, E2E steps 6–7 |
-| Notifications | webhook delivered end to end in 1.0 s with a valid HMAC | `notifications-webhook.json` |
+| Notifications | webhook delivered end to end in 1.0 s with a valid HMAC; a real crowding incident accepted by Telegram for the owner's chat 2.2 s after the rule fired (owner to confirm receipt) | `notifications-webhook.json`, `notifications-telegram.json` |
+| Tier 1 on real footage | queue and crowding (store), crowding (mall atrium, office lobby), restricted entry (office, campus) | live incidents after reset; `sample-data/README.md` |
 | Degraded states | detector and stream outages named with their impact; automatic recovery | `degraded-states.json`, E2E step 9 |
 | Backup/restore | exact round trip; a restored clip downloads and decodes | `backup-restore.json` |
 | Cold start, 3× | done in Phase 1 | `cold-starts.json` |
@@ -53,14 +54,25 @@ Playwright E2E needs the running stack (`npx playwright test`).
   **Not yet tried with a real phone.**
 - **Auth:** 15-min tokens bound to revocable sessions, rotating HttpOnly
   refresh cookie, argon2id, throttling (ADR 0012).
-- **Notifications:** Telegram + webhook outbox (ADR 0013). **Telegram not
-  tried with a real bot.**
+- **Notifications:** Telegram + webhook outbox (ADR 0013). Telegram verified
+  with the owner's bot; the channel is paused after the test.
 - **AI review:** scene, verdict, model name and latency; specific failure
   reasons; optional native-Ollama fallback; 384 px clean frames; background
   model loading; shared runner options (ADR 0014).
 - **Operations:** `/v1/system/status` with an app-wide degraded banner and
   a Monitoring services panel; `/ready`; backup/restore; Caddy production
   overlay; CUDA and remote detector backends; non-root images.
+- **Footage:** three Pexels clips (licence in `sample-data/README.md`) for
+  the office lobby, mall atrium and campus lab cameras; camera stability was
+  measured before use.
+- **Rules on real crowds:** crowding/queue count raw detections (ByteTrack
+  could not confirm small people in a dense crowd at 3 fps: 0 of 45 frames
+  over the limit vs 34 raw), with 1.5 s flicker tolerance; cooldowns apply to
+  every rule type.
+- **Local AI capacity:** one local review at a time; at most one per camera
+  per 120 s on the laptop (`SMARTOPS_REVIEW_MIN_INTERVAL_SECONDS`); skipped
+  reviews say why. Smaller models were benchmarked and rejected
+  (`review-model-benchmark.json`).
 - **Pages cut:** Safety and Occupancy dashboards counted incident types the
   pipeline never produces; they now redirect to filtered Live Ops.
 
@@ -80,11 +92,12 @@ Playwright E2E needs the running stack (`npx playwright test`).
 
 ## Known limitations and what I couldn't verify
 
-- **Footage:** one supplied clip (a convenience store, licence
-  undocumented). Restricted entry, after-hours entry, loitering, unattended
-  bag and blocked exit are unit-tested on synthetic tracks only.
-- **Owner-dependent:** real phone camera, Telegram delivery, footage for
-  office and campus.
+- **Footage gaps:** unattended bag, blocked exit, loitering and after-hours
+  entry are unit-tested on synthetic tracks only; no licensed stock footage
+  exists, so the owner needs to record them. The store clip's licence is
+  still undocumented.
+- **Owner-dependent:** real phone camera; confirming the Telegram messages
+  arrived.
 - Local CPU AI review misses p95 ≤ 30 s (34 s) when incidents coincide; the hosted model passes.
 - `npm audit`: 8 moderate findings in the ESLint dev toolchain; production
   dependencies are clean.

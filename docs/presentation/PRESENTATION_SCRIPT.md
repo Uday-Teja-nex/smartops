@@ -39,7 +39,7 @@ step below says *(needs footage)*, skip it until that clip is in
 | 5:30 | Click **Acknowledge**, **Assign to me**, add a note, **Resolve**. Show the second window. | "Every action goes into the audit trail and appears on every other screen instantly. That's how a control room and a guard's tablet stay in sync." |
 | 6:30 | Show a phone notification *(needs the Telegram bot set up in Settings → Notifications)*. | "Per-workspace rules: who gets what severity, which categories, which hours." |
 | 7:00 | **Add phone camera** *(needs venue Wi-Fi)*: create, paste the RTMP URL into Larix Broadcaster, draw a zone, walk into it. | "Any camera works: a phone, an IP camera over RTSP, an existing NVR." |
-| 8:00 | Sign out; sign in as `viewer@mall.demo`. Then sign in as `operator@smartops.local`. | "Viewers can see but not act. And this is a different client, an office tower: none of the mall's data is visible, enforced by the server, not just hidden in the UI." |
+| 8:00 | Sign out; sign in as `viewer@mall.demo`. Then sign in as `operator@smartops.local` and open Live Ops. | "Viewers can see but not act. And this is a different client, an office tower: none of the mall's data is visible, enforced by the server, not just hidden in the UI. Here someone walked into the restricted wing; a rule caught it within a second." (Campus: `operator@campus.demo`, lab entrance.) |
 | 8:45 | **Reports**: Export CSV, Print / Save PDF. | "Daily and weekly summaries computed from the stored incidents." |
 | 9:15 | **Monitoring**. | "If a camera or a service drops, the console says exactly what's down and what that means, and recovers by itself." |
 | 9:45 | Close. | "It all ran on this laptop today. In your building it runs on a small server or a cloud GPU with the same software; nothing gets rewritten." |
@@ -65,6 +65,7 @@ step below says *(needs footage)*, skip it until that clip is in
 | Camera tile frozen or black | `docker compose restart stream-publisher`. The processor reconnects in a few seconds. |
 | No new incident for 3+ minutes | Queue and crowding have a 2-minute cooldown. Open an earlier incident from Live Ops instead. |
 | AI review says "unavailable: daily request limit" | The hosted free tier is used up for the day. The local fallback answers instead, about 10 s later. If both fail, say "the rule result stands on its own" and move on. |
+| AI review says "skipped: this camera was reviewed N s ago" | Expected on the laptop: the local model reviews at most one incident per camera every 2 minutes. Open an incident that has a review. |
 | AI review says "model did not answer in time" | Same: the alert stands. Run `.\demo.ps1 up` again before the next meeting to warm the model. |
 | Sign-in says "Too many sign-in attempts" | Wait 60 s. That's the brute-force protection working. |
 | Docker Desktop won't start ("cannot be accessed by the system") | `.\demo.ps1 fix-docker`, then `.\demo.ps1 up`. Never choose "Reset to factory defaults". |
