@@ -52,6 +52,13 @@ def update_org_settings(
     principal: Principal = Depends(require_supervisor),
 ) -> OrgResponse:
     org = _get_org(session, principal.org_id)
+    if "evidenceRetentionDays" in payload.settings:
+        # Shortening retention deletes evidence, so it is an admin decision.
+        if principal.role != "admin":
+            raise HTTPException(status_code=403, detail="Only an admin can change evidence retention")
+        days = payload.settings["evidenceRetentionDays"]
+        if not isinstance(days, int) or isinstance(days, bool) or not 1 <= days <= 3650:
+            raise HTTPException(status_code=422, detail="evidenceRetentionDays must be a whole number from 1 to 3650")
     org.settings = {**(org.settings or {}), **payload.settings}
     session.commit()
     session.refresh(org)

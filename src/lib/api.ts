@@ -418,3 +418,19 @@ export const fetchWorkspaceCapabilities = () =>
 
 export const createWorkspace = (input: WorkspaceInput) =>
   request<WorkspaceCreated>("/v1/workspaces", { method: "POST", body: JSON.stringify(input) });
+
+// ---------------------------------------------------------------------------
+// User management
+// ---------------------------------------------------------------------------
+
+export const inviteUser = (input: { email: string; name: string; role: UserRecord["role"] }) =>
+  request<{ user: UserRecord; temporaryPassword: string }>("/v1/users", { method: "POST", body: JSON.stringify(input) });
+
+export const updateUser = (id: string, input: { name?: string; role?: UserRecord["role"]; active?: boolean }) =>
+  request<UserRecord>(`/v1/users/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(input) });
+
+export const resetUserPassword = (id: string) =>
+  request<{ temporaryPassword: string }>(`/v1/users/${encodeURIComponent(id)}/reset-password`, { method: "POST" });
+
+export const changeOwnPassword = (currentPassword: string, newPassword: string) =>
+  request<void>("/v1/auth/password", { method: "POST", body: JSON.stringify({ currentPassword, newPassword }) });

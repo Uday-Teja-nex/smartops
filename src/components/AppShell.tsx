@@ -152,9 +152,9 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
           <div className="space-y-3">
             <div className="glass-panel flex items-center justify-between !rounded-2xl p-3">
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-slate-200">
+                <Link href="/account" title="Account and password" className="block truncate text-sm font-semibold text-slate-200 hover:underline">
                   {user.name}
-                </p>
+                </Link>
                 <p className="text-[10px] uppercase tracking-widest text-[color:var(--accent)]">
                   {user.role}
                 </p>
@@ -171,8 +171,8 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
               </button>
             </div>
             <p className="px-2 text-[10px] leading-relaxed text-slate-600">
-              Privacy-first: aggregate analytics only, no identity recognition,
-              evidence restricted by default.
+              <Link href="/privacy" className="underline decoration-dotted hover:text-slate-400">How SmartOps handles data</Link>:
+              no face or identity recognition, evidence restricted by default.
             </p>
           </div>
         </aside>

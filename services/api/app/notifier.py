@@ -74,8 +74,20 @@ def main() -> None:
 
     from app.config import get_settings
     beat = Redis.from_url(get_settings().redis_url, socket_timeout=2, socket_connect_timeout=2)
+    next_purge = 0.0
     with httpx.Client(timeout=10) as client:
         while _running:
+            if time.time() >= next_purge:
+                # Evidence retention runs hourly in this long-lived process.
+                next_purge = time.time() + 3600
+                try:
+                    from app.retention import purge_expired_evidence, remove_from_storage
+                    with SessionLocal() as session:
+                        purged = purge_expired_evidence(session, remove_from_storage)
+                    if purged:
+                        log.info("evidence purged", extra={"items": purged})
+                except Exception:  # noqa: BLE001 - retried next hour
+                    log.exception("evidence retention run failed")
             try:
                 beat.set(HEARTBEAT_KEY, str(time.time()), ex=15)
             except Exception:  # noqa: BLE001 - status pages report the missing heartbeat.

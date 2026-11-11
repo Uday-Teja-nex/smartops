@@ -35,8 +35,22 @@ def _aware(value: datetime) -> datetime:
     return value if value.tzinfo else value.replace(tzinfo=UTC)
 
 
+PRUNE_AFTER = timedelta(days=7)
+
+
+def prune_sessions(session: Session, user_id: str, now: datetime) -> int:
+    """Delete this user's sessions that ended (revoked or expired) over a week ago."""
+    from sqlalchemy import delete, or_
+    cutoff = now - PRUNE_AFTER
+    result = session.execute(delete(AuthSessionModel).where(
+        AuthSessionModel.user_id == user_id,
+        or_(AuthSessionModel.revoked_at < cutoff, AuthSessionModel.expires_at < cutoff)))
+    return result.rowcount or 0
+
+
 def open_session(session: Session, user: UserModel) -> tuple[AuthSessionModel, str]:
     now = datetime.now(UTC)
+    prune_sessions(session, user.id, now)
     token = secrets.token_urlsafe(32)
     record = AuthSessionModel(
         id=new_id("ses"),

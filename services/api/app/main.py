@@ -23,6 +23,7 @@ from app.routers import (
     sources,
     system,
     topology,
+    users,
     workspaces,
 )
 from app.seed import seed_database
@@ -57,6 +58,7 @@ app.include_router(reports.router)
 app.include_router(notifications.router)
 app.include_router(system.router)
 app.include_router(workspaces.router)
+app.include_router(users.router)
 
 
 def run_migrations() -> None:
