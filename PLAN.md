@@ -32,8 +32,20 @@ CA, release-step migrations, first admin via `python -m app.create_admin`,
 secure cookies, SSE and evidence through the proxy, closed internal ports,
 dev secrets refused. Let's Encrypt on a public domain is not exercised.
 
+## Client-IT items (added to the goal 2026-11-11)
+
+All built and tested: credentials encrypted at rest (`SMARTOPS_SECRETS_KEY`),
+user management and own-password change, per-workspace evidence retention
+with audited purge, multi-tab sessions with pruning, `/metrics` on the API,
+orchestrator and detector with Monitoring backed by them, `pip-audit` clean
+and `npm audit` clean for production (dev-only finding documented in
+`docs/verification/dependency-audit.md`), and the "How SmartOps handles
+data" page linked from the console footer.
+
 ## Next engineering steps
 
 1. Validate the remaining Tier 1 rules on real footage once it arrives, and
    tune the zones.
-2. Encrypt notification secrets at rest; prune expired sessions.
+2. Move `SMARTOPS_SECRETS_KEY` into a secrets manager on the cloud host;
+   add email invites and SSO when a client asks.
+3. Re-run `npm audit` once typescript-eslint ships a stable minimatch fix.

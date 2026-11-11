@@ -36,8 +36,12 @@ HISTORY_NOTES = ['Demo history: recorded footage replayed through the detection 
 SESSION_SECONDS = 120  # each replay session loops the clip for about two minutes, as the live stream does
 
 
-def clip_frames(path: Path, fps: int, seconds: float):
-    """Yield (offset_seconds, image) at `fps`, looping the clip for `seconds`."""
+def clip_frames(path: Path, fps: int, seconds: float, lead_in: float = 6.0):
+    """Yield (offset_seconds, image) at `fps`, looping the clip for `seconds`.
+
+    Like the live stream, a session joins the loop part-way: it starts
+    `lead_in` seconds before the clip's end, so an event at the loop point
+    has its pre-event footage instead of none."""
     capture = cv2.VideoCapture(str(path))
     native = capture.get(cv2.CAP_PROP_FPS) or 25.0
     frames = capture.get(cv2.CAP_PROP_FRAME_COUNT) or 0
@@ -46,7 +50,9 @@ def clip_frames(path: Path, fps: int, seconds: float):
     if duration <= 0:
         raise ValueError(f'Unreadable clip: {path.name}')
     step = max(1, round(native / fps))
-    for loop in range(max(1, math.ceil(seconds / duration))):
+    lead_in = min(lead_in, duration)
+    skip = duration - lead_in  # play only the clip's tail on the first pass
+    for loop in range(max(1, math.ceil(seconds / duration)) + 1):
         capture = cv2.VideoCapture(str(path))
         index = 0
         try:
@@ -54,8 +60,9 @@ def clip_frames(path: Path, fps: int, seconds: float):
                 ok, image = capture.read()
                 if not ok or image is None:
                     break
-                if index % step == 0:
-                    yield loop * duration + index / native, image
+                at = loop * duration + index / native - skip
+                if index % step == 0 and at >= 0:
+                    yield at, image
                 index += 1
         finally:
             capture.release()

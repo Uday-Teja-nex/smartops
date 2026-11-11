@@ -71,6 +71,10 @@ Other commands:
 ```
 
 ```powershell
+.\demo.ps1 build-history
+```
+
+```powershell
 .\demo.ps1 down
 ```
 
@@ -78,7 +82,14 @@ Other commands:
   Docker stopped or crash-looping, VM memory, disk, port collisions, missing
   models or API key, missing footage, streams not publishing.
 - `reset` returns all three workspaces to the freshly seeded state in about
-  6 s.
+  6 s, plus the demo history if you built it.
+- `build-history` replays each camera's recorded clip through the real
+  pipeline (detector, tracker, zone rules, evidence clips) at business-hours
+  times on the last 3 days (`-Days`, `-Sessions` to change). It takes 10-25
+  minutes on CPU and saves a snapshot that every `reset` restores, shifted so
+  the history always ends "now". History incidents carry a "Demo history"
+  badge, are never sent as notifications, and their operator actions are
+  labelled "Scripted demo action" in the timeline.
 - `backup` and `restore` cover the database and the evidence bucket.
 - If Docker Desktop crash-loops with "The file cannot be accessed by the
   system", run `.\demo.ps1 fix-docker`. Never choose "Reset to factory
@@ -105,7 +116,10 @@ Set in `.env`; switching needs no code change.
 | `openai-compatible` | Any OpenAI-style server: vLLM, LM Studio, a cloud GPU. |
 
 `SMARTOPS_MODEL_FALLBACK=ollama` makes a hosted provider fall back to native
-Ollama on rate limits, outages and timeouts. The detector backend is
+Ollama on rate limits, outages and timeouts. After two such failures in a
+row the hosted provider is skipped for `SMARTOPS_FALLBACK_COOLDOWN_SECONDS`
+(300), so reviews don't each wait for its timeout; Monitoring shows when it
+is skipped. The detector backend is
 `SMARTOPS_DETECTOR_BACKEND`: `ultralytics-cpu` (default), `ultralytics-cuda`
 or `remote`.
 

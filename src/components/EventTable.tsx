@@ -34,6 +34,7 @@ export const EventTable = ({
         return (
           <button
             key={event.id}
+            data-incident-id={event.id}
             type="button"
             onClick={() => onSelect(event)}
             className={`grid w-full grid-cols-12 gap-2 border-l-4 px-4 py-3 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${

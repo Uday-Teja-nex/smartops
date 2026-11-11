@@ -42,8 +42,8 @@ def fake_client(log):
 def test_clip_frames_samples_at_fps_and_loops_to_the_session_length(tmp_path):
     clip = tmp_path / 'clip.mp4'
     write_clip(clip, seconds=10)
-    offsets = [offset for offset, _ in history.clip_frames(clip, 3, 25)]
-    assert offsets[0] == 0 and offsets[-1] > 25  # three loops of 10 s cover 25 s
+    offsets = [offset for offset, _ in history.clip_frames(clip, 3, 25, lead_in=6)]
+    assert 0 <= offsets[0] < .5 and offsets[-1] > 25  # a 6 s lead-in plus three loops cover 25 s
     gaps = [b - a for a, b in zip(offsets, offsets[1:])]
     assert max(gaps) < 0.5 and min(gaps) > 0  # continuous across loop boundaries
 
@@ -104,3 +104,13 @@ def test_scripted_actions_follow_the_incident_in_order():
         times = [action['at'] for action in actions]
         assert times == sorted(times) and times[0] > start
         assert actions[-1]['action'] in {'resolve', 'false_positive'}
+
+
+def test_an_event_at_the_loop_point_gets_pre_event_footage(tmp_path):
+    clip = tmp_path / 'clip.mp4'
+    write_clip(clip, seconds=10)
+    offsets = [offset for offset, _ in history.clip_frames(clip, 3, 20, lead_in=6)]
+    # The clip restarts 6 s into the session, so 5 s of footage precede it.
+    restart = 6.0
+    assert any(abs(offset - restart) < .2 for offset in offsets)
+    assert offsets[0] <= restart - 5

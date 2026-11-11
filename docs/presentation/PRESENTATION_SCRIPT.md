@@ -23,6 +23,9 @@ step below says *(needs footage)*, skip it until that clip is in
    ```
 
    Then give the pipeline 3–4 minutes so the mall has fresh incidents.
+   If you ran `.\demo.ps1 build-history` once (10–25 minutes, any time
+   before), the reset also restores three days of history, so Overview and
+   Reports have trends from the first minute.
 4. Open two browser windows: one for you, one to show "another operator".
 5. Projector check: the console is designed for 1280×720 and up.
 
@@ -40,7 +43,7 @@ step below says *(needs footage)*, skip it until that clip is in
 | 6:30 | Show a phone notification *(needs the Telegram bot set up in Settings → Notifications)*. | "Per-workspace rules: who gets what severity, which categories, which hours." |
 | 7:00 | **Add phone camera** *(needs venue Wi-Fi)*: create, paste the RTMP URL into Larix Broadcaster, draw a zone, walk into it. | "Any camera works: a phone, an IP camera over RTSP, an existing NVR." |
 | 8:00 | Sign out; sign in as `viewer@mall.demo`. Then sign in as `operator@smartops.local` and open Live Ops. | "Viewers can see but not act. And this is a different client, an office tower: none of the mall's data is visible, enforced by the server, not just hidden in the UI. Here someone walked into the restricted wing; a rule caught it within a second." (Campus: `operator@campus.demo`, lab entrance.) |
-| 8:45 | **Reports**: Export CSV, Print / Save PDF. | "Daily and weekly summaries computed from the stored incidents." |
+| 8:45 | **Reports**: Export CSV, Print / Save PDF. | "Daily and weekly summaries computed from the stored incidents." If asked about the earlier days: "That history is this footage replayed through the same pipeline; each of those incidents says so, and the operator actions on them are marked as scripted." |
 | 9:15 | **Monitoring**. | "If a camera or a service drops, the console says exactly what's down and what that means, and recovers by itself." |
 | 9:45 | Close. | "It all ran on this laptop today. In your building it runs on a small server or a cloud GPU with the same software; nothing gets rewritten." |
 

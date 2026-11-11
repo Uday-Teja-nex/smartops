@@ -106,7 +106,8 @@ test("3. a rule incident is pushed to Live Ops without refresh", async ({ browse
   expect(fresh, "a new rule incident within 4 minutes").toBeTruthy();
   liveIncidentId = fresh!.id;
   // It must reach the open page through SSE, with no navigation or reload.
-  await expect(page.getByText(fresh!.shortSummary).first()).toBeVisible({ timeout: 10_000 });
+  // Matched by ID: demo history has incidents with the same summary text.
+  await expect(page.locator(`[data-incident-id="${fresh!.id}"]`)).toBeVisible({ timeout: 10_000 });
   const visibleAt = Date.now();
   const triggeredAt = Date.parse(fresh!.startTime);
   measurements.liveIncident = {
