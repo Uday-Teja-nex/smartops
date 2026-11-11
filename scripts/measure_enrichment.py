@@ -30,6 +30,8 @@ def review_state(incident):
             return "validated", note
         if note.startswith("AI review unavailable"):
             return "unavailable", note
+        if note.startswith("AI review skipped"):
+            return "skipped", note
     return None, None
 
 
@@ -61,7 +63,11 @@ while time.time() < deadline or any(row["outcome"] is None for row in rows.value
                            model=review.get("model"), modelLatencyMs=review.get("latencyMs"))
     time.sleep(2)
 
-done = [row for row in rows.values() if row["outcome"]]
+finished = [row for row in rows.values() if row["outcome"]]
+skipped = [row for row in finished if row["outcome"] == "skipped"]
+# Skipped (interval) incidents carry an explicit reason and are reported
+# separately; validation share and latency cover attempted reviews.
+done = [row for row in finished if row["outcome"] != "skipped"]
 validated = [row for row in done if row["outcome"] == "validated"]
 delays = sorted(row["secondsFromIncident"] for row in done)
 
@@ -79,6 +85,7 @@ summary = {
     "minutes": minutes,
     "incidents": len(rows),
     "reviewed": len(done),
+    "skippedByInterval": len(skipped),
     "validated": len(validated),
     "validatedShare": round(len(validated) / len(done), 3) if done else None,
     "neverReviewed": [row["id"] for row in rows.values() if not row["outcome"]],

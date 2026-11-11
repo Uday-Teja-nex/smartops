@@ -55,6 +55,7 @@ venv/
 /sample-data/output/
 /sample-data/tmp/
 /sample-data/input/*.mp4
+/sample-data/input/**/*.mp4
 /tmp-video-review/
 
 # local test artifacts
