@@ -124,7 +124,11 @@ class Replayer:
         ring = FrameRing(seconds=40)
         base = started.timestamp()
         waiting: list[dict] = []
-        for offset, image in clip_frames(clip, self.fps, SESSION_SECONDS):
+        # The session ends at SESSION_SECONDS, but like a camera that keeps
+        # streaming it runs on until every event has its 5 s post-roll.
+        for offset, image in clip_frames(clip, self.fps, SESSION_SECONDS + 6):
+            if offset > SESSION_SECONDS and not waiting:
+                break
             t = base + offset
             if image.shape[1] > 640:  # what the live loop sends the detector
                 image = cv2.resize(image, (640, round(image.shape[0] * 640 / image.shape[1])))
@@ -138,7 +142,8 @@ class Replayer:
                 continue
             ring.append(t, annotated.tobytes())
             observations = tracker.update(detections, t)
-            for event in engine.update(t, observations, wall_time=t, counted=raw_observations(detections)):
+            events = engine.update(t, observations, wall_time=t, counted=raw_observations(detections))
+            for event in events if offset <= SESSION_SECONDS else []:
                 payload = incident_payload(source, event, t)
                 payload['replay'] = True
                 payload['reviewNotes'] = list(HISTORY_NOTES)
@@ -149,7 +154,7 @@ class Replayer:
             for job in [job for job in waiting if t >= job['t'] + 5]:
                 waiting.remove(job)
                 self.finish(source, job, ring)
-        for job in waiting:  # fired in the clip's last seconds: no full post-roll
+        for job in waiting:  # only if the clip ended early; the evidence encoder says why
             self.finish(source, job, ring)
 
 

@@ -114,3 +114,22 @@ def test_an_event_at_the_loop_point_gets_pre_event_footage(tmp_path):
     restart = 6.0
     assert any(abs(offset - restart) < .2 for offset in offsets)
     assert offsets[0] <= restart - 5
+
+
+def test_an_event_near_the_session_end_still_gets_its_post_roll(tmp_path, monkeypatch):
+    clip = tmp_path / 'clip.mp4'
+    write_clip(clip, seconds=10)
+    uploads = []
+    monkeypatch.setattr(history, 'upload_evidence',
+                        lambda *args: uploads.append(args[2]) or {'clipUrl': 'c', 'thumbnailUrl': 't'})
+    monkeypatch.setattr(history, 'SESSION_SECONDS', 7)
+    log = []
+    started = datetime(2026, 11, 9, 4, 30, tzinfo=UTC)
+    replayer = history.Replayer(fake_client(log), 'http://detector', 3, started, seed=1)
+    replayer.session(SOURCE, clip, started)
+    assert uploads and replayer.stats['evidenceFailed'] == 0
+    for frames in uploads:
+        assert frames[-1][0] - frames[0][0] >= 4
+    created = [b for p, b in log if p == '/v1/incidents']
+    end = started.timestamp() + 7
+    assert all(datetime.fromisoformat(b['startTime']).timestamp() <= end for b in created)
