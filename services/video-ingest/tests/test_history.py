@@ -74,8 +74,8 @@ def test_replayed_incidents_are_marked_stamped_in_the_past_and_scripted(tmp_path
     # Created first, then updated with its evidence links.
     assert created[1]['evidence']['clipUrl'] == '/v1/evidence/c/url'
     for frames, triggered, pre in uploads:
-        # Pre-roll is whatever the session had before the event, at most 5 s.
-        assert abs(pre - min(5.0, triggered - started.timestamp())) < 1e-3
+        # Events start after the warm-up, so each has its full 5 s pre-roll.
+        assert pre == 5.0 and triggered - started.timestamp() >= history.WARM_UP
         assert frames[0][0] <= triggered - pre + .75 and frames[-1][0] >= triggered + 4
 
     actions = [(path, body) for path, body in log if path.endswith('/replay-action')]
@@ -122,7 +122,7 @@ def test_an_event_near_the_session_end_still_gets_its_post_roll(tmp_path, monkey
     uploads = []
     monkeypatch.setattr(history, 'upload_evidence',
                         lambda *args: uploads.append(args[2]) or {'clipUrl': 'c', 'thumbnailUrl': 't'})
-    monkeypatch.setattr(history, 'SESSION_SECONDS', 7)
+    monkeypatch.setattr(history, 'SESSION_SECONDS', 8)
     log = []
     started = datetime(2026, 11, 9, 4, 30, tzinfo=UTC)
     replayer = history.Replayer(fake_client(log), 'http://detector', 3, started, seed=1)
@@ -131,5 +131,5 @@ def test_an_event_near_the_session_end_still_gets_its_post_roll(tmp_path, monkey
     for frames in uploads:
         assert frames[-1][0] - frames[0][0] >= 4
     created = [b for p, b in log if p == '/v1/incidents']
-    end = started.timestamp() + 7
+    end = started.timestamp() + 8
     assert all(datetime.fromisoformat(b['startTime']).timestamp() <= end for b in created)

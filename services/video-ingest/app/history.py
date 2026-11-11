@@ -33,6 +33,7 @@ from app.tracking import Tracker
 
 HISTORY_NOTES = ['Demo history: recorded footage replayed through the detection pipeline.',
                  'AI review skipped: demo history is not sent to the AI model.']
+WARM_UP = 5.0  # seconds of footage a session needs before it takes events
 SESSION_SECONDS = 120  # each replay session loops the clip for about two minutes, as the live stream does
 
 
@@ -142,15 +143,18 @@ class Replayer:
                 continue
             ring.append(t, annotated.tobytes())
             observations = tracker.update(detections, t)
-            events = engine.update(t, observations, wall_time=t, counted=raw_observations(detections))
-            for event in events if offset <= SESSION_SECONDS else []:
+            # The rules start once WARM_UP seconds of footage are in the ring,
+            # so every event has its pre-roll; past the session end they stop.
+            events = (engine.update(t, observations, wall_time=t, counted=raw_observations(detections))
+                      if WARM_UP <= offset <= SESSION_SECONDS else [])
+            for event in events:
                 payload = incident_payload(source, event, t)
                 payload['replay'] = True
                 payload['reviewNotes'] = list(HISTORY_NOTES)
                 payload['detectionSummary'] = {**payload['detectionSummary'], 'historyReplay': {
                     'builtAt': self.built_at.isoformat(), 'clip': clip.name, 'session': started.isoformat()}}
                 waiting.append({'payload': payload, 't': t, 'snapshot': annotated.tobytes(), 'boxes': detections,
-                                'pre_seconds': min(5.0, offset)})
+                                'pre_seconds': 5.0})
             for job in [job for job in waiting if t >= job['t'] + 5]:
                 waiting.remove(job)
                 self.finish(source, job, ring)
