@@ -1,0 +1,8 @@
+{
+  "measuredAt": "2026-11-11T12:37:56.521Z",
+  "liveIncident": {
+    "id": "inc-rule-e8f12b8ca0124f4c9f5b99b113c73a47",
+    "summary": "3 people in Front aisle for 5s (crowding limit exceeded)",
+    "secondsFromTriggerFrameToVisible": 1.4
+  }
+}

@@ -1,0 +1,67 @@
+
+Running 9 tests using 1 worker
+
+  ok 1 e2e\demo.spec.ts:73:5 › 1. operator signs in and sees real KPIs for the mall (2.2s)
+  ok 2 e2e\demo.spec.ts:80:5 › 2. live camera tile plays real video (6.3s)
+  ok 3 e2e\demo.spec.ts:94:5 › 3. a rule incident is pushed to Live Ops without refresh (11.6s)
+  x  4 e2e\demo.spec.ts:120:5 › 4. incident shows evidence and an AI review or its stated reason (1.6m)
+  -  5 e2e\demo.spec.ts:136:5 › 5. lifecycle actions update the timeline and a second browser live
+  -  6 e2e\demo.spec.ts:157:5 › 6. viewers are read-only in the UI and the API
+  -  7 e2e\demo.spec.ts:169:5 › 7. another workspace sees none of the mall's data
+  -  8 e2e\demo.spec.ts:180:5 › 8. reports show computed summaries with CSV and PDF export
+  -  9 e2e\demo.spec.ts:191:5 › 9. stopping the detector shows a named degraded state that recovers
+
+
+  1) e2e\demo.spec.ts:120:5 › 4. incident shows evidence and an AI review or its stated reason ─────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m failed
+
+    Locator:  getByText(/AI review by|AI review unavailable|AI review skipped|No AI review was recorded|Image consistent|Image casts doubt|Image unclear/).first()
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  90000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 90000ms[22m
+    [2m  - waiting for getByText(/AI review by|AI review unavailable|AI review skipped|No AI review was recorded|Image consistent|Image casts doubt|Image unclear/).first()[22m
+
+
+      129 |   // Within 90 s the review must have landed or say why; never an endless spinner.
+      130 |   const review = page.getByText(/AI review by|AI review unavailable|AI review skipped|No AI review was recorded|Image consistent|Image casts doubt|Image unclear/);
+    > 131 |   await expect(review.first()).toBeVisible({ timeout: 90_000 });
+          |                                ^
+      132 |   measurements.aiReview = await page.locator("section").filter({ hasText: "AI review" }).first().innerText();
+      133 |   await shot(page, "04-incident-evidence-ai");
+      134 | });
+        at C:\Users\UDAY\Desktop\Projetcs\scope\me\e2e\demo.spec.ts:131:32
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-4-incident-shows-evid-70e0c-review-or-its-stated-reason\test-failed-4.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-4-incident-shows-evid-70e0c-review-or-its-stated-reason\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-4-incident-shows-evid-70e0c-review-or-its-stated-reason\test-failed-3.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-4-incident-shows-evid-70e0c-review-or-its-stated-reason\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: docs\verification\e2e\artifacts\demo-4-incident-shows-evid-70e0c-review-or-its-stated-reason\error-context.md
+
+    attachment #6: trace (application/zip) ─────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-4-incident-shows-evid-70e0c-review-or-its-stated-reason\trace.zip
+    Usage:
+
+        npx playwright show-trace docs\verification\e2e\artifacts\demo-4-incident-shows-evid-70e0c-review-or-its-stated-reason\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e\demo.spec.ts:120:5 › 4. incident shows evidence and an AI review or its stated reason ──────
+  5 did not run
+  3 passed (2.4m)
