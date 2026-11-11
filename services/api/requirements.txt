@@ -11,3 +11,4 @@ prometheus-client==0.21.0
 argon2-cffi==25.1.0
 httpx==0.28.1
 tzdata==2026.2
+cryptography==44.0.0

@@ -18,6 +18,7 @@ from app.notifications import (
     send,
     validate_active_hours,
 )
+from app.secret_box import open_, seal
 from app.tenancy import get_tenant_session
 
 router = APIRouter(prefix="/v1/notifications", tags=["notifications"])
@@ -83,7 +84,7 @@ def _mask(value: str) -> str:
 
 
 def _destination(channel: NotificationChannelModel) -> str:
-    config = channel.config or {}
+    config = open_(channel.config)
     if channel.kind == "telegram":
         return f"Telegram chat {_mask(str(config.get('chatId', '')))}" if config.get("chatId") else "Telegram (no chat)"
     url = str(config.get("url", ""))
@@ -98,7 +99,7 @@ def _serialize(channel: NotificationChannelModel) -> ChannelResponse:
         id=channel.id, kind=channel.kind, name=channel.name, enabled=channel.enabled,
         minSeverity=channel.min_severity, categories=list(channel.categories or []),
         activeHours=channel.active_hours, destination=_destination(channel),
-        configured=sorted(key for key, value in (channel.config or {}).items() if value),
+        configured=sorted(key for key, value in open_(channel.config).items() if value),
         createdAt=channel.created_at, updatedAt=channel.updated_at,
     )
 
@@ -147,7 +148,7 @@ def create_channel(payload: ChannelInput, session: Session = Depends(get_tenant_
     now = datetime.now(UTC)
     channel = NotificationChannelModel(
         id=new_id("chn"), org_id=principal.org_id, kind=payload.kind, name=payload.name.strip(),
-        enabled=payload.enabled, config=_validated_config(payload.kind, payload.config),
+        enabled=payload.enabled, config=seal(_validated_config(payload.kind, payload.config)),
         min_severity=payload.minSeverity, categories=payload.categories,
         active_hours=_hours(payload.activeHours), created_at=now, updated_at=now,
     )
@@ -173,7 +174,7 @@ def update_channel(channel_id: str, payload: ChannelUpdate, session: Session = D
     elif payload.activeHours is not None:
         channel.active_hours = _hours(payload.activeHours)
     if payload.config is not None:
-        channel.config = _validated_config(channel.kind, {**(channel.config or {}), **payload.config})
+        channel.config = seal(_validated_config(channel.kind, {**open_(channel.config), **payload.config}))
     channel.updated_at = datetime.now(UTC)
     session.commit()
     return _serialize(channel)

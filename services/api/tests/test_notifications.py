@@ -91,7 +91,11 @@ def test_channel_admin_api_masks_secrets_and_enforces_roles(client, admin_header
                            json={"enabled": False, "config": {"chatId": "111122223333"}})
     assert patched.json()["enabled"] is False and patched.json()["destination"].endswith("3333")
     with Session(engine) as session:
-        assert session.get(NotificationChannelModel, channel_id).config["botToken"] == "123456:SECRET-TOKEN-VALUE"
+        stored = session.get(NotificationChannelModel, channel_id).config
+    # Encrypted at rest: nothing readable in the database row, still usable by the notifier.
+    from app.secret_box import open_
+    assert list(stored) == ["_enc"] and "SECRET" not in stored["_enc"] and "111122223333" not in stored["_enc"]
+    assert open_(stored) == {"botToken": "123456:SECRET-TOKEN-VALUE", "chatId": "111122223333"}
 
 
 def test_new_incidents_enqueue_matching_channels_once(client, admin_headers, service_headers,

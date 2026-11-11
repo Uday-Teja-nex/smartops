@@ -197,4 +197,5 @@ def send(channel: NotificationChannelModel, payload: dict[str, Any], client: htt
     sender = SENDERS.get(channel.kind)
     if sender is None:
         raise DeliveryError(f"Unsupported channel kind {channel.kind}", retryable=False)
-    sender(channel.config or {}, payload, client)
+    from app.secret_box import open_
+    sender(open_(channel.config), payload, client)

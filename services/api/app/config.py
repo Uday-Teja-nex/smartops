@@ -53,6 +53,9 @@ class Settings(BaseSettings):
     refresh_ttl_hours: int = Field(default=12, ge=1, le=24 * 30)
     refresh_cookie_secure: bool = False
     internal_token: str = "smartops-internal-dev-token"
+    # Fernet key for credentials stored in the database (python -c "from
+    # cryptography.fernet import Fernet; print(Fernet.generate_key().decode())").
+    secrets_key: str = ""
 
     model_config = SettingsConfigDict(
         env_prefix="SMARTOPS_",
@@ -76,6 +79,8 @@ class Settings(BaseSettings):
             self.minio_secret_key == 'smartopsminio' or len(self.minio_secret_key.strip()) < 16
         ):
             raise ValueError('Production requires a non-default object storage secret of at least 16 characters')
+        if not self.secrets_key:
+            raise ValueError('Production requires SMARTOPS_SECRETS_KEY to encrypt stored credentials')
         if 'admin@smartops.local' in self.platform_admin_emails:
             raise ValueError('Production must not grant platform admin to the demo account')
         if self.seed_demo_data:
