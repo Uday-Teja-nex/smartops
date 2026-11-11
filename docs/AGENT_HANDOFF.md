@@ -21,7 +21,9 @@ README. The client demo is `docs/presentation/PRESENTATION_SCRIPT.md`.
 recorded clip through the real detector, tracker and rules at virtual times
 over the last 3 days of business hours (`-Days`, `-Sessions`) and exports
 the result as a snapshot. Every `reset` then restores it, shifted to end at
-the reset, so the KPIs and reports have days of data. History incidents are
+the reset, so the KPIs and reports have days of data. The current snapshot
+(built 2026-11-11): 45 incidents, 180 timeline events, every one with its
+clip and thumbnail; reset restores it in under 1 s. History incidents are
 badged "Demo history", never notified or sent to the AI model, and operator
 actions on them are labelled "Scripted demo action" in the timeline.
 
