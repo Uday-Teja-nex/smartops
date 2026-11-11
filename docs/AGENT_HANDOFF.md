@@ -17,11 +17,19 @@ about 2.5 minutes while the local model loads. `preflight`, `reset` (about
 8 s), `status`, `backup`, `restore` and `fix-docker` are described in the
 README. The client demo is `docs/presentation/PRESENTATION_SCRIPT.md`.
 
+`.\demo.ps1 build-history` (about 27 min, once) replays each camera's
+recorded clip through the real detector, tracker and rules at virtual times
+over the last 3 days of business hours (`-Days`, `-Sessions`) and exports
+the result as a snapshot. Every `reset` then restores it, shifted to end at
+the reset, so the KPIs and reports have days of data. History incidents are
+badged "Demo history", never notified or sent to the AI model, and operator
+actions on them are labelled "Scripted demo action" in the timeline.
+
 ## Acceptance evidence
 
 | Gate | Result | Evidence |
 |---|---|---|
-| Section C demo script, 5× from reset | **Passed 5/5** (9/9 Playwright steps each, real Edge, real stack). An earlier attempt failed once at the degraded-banner step; the step now checks the API first. | `e2e/five-runs/summary.json`, `e2e/five-runs-attempt1/` |
+| Section C demo script, 5× from reset | **Passed 5/5 on the current stack** (attempt 8, 2026-11-11, with demo history loaded): 9/9 Playwright steps each, 120–277 s per run, 57/58 live evidence clips ready (one honest "Incomplete pre/post-event footage" refusal), 0 DB pool errors. Attempts 1–7 after the upgrades failed once each; every failure is archived with its cause and fix (see below). The earlier 5/5 (2026-11-06) predates the upgrades. | `e2e/five-runs-final/`, `e2e/five-runs-final-attempt1..7/`, `e2e/five-runs/` |
 | Live push ≤ 5 s | 0.3–3.0 s from the triggering frame to the open Live Ops page across the 5 runs | `e2e/five-runs/measurements-*.json` |
 | AI review ≥ 95 % validated, p95 ≤ 30 s | **Hosted** (`nemotron-3.5-super-vl:free`): 11/11, p95 10.1 s. **Local CPU only** (`qwen2.5vl:3b`, 320 px, 4 threads): 11/11, p95 34.2 s; misses the 30 s target by about 4 s when incidents coincide. | `enrichment-live-384px.json`, `enrichment-live-local-320px.json` |
 | Honest AI failures | every failure names its cause; the incident stands without a review | API/orchestrator tests, E2E step 4 |
@@ -34,8 +42,8 @@ README. The client demo is `docs/presentation/PRESENTATION_SCRIPT.md`.
 | Production rehearsal | HTTPS via Caddy, release-step migrations, first-admin bootstrap, secure cookies, SSE and evidence through the proxy, internal ports closed, dev secrets refused | `production-rehearsal.json` |
 | 30-min 3-stream soak | **Passed:** min 2.73 fps, median 3.0, 0 failures, no memory growth. The baseline failed (local AI reviews starved the detector); fixed by capping review threads. | `stream-soak-final-assessment.json`, `stream-soak-baseline-assessment.json` |
 
-Tests (2026-11-06): API 102, video-ingest 47, orchestrator 46, detector 10,
-stream-publisher 3, frontend 23. Lint and typecheck are clean. The
+Tests (2026-11-11): API 126, video-ingest 64, orchestrator 50, detector 10,
+stream-publisher 3, frontend 24. Lint and typecheck are clean. The
 Playwright E2E needs the running stack (`npx playwright test`).
 
 ## Built this session (beyond the Phase 0–1 work)
@@ -76,6 +84,38 @@ Playwright E2E needs the running stack (`npx playwright test`).
 - **Pages cut:** Safety and Occupancy dashboards counted incident types the
   pipeline never produces; they now redirect to filtered Live Ops.
 
+## Built 2026-11-11 (client-IT items and hardening)
+
+- **Secrets at rest:** notification credentials are Fernet-encrypted under
+  `SMARTOPS_SECRETS_KEY` (generation command in `DEPLOYMENT_READINESS.md`).
+- **Users:** admins add, deactivate, re-role and reset the password of users; everyone can change
+  their own password. Sessions are per tab, and ended sessions are pruned
+  after 7 days.
+- **Retention:** per-workspace evidence retention (default 30 days) with an
+  audited purge. The demo-history snapshot (`history/` in MinIO) is exempt.
+- **Metrics:** Prometheus `/metrics` on the API, orchestrator and detector.
+  `GET /v1/system/metrics` turns them into p50/p95 latency and outcome
+  shares for the Monitoring page, or says "metrics unavailable (reason)".
+- **Privacy:** a "How SmartOps handles data" page is linked from the
+  console footer.
+- **Dependencies:** fastapi 0.161 / starlette 1.10, cryptography 50, pyjwt
+  2.15, langgraph 1.2, httpx 0.28.1 everywhere. `pip-audit` is clean;
+  `npm audit` is clean for production
+  (`docs/verification/dependency-audit.md`).
+- **AI fallback breaker:** after 2 failed hosted requests the hosted model
+  is skipped for `SMARTOPS_FALLBACK_COOLDOWN_SECONDS` (300). One probe is
+  then allowed, and Monitoring says it is paused. Before this, every review
+  paid the hosted timeout before falling back (85–136 s on CPU).
+
+## What the E2E gate attempts found (all fixed)
+
+| Attempt | Failure | Cause | Fix |
+|---|---|---|---|
+| 5 | evidence "capture gap" | the evidence ring was fed by the detection loop, so it starved while the detector was slow | `RingSampler`: a per-camera thread feeds the ring at 3 fps independently |
+| 6 | QueuePool exhausted | FastAPI ≥ 0.118 keeps yield dependencies open for the whole response, so every open SSE stream held a DB connection through auth | auth opens and closes its own session |
+| 7 | step 4 timed out at 90 s | CPU-fallback reviews waited for the hosted timeout first | circuit breaker; the step waits the stated 180 s bound |
+| history | 9/54 clips failed | events at the clip's loop point or end lacked pre- or post-roll | sessions join the loop part-way and run on until each event has its post-roll |
+
 ## Findings worth knowing
 
 - Docker Desktop 4.76 leaves AF_UNIX socket files behind on every stop and
@@ -99,7 +139,10 @@ Playwright E2E needs the running stack (`npx playwright test`).
 - **Owner-dependent:** real phone camera; confirming the Telegram messages
   arrived.
 - Local CPU AI review misses p95 ≤ 30 s (34 s) when incidents coincide; the hosted model passes.
-- `npm audit`: 8 moderate findings in the ESLint dev toolchain; production
-  dependencies are clean.
-- Notification secrets are unencrypted at rest (never returned by the
-  API); expired `auth_sessions` rows are not pruned.
+- `npm audit`: 8 moderate findings in the ESLint dev toolchain (minimatch);
+  production dependencies are clean.
+- CI has not run on the upgraded dependencies: nothing is pushed.
+- `SMARTOPS_SECRETS_KEY` is an env var; a cloud deployment should hold it
+  in a secrets manager, and rotating it means re-encrypting the channels.
+- No email invites or SSO yet; an admin passes on a generated temporary
+  password.
