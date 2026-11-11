@@ -126,6 +126,7 @@ def run(source, client, stop, *, detector_url, fps=3):
     ring = FrameRing()
     evidence_waiting = []
     evidence_running = []
+    stream_started_at = None  # capture time of this worker's first processed frame
     evidence_pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix='evidence')
     previous_sequence = 0
     last_health = time.monotonic() - 5
@@ -224,7 +225,8 @@ def run(source, client, stop, *, detector_url, fps=3):
                             job['frames'] = ring.frames(triggered_at - 5, triggered_at + 5)
                         if job['frames'] is not None and not pending and len(evidence_running) < 2:
                             future = evidence_pool.submit(upload_evidence, source['id'], job['payload']['id'],
-                                                          job['frames'], job['snapshot'], job['boxes'], triggered_at)
+                                                          job['frames'], job['snapshot'], job['boxes'], triggered_at,
+                                                          job['pre_seconds'])
                             evidence_running.append((future, job['payload']))
                             evidence_waiting.remove(job)
                     response = client.post(detector_url + '/v1/detect', json={
@@ -235,7 +237,11 @@ def run(source, client, stop, *, detector_url, fps=3):
                     response.raise_for_status()
                     detector_ms = response.json().get('inferenceMs')
                     processing_lag_ms = (time.monotonic() - frame.monotonic_at) * 1000
-                    # Discard slow detector output instead of treating it as live.
+                    # Discard slow detector output instead of treating it as live,
+                    # but keep the frame (without boxes) so evidence clips stay
+                    # continuous when the detector falls behind.
+                    if time.monotonic() - frame.monotonic_at >= 1.5:
+                        ring.append(frame.captured_at, jpeg)
                     if time.monotonic() - frame.monotonic_at < 1.5:
                         processed_frames += 1
                         annotated = annotate(image, response.json()['detections'])
@@ -244,6 +250,7 @@ def run(source, client, stop, *, detector_url, fps=3):
                             raise RuntimeError('Evidence annotation encoding failed')
                         evidence_jpeg = evidence_encoded.tobytes()
                         ring.append(frame.captured_at, evidence_jpeg)
+                        stream_started_at = stream_started_at or frame.captured_at
                         detections = response.json()['detections']
                         observations = tracker.update(detections, frame.monotonic_at)
                         counted = raw_observations(detections)
@@ -253,7 +260,13 @@ def run(source, client, stop, *, detector_url, fps=3):
                             if len(evidence_waiting) + len(evidence_running) < 20:
                                 # The AI reviews the clean frame; burned-in boxes and scores confuse it.
                                 pending.track_evidence(payload, review_jpeg(image) if enrichment else None)
-                                evidence_waiting.append({'payload': payload, 'triggered_at': frame.captured_at, 'snapshot': evidence_jpeg,
+                                pre_seconds = min(5.0, frame.captured_at - stream_started_at)
+                                if pre_seconds < 4.25:
+                                    payload['reviewNotes'].append(
+                                        f'Evidence clip starts {max(pre_seconds, 0):.1f} s before the event '
+                                        '(the camera connected just before it).')
+                                evidence_waiting.append({'pre_seconds': pre_seconds,
+                                                         'payload': payload, 'triggered_at': frame.captured_at, 'snapshot': evidence_jpeg,
                                                          'boxes': response.json()['detections'], 'frames': None})
                             else:
                                 payload['reviewNotes'].append('Evidence unavailable: evidence queue capacity reached')

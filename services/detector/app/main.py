@@ -16,7 +16,15 @@ import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
+from fastapi import Response
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
+
 from app.backends import get_backend
+
+DETECT_REQUESTS = Counter("smartops_detector_requests_total", "Detection requests", ["outcome"])
+INFERENCE_SECONDS = Histogram("smartops_detector_inference_seconds", "Model inference time per request",
+                              buckets=(0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5))
+DETECTIONS = Counter("smartops_detector_detections_total", "Objects detected", ["label"])
 
 app = FastAPI(title="SmartOps Detector", version="0.1.0")
 backend = get_backend()
@@ -55,6 +63,11 @@ class DetectResponse(BaseModel):
     detections: list[DetectionPayload]
 
 
+@app.get("/metrics", include_in_schema=False)
+def metrics() -> Response:
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {
@@ -84,8 +97,17 @@ def detect(payload: DetectRequest) -> DetectResponse:
         images.append(image)
 
     started = time.perf_counter()
-    per_frame = backend.detect(images, payload.minConfidence)
+    try:
+        per_frame = backend.detect(images, payload.minConfidence)
+    except Exception:
+        DETECT_REQUESTS.labels("error").inc()
+        raise
     elapsed_ms = (time.perf_counter() - started) * 1000
+    DETECT_REQUESTS.labels("ok").inc()
+    INFERENCE_SECONDS.observe(elapsed_ms / 1000)
+    for frame_detections in per_frame:
+        for det in frame_detections:
+            DETECTIONS.labels(det.label if det.label in {"person", "backpack", "handbag", "suitcase"} else "other").inc()
 
     detections: list[DetectionPayload] = []
     for frame, frame_detections in zip(payload.frames, per_frame):

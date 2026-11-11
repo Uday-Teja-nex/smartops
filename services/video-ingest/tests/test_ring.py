@@ -35,3 +35,14 @@ def test_ring_rejects_oversize_and_resets_reversed_time():
     ring.append(2, b'12')
     ring.append(1, b'34')
     assert ring.frames() == [(1, b'34')]
+
+
+def test_short_pre_roll_is_accepted_only_right_after_connect():
+    import pytest
+    from app.ring import require_evidence_window
+    frames = [(t / 3, b'x') for t in range(0, 3 * 8)]          # 0 .. 7.67 s, camera started at 0
+    require_evidence_window(frames, 2.5, pre_seconds=2.5)        # 2.5 s pre-roll at stream start
+    with pytest.raises(ValueError):
+        require_evidence_window(frames, 2.5)                     # normal 5 s requirement fails
+    with pytest.raises(ValueError):
+        require_evidence_window(frames, 0.5, pre_seconds=0.5)    # under 1 s is never accepted

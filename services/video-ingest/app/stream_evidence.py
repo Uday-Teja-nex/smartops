@@ -12,8 +12,8 @@ from urllib3 import PoolManager, Timeout
 from app.ring import require_evidence_window
 
 
-def upload_evidence(source_id, incident_id, frames, snapshot, detections, triggered_at):
-    require_evidence_window(frames, triggered_at)
+def upload_evidence(source_id, incident_id, frames, snapshot, detections, triggered_at, pre_seconds=5.0):
+    require_evidence_window(frames, triggered_at, pre_seconds=pre_seconds)
     endpoint = urlparse(os.getenv('SMARTOPS_MINIO_ENDPOINT', 'http://minio:9000'))
     storage = Minio(endpoint.netloc, access_key=os.getenv('SMARTOPS_MINIO_ACCESS_KEY', 'smartops'),
                     secret_key=os.getenv('SMARTOPS_MINIO_SECRET_KEY', 'smartopsminio'),

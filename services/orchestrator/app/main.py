@@ -1,6 +1,7 @@
 import logging
 import os
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 from app.enrichment import EnrichmentRequest, EnrichmentResponse, describe_failure, enrich
 
 from app.graph import REVIEW_CONFIDENCE_THRESHOLD, build_graph, describe_graph
@@ -14,6 +15,17 @@ graph = build_graph(provider)
 
 # Outcome of the most recent real review, for status pages (in-process only).
 last_review: dict = {}
+REVIEWS = Counter("smartops_ai_reviews_total", "AI review outcomes", ["outcome", "reason"])
+REVIEW_SECONDS = Histogram("smartops_ai_review_seconds", "AI review time including queue wait",
+                           buckets=(1, 2, 5, 10, 20, 30, 60, 120))
+
+
+def _reason_label(reason: str) -> str:
+    for key in ("daily request limit", "rate limit", "API key", "did not answer", "unreachable", "validation",
+                "loading", "busy", "provider error", "refused", "not found"):
+        if key in reason:
+            return key.replace(" ", "_")
+    return "other"
 
 
 @app.post('/v1/incidents/enrich', response_model=EnrichmentResponse)
@@ -21,16 +33,24 @@ def enrich_incident(payload: EnrichmentRequest):
     import time
     try:
         result = enrich(provider, payload)
+        REVIEWS.labels("validated", "").inc()
+        REVIEW_SECONDS.observe(result.latencyMs / 1000)
         last_review.clear()
         last_review.update(ok=True, at=time.time(), model=result.model, latencyMs=result.latencyMs)
         return result
     except Exception as exc:
         reason = describe_failure(exc)
+        REVIEWS.labels("unavailable", _reason_label(reason)).inc()
         last_review.clear()
         last_review.update(ok=False, at=time.time(), reason=reason)
         logging.getLogger('smartops.enrichment').warning(
             'enrichment failed incident=%s reason=%s error=%s', payload.incidentId, reason, type(exc).__name__)
         raise HTTPException(status_code=503, detail=reason) from None
+
+
+@app.get("/metrics", include_in_schema=False)
+def metrics() -> Response:
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @app.get("/v1/status")

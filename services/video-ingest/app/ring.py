@@ -2,9 +2,13 @@
 from collections import deque
 
 
-def require_evidence_window(frames, triggered_at, tolerance=.75):
-    """Require five seconds either side, allowing one normal sampling interval."""
-    if len(frames) < 2 or frames[0][0] > triggered_at - 5 + tolerance or frames[-1][0] < triggered_at + 5 - tolerance:
+def require_evidence_window(frames, triggered_at, tolerance=.75, pre_seconds=5.0):
+    """Require pre_seconds before (5 s normally; less only right after the camera
+    connected, never under 1 s) and five seconds after, allowing one sampling
+    interval of tolerance."""
+    if pre_seconds < 1:
+        raise ValueError('Incomplete pre/post-event footage')
+    if len(frames) < 2 or frames[0][0] > triggered_at - pre_seconds + tolerance or frames[-1][0] < triggered_at + 5 - tolerance:
         raise ValueError('Incomplete pre/post-event footage')
     if any(b[0] - a[0] > 1.5 or b[0] <= a[0] for a, b in zip(frames, frames[1:])):
         raise ValueError('Evidence capture gap')

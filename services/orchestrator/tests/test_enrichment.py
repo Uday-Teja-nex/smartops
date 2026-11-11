@@ -61,3 +61,14 @@ def response(status, text=''):
 def test_failures_have_specific_reasons_without_urls(error, reason):
     assert describe_failure(error) == reason
     assert '://' not in reason and 'openrouter' not in reason
+
+
+def test_metrics_count_review_outcomes_by_reason(monkeypatch):
+    from fastapi.testclient import TestClient
+    import app.main as main
+    monkeypatch.setattr(main, 'enrich', lambda provider, payload: (_ for _ in ()).throw(response(429, 'free-models-per-day')))
+    client = TestClient(main.app)
+    body = {'incidentId': 'm', 'eventType': 'crowding', 'measuredSummary': 's', 'imageBase64': 'aA=='}
+    assert client.post('/v1/incidents/enrich', json=body).status_code == 503
+    text = client.get('/metrics').text
+    assert 'smartops_ai_reviews_total{outcome="unavailable",reason="daily_request_limit"}' in text
