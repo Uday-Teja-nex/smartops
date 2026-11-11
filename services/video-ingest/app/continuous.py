@@ -160,9 +160,14 @@ def run(source, client, stop, *, detector_url, fps=3):
                     pending.finish_evidence(payload)
                     evidence_running.remove((future, payload))
                 for job in list(evidence_waiting):
-                    payload, triggered_at, _, _ = job
-                    if time.time() - triggered_at > 20:
-                        payload['reviewNotes'].append('Evidence unavailable: timed out waiting for post-event footage or encoding capacity')
+                    payload, frames = job['payload'], job['frames']
+                    waited = time.time() - job['triggered_at']
+                    # Frames already copied out of the ring are safe; only the
+                    # encoding slot can be late, so allow it longer.
+                    if (frames is None and waited > 20) or waited > 120:
+                        payload['reviewNotes'].append(
+                            'Evidence unavailable: timed out waiting for post-event footage'
+                            if frames is None else 'Evidence unavailable: timed out waiting for encoding capacity')
                         pending.finish_evidence(payload)
                         evidence_waiting.remove(job)
                 # Retries use the same incident ID. A full buffer pauses detection
@@ -211,11 +216,16 @@ def run(source, client, stop, *, detector_url, fps=3):
                         raise RuntimeError('Frame encoding failed')
                     jpeg = encoded.tobytes()
                     for job in list(evidence_waiting):
-                        payload, triggered_at, snapshot, boxes = job
-                        if frame.captured_at >= triggered_at + 5 and not pending and len(evidence_running) < 2:
-                            frames = ring.frames(triggered_at - 5, triggered_at + 5)
-                            future = evidence_pool.submit(upload_evidence, source['id'], payload['id'], frames, snapshot, boxes, triggered_at)
-                            evidence_running.append((future, payload))
+                        triggered_at = job['triggered_at']
+                        if job['frames'] is None and frame.captured_at >= triggered_at + 5:
+                            # Copy the 10 s window out of the 32 s ring now: a job
+                            # waiting for delivery or an encoding slot must not
+                            # lose its pre-event frames to ring eviction.
+                            job['frames'] = ring.frames(triggered_at - 5, triggered_at + 5)
+                        if job['frames'] is not None and not pending and len(evidence_running) < 2:
+                            future = evidence_pool.submit(upload_evidence, source['id'], job['payload']['id'],
+                                                          job['frames'], job['snapshot'], job['boxes'], triggered_at)
+                            evidence_running.append((future, job['payload']))
                             evidence_waiting.remove(job)
                     response = client.post(detector_url + '/v1/detect', json={
                         'minConfidence': .25,
@@ -243,7 +253,8 @@ def run(source, client, stop, *, detector_url, fps=3):
                             if len(evidence_waiting) + len(evidence_running) < 20:
                                 # The AI reviews the clean frame; burned-in boxes and scores confuse it.
                                 pending.track_evidence(payload, review_jpeg(image) if enrichment else None)
-                                evidence_waiting.append((payload, frame.captured_at, evidence_jpeg, response.json()['detections']))
+                                evidence_waiting.append({'payload': payload, 'triggered_at': frame.captured_at, 'snapshot': evidence_jpeg,
+                                                         'boxes': response.json()['detections'], 'frames': None})
                             else:
                                 payload['reviewNotes'].append('Evidence unavailable: evidence queue capacity reached')
                             pending.append(payload)
@@ -274,7 +285,8 @@ def run(source, client, stop, *, detector_url, fps=3):
             except Exception as exc:
                 payload['reviewNotes'].append(f'Evidence unavailable: {evidence_failure(exc)}')
             pending.finish_evidence(payload)
-        for payload, _, _, _ in evidence_waiting:
+        for job in evidence_waiting:
+            payload = job['payload']
             payload['reviewNotes'].append('Evidence unavailable: processor stopped before post-event footage completed')
             pending.finish_evidence(payload)
         if pending:
