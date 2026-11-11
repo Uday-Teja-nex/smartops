@@ -1,0 +1,9 @@
+{
+  "measuredAt": "2026-11-11T12:18:05.277Z",
+  "liveIncident": {
+    "id": "inc-rule-472ca16823be479597cc1119d75f9ba2",
+    "summary": "5 people queuing in Checkout queue for 8s",
+    "secondsFromTriggerFrameToVisible": 0.9
+  },
+  "aiReview": "AI review\nadvisory · never changes the rule decision\n\nAI review unavailable: model did not answer in time. The rule result above stands on its own."
+}

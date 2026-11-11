@@ -1,0 +1,89 @@
+
+Running 9 tests using 1 worker
+
+  ok 1 e2e\demo.spec.ts:73:5 › 1. operator signs in and sees real KPIs for the mall (4.0s)
+  ok 2 e2e\demo.spec.ts:80:5 › 2. live camera tile plays real video (9.0s)
+  ok 3 e2e\demo.spec.ts:94:5 › 3. a rule incident is pushed to Live Ops without refresh (49.2s)
+  ok 4 e2e\demo.spec.ts:120:5 › 4. incident shows evidence and an AI review or its stated reason (1.5m)
+  ok 5 e2e\demo.spec.ts:136:5 › 5. lifecycle actions update the timeline and a second browser live (13.7s)
+  ok 6 e2e\demo.spec.ts:157:5 › 6. viewers are read-only in the UI and the API (8.0s)
+  ok 7 e2e\demo.spec.ts:169:5 › 7. another workspace sees none of the mall's data (11.0s)
+  x  8 e2e\demo.spec.ts:180:5 › 8. reports show computed summaries with CSV and PDF export (35.3s)
+  -  9 e2e\demo.spec.ts:191:5 › 9. stopping the detector shows a named degraded state that recovers
+
+
+  1) e2e\demo.spec.ts:180:5 › 8. reports show computed summaries with CSV and PDF export ───────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeEnabled[2m()[22m failed
+
+    Locator:  getByRole('button', { name: 'Export CSV' })
+    Expected: enabled
+    Received: disabled
+    Timeout:  30000ms
+
+    Call log:
+    [2m  - Expect "toBeEnabled" with timeout 30000ms[22m
+    [2m  - waiting for getByRole('button', { name: 'Export CSV' })[22m
+    [2m    32 × locator resolved to <button disabled class="rounded-lg border border-slate-600 px-4 py-2 text-sm disabled:opacity-50">Export CSV</button>[22m
+    [2m       - unexpected value "disabled"[22m
+
+
+      181 |   const page = await pageAs(browser, "supervisor@mall.demo");
+      182 |   await page.goto("/reports");
+    > 183 |   await expect(page.getByRole("button", { name: "Export CSV" })).toBeEnabled({ timeout: 30_000 });
+          |                                                                  ^
+      184 |   const download = page.waitForEvent("download");
+      185 |   await page.getByRole("button", { name: "Export CSV" }).click();
+      186 |   const csv = await download;
+        at C:\Users\UDAY\Desktop\Projetcs\scope\me\e2e\demo.spec.ts:183:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-8-reports-show-comput-b6754-ies-with-CSV-and-PDF-export\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-8-reports-show-comput-b6754-ies-with-CSV-and-PDF-export\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-8-reports-show-comput-b6754-ies-with-CSV-and-PDF-export\test-failed-3.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-8-reports-show-comput-b6754-ies-with-CSV-and-PDF-export\test-failed-4.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-8-reports-show-comput-b6754-ies-with-CSV-and-PDF-export\test-failed-6.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #6: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-8-reports-show-comput-b6754-ies-with-CSV-and-PDF-export\test-failed-7.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #7: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-8-reports-show-comput-b6754-ies-with-CSV-and-PDF-export\test-failed-5.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #8: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-8-reports-show-comput-b6754-ies-with-CSV-and-PDF-export\test-failed-8.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #9: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-8-reports-show-comput-b6754-ies-with-CSV-and-PDF-export\test-failed-9.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: docs\verification\e2e\artifacts\demo-8-reports-show-comput-b6754-ies-with-CSV-and-PDF-export\error-context.md
+
+    attachment #11: trace (application/zip) ────────────────────────────────────────────────────────
+    docs\verification\e2e\artifacts\demo-8-reports-show-comput-b6754-ies-with-CSV-and-PDF-export\trace.zip
+    Usage:
+
+        npx playwright show-trace docs\verification\e2e\artifacts\demo-8-reports-show-comput-b6754-ies-with-CSV-and-PDF-export\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e\demo.spec.ts:180:5 › 8. reports show computed summaries with CSV and PDF export ────────────
+  1 did not run
+  7 passed (4.2m)

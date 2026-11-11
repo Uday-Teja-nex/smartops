@@ -1,0 +1,74 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e4]:
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - img [ref=e9]
+          - generic [ref=e12]:
+            - paragraph [ref=e13]: SmartOps
+            - paragraph [ref=e14]: Building Intelligence
+        - navigation [ref=e15]:
+          - link "Overview" [ref=e16] [cursor=pointer]:
+            - /url: /
+            - img [ref=e17] [cursor=pointer]
+            - text: Overview
+          - link "Live Ops" [ref=e23] [cursor=pointer]:
+            - /url: /live-ops
+            - img [ref=e24] [cursor=pointer]
+            - text: Live Ops
+          - link "Camera view" [ref=e26] [cursor=pointer]:
+            - /url: /cameras
+            - img [ref=e27] [cursor=pointer]
+            - text: Camera view
+          - link "Sources" [ref=e30] [cursor=pointer]:
+            - /url: /sources
+            - img [ref=e31] [cursor=pointer]
+            - text: Sources
+          - link "Monitoring" [ref=e34] [cursor=pointer]:
+            - /url: /monitoring
+            - img [ref=e35] [cursor=pointer]
+            - text: Monitoring
+          - link "Reports" [ref=e41] [cursor=pointer]:
+            - /url: /reports
+            - img [ref=e42] [cursor=pointer]
+            - text: Reports
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - link "Olivia Operator" [ref=e48] [cursor=pointer]:
+              - /url: /account
+            - paragraph [ref=e49]: operator
+          - button "Sign out" [ref=e50]:
+            - img [ref=e51]
+        - paragraph [ref=e54]:
+          - link "How SmartOps handles data" [ref=e55] [cursor=pointer]:
+            - /url: /privacy
+          - text: ": no face or identity recognition, evidence restricted by default."
+    - generic [ref=e56]:
+      - banner [ref=e57]:
+        - generic [ref=e58]:
+          - generic [ref=e59]:
+            - generic [ref=e62]: Harborline Mall
+            - generic [ref=e63]: Offline
+            - paragraph [ref=e65]: Waiting for the API and live updates
+          - generic [ref=e66]:
+            - combobox [ref=e67]:
+              - option "Harborline Mall" [selected]
+            - combobox [ref=e68]:
+              - option "Last 4 hours"
+              - option "Last 24 hours"
+              - option "Last 7 days" [selected]
+              - option "Last 30 days"
+            - generic [ref=e69]:
+              - img [ref=e70]
+              - textbox "Search events" [ref=e73]
+      - main [ref=e74]:
+        - generic [ref=e75]:
+          - generic [ref=e76]: "!"
+          - paragraph [ref=e77]: Live connection unavailable
+          - paragraph [ref=e78]: The API or event stream is unreachable. Data and actions are unavailable while SmartOps reconnects automatically.
+```
