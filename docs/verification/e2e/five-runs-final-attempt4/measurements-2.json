@@ -1,0 +1,8 @@
+{
+  "measuredAt": "2026-11-11T11:30:54.453Z",
+  "liveIncident": {
+    "id": "inc-rule-ee09c9f4900547d69e1bfd44b107709d",
+    "summary": "8 people in Atrium floor for 6s (crowding limit exceeded)",
+    "secondsFromTriggerFrameToVisible": 1.8
+  }
+}
