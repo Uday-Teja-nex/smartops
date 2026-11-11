@@ -179,3 +179,39 @@ def test_local_reviews_queue_one_at_a_time_and_skip_when_waiting_too_long(monkey
     finally:
         ollama._GENERATION_LOCK.release()
     assert describe_failure(caught.value) == 'local model busy with other reviews for 0 s; this one was skipped'
+
+
+def test_breaker_skips_a_failing_primary_then_probes_it_again():
+    import httpx
+
+    from app.providers.fallback import FallbackProvider
+    now = [0.0]
+    primary, local = FakeProvider('hosted', httpx.ReadTimeout('t')), FakeProvider('local', {'ok': 1})
+    provider = FallbackProvider(primary, local, failure_threshold=2, cooldown_seconds=300, clock=lambda: now[0])
+    for _ in range(2):
+        provider.review_event_evidence_base64('p', ['aA=='])
+    assert primary.calls == 2 and local.calls == 2
+    # Open: the hosted timeout is no longer paid on every review.
+    for _ in range(3):
+        provider.review_event_evidence_base64('p', ['aA=='])
+    assert primary.calls == 2 and local.calls == 5
+    assert provider.paused_seconds() == 300
+    now[0] = 301
+    provider.review_event_evidence_base64('p', ['aA=='])  # one probe, still failing: open again
+    assert primary.calls == 3 and provider.paused_seconds() == 300
+    now[0] = 700
+    primary.outcome = {'ok': 'hosted'}
+    assert provider.review_event_evidence_base64('p', ['aA==']) == {'ok': 'hosted'}
+    assert provider.paused_seconds() == 0 and provider.vision_model == 'hosted'
+    provider.review_event_evidence_base64('p', ['aA=='])
+    assert primary.calls == 5
+
+
+def test_status_says_when_the_primary_is_being_skipped():
+    import httpx
+
+    from app.providers.fallback import FallbackProvider
+    primary, local = FakeProvider('hosted', httpx.ConnectError('down')), FakeProvider('local', {})
+    provider = FallbackProvider(primary, local, failure_threshold=1, cooldown_seconds=120, clock=lambda: 0.0)
+    provider.review_event_evidence_base64('p', ['aA=='])
+    assert 'skipped for 120 s after 1 failed requests' in provider.availability()['detail']

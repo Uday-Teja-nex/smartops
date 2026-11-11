@@ -126,9 +126,14 @@ test("4. incident shows evidence and an AI review or its stated reason", async (
   await expect.poll(async () => clip.count(), { timeout: 60_000 }).toBeGreaterThan(0);
   await expect.poll(async () => clip.evaluate((v: HTMLVideoElement) => v.readyState), { timeout: 60_000 })
     .toBeGreaterThanOrEqual(2);
-  // Within 90 s the review must have landed or say why; never an endless spinner.
+  // The review must land or say why within the product's stated bound, never
+  // an endless spinner. On the laptop's CPU fallback that bound is the review
+  // timeout (SMARTOPS_REVIEW_TIMEOUT_SECONDS, 180 s): reviews queue one at a
+  // time behind a 120 s queue limit. A hosted or GPU model lands in seconds.
   const review = page.getByText(/AI review by|AI review unavailable|AI review skipped|No AI review was recorded|Image consistent|Image casts doubt|Image unclear/);
-  await expect(review.first()).toBeVisible({ timeout: 90_000 });
+  const waitStarted = Date.now();
+  await expect(review.first()).toBeVisible({ timeout: 180_000 });
+  measurements.aiReviewSettledAfterSeconds = Math.round((Date.now() - waitStarted) / 1000);
   measurements.aiReview = await page.locator("section").filter({ hasText: "AI review" }).first().innerText();
   await shot(page, "04-incident-evidence-ai");
 });
