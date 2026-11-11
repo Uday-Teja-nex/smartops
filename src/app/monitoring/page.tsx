@@ -6,6 +6,7 @@ import { GlassPanel } from "@/components/ui/GlassPanel";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeader } from "@/components/SectionHeader";
 import { ServiceList, useSystemStatus } from "@/components/SystemStatus";
+import { ServiceMetricsHeading, ServiceMetricsPanel } from "@/components/ServiceMetricsPanel";
 import { SourceStatus } from "@/lib/types";
 import { SOURCE_STATUS_COLORS, hexToRgba } from "@/lib/visuals";
 import { classNames, formatDateTime, humanize } from "@/lib/utils";
@@ -18,7 +19,7 @@ export default function MonitoringPage() {
     <div className="space-y-6">
       <SectionHeader
         title="Realtime Monitoring"
-        subtitle="Which services are up, and per-camera processing rate, lag, queues and errors"
+        subtitle="Which services are up, model latency, and per-camera processing rate, lag, queues and errors"
       />
 
       {backendStatus !== "connected" && (
@@ -36,6 +37,8 @@ export default function MonitoringPage() {
           <GlassPanel>
             <ServiceList status={systemStatus} />
           </GlassPanel>
+          <ServiceMetricsHeading />
+          <ServiceMetricsPanel enabled={backendStatus === "connected"} />
         </div>
 
         {/* Source health tiles */}

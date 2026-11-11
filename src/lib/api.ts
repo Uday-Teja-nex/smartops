@@ -375,6 +375,18 @@ export type SystemStatus = { ok: boolean; checkedAt: string; components: SystemC
 export const fetchSystemStatus = () =>
   request<SystemStatus>("/v1/system/status", { cache: "no-store", signal: AbortSignal.timeout(8000) });
 
+export type ServiceMetrics = {
+  error?: string;
+  p50Seconds?: number | null;
+  p95Seconds?: number | null;
+  outcomes?: Record<string, number> | null;
+};
+export type SystemMetrics = { checkedAt: string; minSamples: number; scope: string; detector: ServiceMetrics; ai: ServiceMetrics };
+
+/** Latency percentiles and outcome shares scraped from the shared services' /metrics. */
+export const fetchSystemMetrics = () =>
+  request<SystemMetrics>("/v1/system/metrics", { cache: "no-store", signal: AbortSignal.timeout(8000) });
+
 export type PhoneCameraResult = {
   source: SourceRecord;
   publish: { rtmpUrl: string; server: string; streamKey: string; path: string; lanHostConfigured: boolean };
