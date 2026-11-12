@@ -1,6 +1,7 @@
 # SmartOps handoff
 
-Updated 2026-11-11. Branch `codex/smartops-live-demo`; nothing is pushed.
+Updated 2026-11-12. Branch `codex/smartops-live-demo`, pushed (no PR). CI
+on GitHub is green on the pushed branch.
 Goal: `GOAL_PROMPT.md`. Phase status: `PLAN.md`. Evidence:
 `docs/verification/`. Decisions: `docs/DECISIONS/` (ADRs 0001–0014).
 
@@ -144,7 +145,6 @@ Playwright E2E needs the running stack (`npx playwright test`).
 - Local CPU AI review misses p95 ≤ 30 s (34 s) when incidents coincide; the hosted model passes.
 - `npm audit`: 8 moderate findings in the ESLint dev toolchain (minimatch);
   production dependencies are clean.
-- CI has not run on the upgraded dependencies: nothing is pushed.
 - `SMARTOPS_SECRETS_KEY` is an env var; a cloud deployment should hold it
   in a secrets manager, and rotating it means re-encrypting the channels.
 - No email invites or SSO yet; an admin passes on a generated temporary

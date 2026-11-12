@@ -23,4 +23,6 @@ Playwright E2E (Section C) against the compose stack: 5/5 consecutive runs
 from reset (`e2e/five-runs-final/`), then a confirmation run on the final
 demo history, 9/9 steps.
 
-CI on GitHub has not run: the branch is not pushed (owner's call).
+**CI on GitHub: green** (2026-11-12, run 43214271332 on `63c8ec3`, all 7 jobs passed):
+https://github.com/Uday-Teja-nex/smartops/actions/runs/43214271332
+The only annotations are GitHub's Node.js 20 and ubuntu-latest deprecation notices.
